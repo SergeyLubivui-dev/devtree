@@ -1,0 +1,65 @@
+name: Bug report
+description: Something devtree did that it should not have
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Three things make a bug report actionable, and they are all below: the plan that triggered
+        it, the command you ran, and what devtree printed. Parse errors always name a line number —
+        paste that line too.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: The command
+      render: shell
+      placeholder: devtree archive --all
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: What devtree printed
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: The plan that triggers it
+      description: The smallest `.devtree/tree.yaml` that still shows the problem.
+      render: yaml
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `devtree version`, and how you installed it.
+      placeholder: devtree 0.3.0, go install
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Where
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - The container image
+    validations:
+      required: true

@@ -3,18 +3,19 @@
   <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/assets/hero.svg" width="800">
 </picture>
 
-**English** · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
+**English** · [Русский](docs/i18n/README.ru.md) · [中文](docs/i18n/README.zh-CN.md) · [Deutsch](docs/i18n/README.de.md) · [Français](docs/i18n/README.fr.md)
 
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/SergeyLubivui-dev/devtree.svg)](https://pkg.go.dev/github.com/SergeyLubivui-dev/devtree)
 [![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)
+[![Container](https://img.shields.io/badge/ghcr.io-devtree-2496ed?logo=docker&logoColor=white)](https://github.com/SergeyLubivui-dev/devtree/pkgs/container/devtree)
+[![Go Reference](https://pkg.go.dev/badge/github.com/SergeyLubivui-dev/devtree.svg)](https://pkg.go.dev/github.com/SergeyLubivui-dev/devtree)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Your plan is a file — `.devtree/tree.yaml` — that sits next to the code. It is versioned with the
-code, reviewed in the pull request, and merged line by line. From it, devtree generates a
+code, reviewed in the pull request, and merged line by line. From it, devtree draws a
 [Mermaid](https://mermaid.js.org/) diagram into `TREE.md` or straight into your `README.md`, and a
-drawing of its own into `.svg`. GitHub and GitLab render both natively. No browser extension, no
-image to regenerate by hand, nothing to host.
+picture of its own into `.svg` — as a tree, or as a board. GitHub and GitLab render both natively.
+No browser extension, no image to regenerate by hand, nothing to host.
 
 ---
 
@@ -86,8 +87,7 @@ Payment Gateway
 ██░░░░░░░░░░░░░░░░░░  1/9
 ```
 
-And the SVG backend, which devtree draws itself — [further down](#devtrees-own-plan), rendering this
-repository's own plan.
+And devtree's own drawing — [further down](#devtrees-own-plan), rendering this repository's plan.
 
 ---
 
@@ -98,37 +98,15 @@ go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
 Prebuilt binaries for Linux, macOS, and Windows are attached to every
-[release](https://github.com/SergeyLubivui-dev/devtree/releases/latest), with checksums.
-
-Or build from source — Go 1.22 or newer, nothing else:
-
-```bash
-git clone https://github.com/SergeyLubivui-dev/devtree.git
-cd devtree
-go test ./...
-go build -o devtree .
-```
-
-### In a container
-
-If you would rather not install anything at all, mount the repository and run the image:
+[release](https://github.com/SergeyLubivui-dev/devtree/releases/latest), with checksums. Or run it
+without installing anything:
 
 ```bash
 docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree render
-docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree board
-docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree add "Search filters" -p mvp
 ```
 
-On Linux, add `--user "$(id -u):$(id -g)"` so the files it writes belong to you rather than to root.
-Tag `latest` follows the last release, `edge` follows `main`; both are published for `amd64` and
-`arm64`. A shell alias makes it disappear into the background:
-
-```bash
-alias devtree='docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree'
-```
-
-The image carries git, so `devtree sync` works inside it too. That is the only reason it is not built
-`FROM scratch`: everything else devtree does needs the plan file and nothing more.
+Building from source needs Go 1.22 and nothing else. Details, and a shell alias that makes the
+container disappear into the background: [docs/container.md](docs/container.md).
 
 ---
 
@@ -150,6 +128,8 @@ git add . && git commit -m "feat: oauth"     # the hook refreshes the diagram fo
 
 IDs are derived from titles — "OAuth providers" becomes `oauth-providers`, and non-Latin titles are
 transliterated so the ID stays typeable. Pass `--id` when you want to choose one yourself.
+
+A longer walk through the same ground: [docs/getting-started.md](docs/getting-started.md).
 
 ---
 
@@ -241,58 +221,37 @@ Payment Gateway
 ██░░░░░░░░░░░░░░░░░░  1/7
 ```
 
-Only leaves appear. A milestone is a container, not a task, and a board that lists containers next
-to the work inside them stops being a board — so each card carries its milestone as a breadcrumb
-instead. Empty columns are left out entirely: a board with nothing blocked should not spend a fifth
-of its width saying so.
-
-The same board renders to SVG. Name an output `board.svg` (or `anything.board.svg`) and it is drawn
-as columns instead of a tree:
-
-```bash
-devtree init --outputs "docs/assets/tree.svg, docs/assets/board.svg, docs/assets/board-dark.svg"
-```
+Only leaves appear — a milestone is a container, not a card — and each task carries its milestone as
+a breadcrumb. Name an output `board.svg` and the same thing is drawn as columns:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
   <img alt="devtree's own board: columns of work by status" src="docs/assets/board.svg">
 </picture>
 
+More: [docs/board.md](docs/board.md).
+
 ---
 
 ## Finished work
 
-A plan that keeps every task ever completed stops being a plan and becomes a log: the board fills
-with columns of done work and the diagram grows a tail nobody reads. Archiving keeps the record
-without keeping the noise.
+A plan that keeps every task ever completed stops being a plan and becomes a log. Two commands
+handle that from opposite ends:
 
 ```bash
 devtree archive          # what is finished and could move
 devtree archive --all    # move it into .devtree/archive.yaml
-devtree archive v1       # or just this branch of the plan
-devtree archive --list   # what has already left
-devtree restore v1       # bring it back, with everything under it
+devtree restore v1       # bring a branch of it back
+
+devtree sync             # tasks whose branch git has already merged
+devtree sync --apply     # mark them done
 ```
 
-Nothing moves until you say so — plain `devtree archive` only reports. A node qualifies only when
-its whole subtree is done or dropped, so live work can never vanish along with the milestone above
-it. Archived tasks keep the parent they had, which is how they remember where they came from; if
-that parent is gone by the time you restore, the task comes back as a root and tells you.
+Nothing moves until you say so, and a node qualifies only when its whole subtree is done or dropped,
+so live work can never leave with the milestone above it. `sync` proposes rather than acts, because
+git knows which branches were merged but not which of them were merged *finished*.
 
-The archive uses the same format as the plan, so there is no second parser to learn and nothing new
-to review in a diff.
-
-**Closing what git already knows about:**
-
-```bash
-devtree sync           # list tasks whose branch is already merged
-devtree sync --apply   # mark them done
-```
-
-It proposes instead of acting, because git knows which branches were merged but not which of them
-were merged *finished* — a branch merged behind a feature flag is not a task that is done. This is
-the only command that runs another program; everything else works on the file alone, which is what
-lets devtree run in a tarball or a container with no repository at all.
+More: [docs/finished-work.md](docs/finished-work.md).
 
 ---
 
@@ -300,14 +259,14 @@ lets devtree run in a tarball or a container with no repository at all.
 
 | Command | What it does |
 |---|---|
-| `init [--project N] [--repo URL] [--outputs F] [--hook] [--action] [--empty]` | Creates `.devtree/tree.yaml`, `.gitattributes`, and the first diagram. `--outputs` takes any mix of `.md` and `.svg` files |
+| `init [--project N] [--repo URL] [--outputs F] [--hook] [--action] [--empty]` | Creates `.devtree/tree.yaml`, `.gitattributes`, and the first diagram |
 | `add "Title" [-p ID] [-s STATUS] [-b BRANCH] [-i N] [--pr N] [-o WHO] [--tags a,b] [-n NOTE] [--id ID]` | Adds a task |
-| `set ID [--title T] [-s ...] [-p ...] [...]` | Changes fields on a task; only the flags you pass are touched |
+| `set ID [--title T] [-s ...] [-p ...] [...]` | Changes fields; only the flags you pass are touched |
 | `done ID [ID...]` | Marks tasks done |
 | `mv ID PARENT\|root` | Re-parents a task |
 | `rm ID [--cascade]` | Deletes a task; without `--cascade` its children move up to its parent |
 | `ls [-s STATUS]` | Prints the tree in the terminal |
-| `board [-s STATUS]` | Prints the work grouped by status, like a board |
+| `board [-s STATUS]` | Prints the work grouped by status |
 | `archive [ID...] [--all] [--list]` | Moves finished branches of the plan into the archive |
 | `restore ID [ID...]` | Brings archived work back |
 | `sync [--apply]` | Closes tasks whose branch git has already merged |
@@ -334,171 +293,45 @@ The canonical spelling is what lands in the file, whichever shorthand you type.
 
 ---
 
-## The file format
+## Where the diagram goes
+
+The plan lists its own output files, and the **name decides the drawing**:
+
+| File name | What gets written |
+|---|---|
+| `TREE.md`, `README.md` | the Mermaid block, between `<!-- devtree:begin -->` and `<!-- devtree:end -->` markers |
+| `docs/tree.svg` | devtree's own drawing of the tree, light palette |
+| `docs/tree-dark.svg` | the same, dark palette |
+| `docs/board.svg` | the board |
 
 ```yaml
-# Development tree. Edit by hand or through the `devtree` command.
-# After editing, run `devtree render` to refresh the diagram.
-version: 1
-project: "Payment Gateway"
-repo: "https://github.com/acme/pay"
-outputs: "TREE.md"
-nodes:
-  - id: "mvp"
-    title: "MVP"
-    status: "in_progress"
-  - id: "authentication"
-    title: "Authentication"
-    status: "in_progress"
-    parent: "mvp"
-    branch: "feat/auth"
-    issue: "12"
-    owner: "ann"
-  - id: "password-reset"
-    title: "Password reset"
-    status: "blocked"
-    parent: "authentication"
-    note: "waiting on SMTP"
+outputs: "README.md, docs/tree.svg, docs/tree-dark.svg, docs/board.svg"
 ```
 
-The list is **flat**; the hierarchy comes from the `parent` field. That is a deliberate trade.
-Nesting would mean that adding a task rewrites an existing block — exactly the shape that makes two
-feature branches conflict. A flat list turns "add a task" into "append lines", so parallel branches
-merge cleanly, and `init` writes a `merge=union` rule into `.gitattributes` to finish the job. Worst
-case you end up with a duplicate ID, which `devtree check` catches on the spot.
+Everything outside the markers is left exactly as you wrote it, and re-rendering an unchanged plan
+rewrites nothing at all. Point a `<picture>` at a light and dark pair and GitHub switches it with the
+reader's theme.
 
-Edit the file by hand whenever you like. The parser is strict and tells you the line number:
+Three things in the drawing move, and each one is information: a dash travels down the edges leading
+into work in progress, a glyph turns while a task is in flight and breathes while it is blocked, and
+progress bars grow in once. Readers who ask their system for less motion — and anyone printing —
+get a still picture.
 
-```text
-devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
-```
+File naming rules, palettes, the animation vocabulary, and the content security policy all of it has
+to survive: [docs/svg-output.md](docs/svg-output.md).
 
 ---
 
 ## Automation
 
-**Pre-commit hook** — `devtree install hook`
-
-Validates the plan, regenerates every output, and stages the result along with your commit. An
-existing hook is preserved as `pre-commit.devtree-backup`. Teammates who have not installed devtree
-are not blocked: the hook notices the binary is missing and steps aside.
-
-**GitHub Action** — `devtree install action`
-
-- on `pull_request`: fails if the diagram is stale, so the author fixes it in their own diff;
-- on `push` to the default branch: refreshes the diagram and commits it.
-
----
-
-## Rendering into your README
-
 ```bash
-devtree init --outputs "README.md"
+devtree install hook      # validate and re-render before every commit
+devtree install action    # fail a pull request whose diagram is out of date
 ```
 
-The block is written between the `<!-- devtree:begin -->` and `<!-- devtree:end -->` markers, each on
-a line of its own. If the markers are not there yet, the block is appended once and updated in place
-from then on — so put the empty pair wherever you want the diagram to appear. Everything outside
-them is left exactly as you wrote it, and re-rendering an unchanged plan rewrites nothing at all.
-
-Only markers that start their own line count. Prose that mentions them mid-sentence — the paragraph
-you are reading, for instance — is left alone.
-
-Issue and pull request links are built from `repo`. If `repo` is not set, devtree falls back to
-relative links (`../../issues/12`), which GitHub resolves correctly for files in the repository root
-and which survive a fork or a move to another host.
-
----
-
-## Drawing to SVG
-
-Mermaid has a ceiling. GitHub renders it with a strict sanitizer and a page-level CSP, so a diagram
-node cannot carry an icon or a link no matter how the label is written. A file devtree draws itself
-has no such ceiling — so name an output `.svg` and you get the native renderer instead:
-
-```bash
-devtree init --outputs "TREE.md, docs/assets/tree.svg, docs/assets/tree-dark.svg"
-```
-
-The name decides everything, so `outputs` stays a plain list of destinations and `devtree render`
-needs no arguments to reproduce it:
-
-| File name | What gets drawn |
-|---|---|
-| `TREE.md`, `README.md` | the Mermaid block, between markers |
-| `docs/assets/tree.svg` | the tree, light palette |
-| `docs/assets/tree-dark.svg` | the tree, dark palette |
-| `docs/assets/board.svg` | the board |
-| `docs/plan.board-dark.svg` | the board, dark, under a different name |
-
-Point a `<picture>` at a light and dark pair and GitHub switches it with the reader's theme:
-
-```html
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/tree-dark.svg">
-  <img alt="Development tree" src="docs/assets/tree.svg" width="800">
-</picture>
-```
-
-What the drawing adds over the Mermaid block: status glyphs on a 24×24 grid, a stripe of the status
-color running the full height of each card, a progress bar and a completion ratio on every parent,
-branch, issue, pull request, owner and tags on a second line under each title, a status key along
-the bottom, and rounded elbow connectors that stay readable when a milestone grows a dozen children.
-
-### Motion that means something
-
-Three things move, and each one is information rather than decoration:
-
-| | |
-|---|---|
-| A dash travels down an edge | that edge leads into work that is in progress — it marks the live path through the plan |
-| A glyph turns | that task is in flight right now |
-| A glyph breathes | that task is blocked, the one state worth interrupting a reader for |
-| A bar grows in, once | how much of a milestone is finished |
-| A card fades up | it just arrived, in sequence with its neighbours — the picture assembles instead of appearing |
-
-Everything else holds still. The motion is CSS inside the file: GitHub serves repository SVGs under
-`default-src 'none'; style-src 'unsafe-inline'; sandbox`, which permits a stylesheet and forbids
-script, so declarative animation is the only kind that survives — and the only kind worth having in
-a diagram.
-
-Two rules keep it from ever costing a reader anything. Anyone whose system asks for less motion gets
-a still picture, because every animated element is drawn over something that already reads correctly
-without it. And printing switches the animations off outright: a renderer that froze the first frame
-of a fade-in would otherwise put a blank card on the page.
-
-The output is self-contained by design — no external fonts, no images, no script, no CSS custom
-properties. GitHub serves repository SVGs under `default-src 'none'; sandbox`, and everything in the
-file survives that. The one thing sandboxing costs is interactivity: an SVG rendered as an image
-cannot carry links, so branch and issue links still live in the table under the Mermaid block.
-
-Glyphs are vendored from [Reicon](https://reicon.dev) (MIT) as path data in `internal/icons` — see
-[NOTICE](NOTICE). Nothing is fetched at render time, and the binary still has no dependencies. Every
-picture in this README is drawn by the same code that draws your plan; `go run ./internal/art`
-regenerates them, and CI fails if they drift.
-
----
-
-## How it is built
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-dark.svg">
-  <img alt="Nested layers: cli around store, render and scaffold, around render/svg and draw, around tree and icons" src="docs/assets/architecture.svg" width="800">
-</picture>
-
-`internal/tree` imports nothing but the standard library. It does not know that a file format
-exists, and it certainly does not know about Mermaid — which is why the rules about what a valid
-plan *is* live in one place and stay there. Everything below the CLI is silent: no printing, no
-`os.Exit`, errors returned as values. `App` takes its working directory and its two writers as
-fields, so the test suite drives whole commands against a temporary directory and reads back exactly
-what a user would have seen.
-
-```bash
-go test ./...
-go vet ./...
-```
-
-The full layering, the rules that hold it, and how it is tested: [docs/architecture.md](docs/architecture.md).
+The hook keeps your own commits honest; the Action keeps everyone else's honest without requiring
+them to install anything. A teammate without devtree is never blocked — the hook notices the binary
+is missing and steps aside. Line by line: [docs/automation.md](docs/automation.md).
 
 ---
 
@@ -515,17 +348,16 @@ This page is the tour. [`docs/`](docs/) is the detail underneath it.
 | [Automation](docs/automation.md) | The pre-commit hook and the GitHub Action, line by line |
 | [SVG output](docs/svg-output.md) | File naming, palettes, the animation vocabulary, the CSP it survives |
 | [The container](docs/container.md) | Running devtree without installing anything |
-| [Architecture](docs/architecture.md) | The layering and the rules that hold it |
+| [Architecture](docs/architecture.md) | The layering, the rules that hold it, and how it is tested |
 
 ---
 
 ## Limitations
 
 - The storage format is a strict subset of YAML — a flat list of scalar fields. Anchors, multi-line
-  block scalars, and nested mappings are not supported and will be rejected with a line number.
+  block scalars, and nested mappings are rejected, with the line number.
 - Nothing rendered into a README is clickable: GitHub's Mermaid ignores `click` directives, and an
   SVG served as an image is sandboxed. Links live in the collapsed table under the Mermaid block.
-  An interactive HTML export is on the plan below.
 - Text in the SVG output is measured by estimate rather than by font metrics — shipping real metrics
   would mean shipping a font. Cards are sized a few pixels generously to compensate.
 - Very wide trees (hundreds of nodes) render slowly in the browser. Split them across several output
@@ -550,7 +382,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-████████████░░░░░░░░ **14 / 23** tasks done
+████████████░░░░░░░░ **15 / 24** tasks done
 
 ```mermaid
 flowchart TD
@@ -572,7 +404,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>5/10</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>6/11</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["☐ Filter ls by owner and tag"]:::todo
     n_v0_2 --> n_focus
@@ -593,6 +425,8 @@ flowchart TD
     n_archive["✔ Archive and restore finished work"]:::done
     n_v0_2 --> n_sync
     n_sync["✔ Close tasks from merged branches"]:::done
+    n_v0_2 --> n_docs_layout
+    n_docs_layout["✔ Documentation folder and a tidy root"]:::done
     n_distribution["◐ Distribution<br/><i>2/4</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done
@@ -607,6 +441,11 @@ flowchart TD
 > ☐ not started · ◐ in progress · ⛔ blocked · ✔ done · ✖ dropped
 
 <!-- devtree:end -->
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers the checks CI runs,
+which package new code belongs in, and the two rules the layering depends on.
 
 ## License
 

@@ -6,7 +6,23 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-## [0.3.0] — 2026-08-15
+### Changed
+
+- The repository root holds only what belongs there. The four translated READMEs moved to
+  `docs/i18n/`, leaving one README at the top, and every relative link inside them was rewritten and
+  checked.
+- The README is the tour again: the deep sections it had grown — the full file format, the hook line
+  by line, SVG naming and motion — now live in `docs/`, which is where they belong and where they
+  are not duplicated.
+
+### Added
+
+- `.editorconfig`, a security policy, issue forms, and a pull request template, all under `.github/`
+  where GitHub looks for them.
+
+### Fixed
+
+- The architecture picture was missing `internal/vcs`, which arrived with `devtree sync`.
 
 Finished work can leave the plan, git can close tasks on its own, the pictures move where movement
 means something, and none of it needs anything installed.

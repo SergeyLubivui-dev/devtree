@@ -29,6 +29,17 @@ CI runs exactly these on Linux, macOS, and Windows. The last two are the same ch
 installs into other people's repositories — the project plans itself with its own tool, so a change
 that makes the diagram stale fails the build.
 
+## Where things live
+
+```text
+main.go        wiring, and nothing else
+internal/      the code — see the table below
+docs/          documentation, with generated pictures in assets/ and translations in i18n/
+.devtree/      devtree's own plan, and its archive
+.github/       workflows, issue templates, the security policy
+Dockerfile     the container image published to GHCR
+```
+
 ## Where code goes
 
 The dependencies point inward, and pull requests are reviewed with that in mind:
@@ -54,10 +65,9 @@ Two rules follow from that table, and they are the ones most likely to come up i
 
 ## Translations
 
-`README.md` is the source. `README.ru.md`, `README.zh-CN.md`, `README.de.md`, and `README.fr.md`
-cover everything a user needs — install, quickstart, recipes, board, commands, format, automation,
-SVG output, limits — and point back to the English file for the architecture section, which is aimed
-at people reading the code anyway.
+`README.md` is the source. The four translations live in `docs/i18n/` and cover everything a user
+needs — install, quickstart, recipes, board, finished work, commands, format, automation, SVG
+output, limits — then point at `docs/` for the pages that are aimed at people reading the code.
 
 If a change alters what a user does or sees, update the translations in the same pull request. If it
 only touches internals, leave them alone. A translation that quietly drifts is worse than one that

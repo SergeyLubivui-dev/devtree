@@ -1,13 +1,13 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <img alt="devtree — planification arborescente du développement, qui vit dans le dépôt" src="docs/assets/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/hero-dark.svg">
+  <img alt="devtree — planification arborescente du développement, qui vit dans le dépôt" src="../assets/hero.svg" width="800">
 </picture>
 
-[English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Français**
+[English](../../README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Français**
 
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 Votre plan est un fichier — `.devtree/tree.yaml` — posé à côté du code. Il est versionné avec le
 code, relu dans la pull request et fusionné ligne à ligne. À partir de lui, devtree génère un
@@ -20,8 +20,8 @@ aucune extension de navigateur, aucune image à réexporter à la main, rien à 
 ## Pourquoi garder le plan dans le dépôt
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
-  <img alt="Trois raisons : il est relu, il se fusionne, il reste honnête" src="docs/assets/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/why-dark.svg">
+  <img alt="Trois raisons : il est relu, il se fusionne, il reste honnête" src="../assets/why.svg" width="800">
 </picture>
 
 - **Il est relu.** Une modification du plan apparaît dans le diff, juste à côté de la modification du
@@ -40,8 +40,8 @@ lequel les habitudes existent déjà.
 ## Comment ça marche
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="La boucle : modifier tree.yaml, lancer devtree render, les fichiers sont réécrits, GitHub les dessine" src="docs/assets/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/pipeline-dark.svg">
+  <img alt="La boucle : modifier tree.yaml, lancer devtree render, les fichiers sont réécrits, GitHub les dessine" src="../assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -188,8 +188,8 @@ son jalon en fil d'Ariane. Les colonnes vides ne sont pas dessinées du tout.
 Le même tableau se rend en SVG : il suffit de nommer le fichier de sortie `board.svg` :
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
-  <img alt="Le tableau de devtree : des colonnes de travail par statut" src="docs/assets/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/board-dark.svg">
+  <img alt="Le tableau de devtree : des colonnes de travail par statut" src="../assets/board.svg">
 </picture>
 
 ---
@@ -261,8 +261,8 @@ devtree add -p mvp -s wip "Authentication"
 ### Statuts
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — avec les abréviations acceptées" src="docs/assets/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — avec les abréviations acceptées" src="../assets/statuses.svg" width="800">
 </picture>
 
 C'est toujours l'orthographe canonique qui atterrit dans le fichier, quelle que soit l'abréviation
@@ -341,7 +341,7 @@ Qui demande moins d'animation à son système obtient une image fixe. À l'impre
 coupées : un moteur de rendu figé sur la première image d'un fondu imprimerait sinon une carte vide.
 
 Les glyphes proviennent de [Reicon](https://reicon.dev) (MIT), stockés comme données de chemin dans
-`internal/icons` — voir [NOTICE](NOTICE). Rien n'est téléchargé au moment du rendu, et le binaire
+`internal/icons` — voir [NOTICE](../../NOTICE). Rien n'est téléchargé au moment du rendu, et le binaire
 reste sans dépendances.
 
 ---
@@ -362,20 +362,20 @@ reste sans dépendances.
 
 ## Documentation
 
-Cette page est la visite guidée ; le détail est dans [`docs/`](docs/) :
-[premiers pas](docs/getting-started.md), [le format de fichier](docs/file-format.md),
-[le tableau](docs/board.md), [le travail terminé](docs/finished-work.md),
-[l'automatisation](docs/automation.md), [la sortie SVG](docs/svg-output.md),
-[le conteneur](docs/container.md), [l'architecture](docs/architecture.md). Ces pages sont en anglais.
+Cette page est la visite guidée ; le détail est dans [`docs/`](../) :
+[premiers pas](../getting-started.md), [le format de fichier](../file-format.md),
+[le tableau](../board.md), [le travail terminé](../finished-work.md),
+[l'automatisation](../automation.md), [la sortie SVG](../svg-output.md),
+[le conteneur](../container.md), [l'architecture](../architecture.md). Ces pages sont en anglais.
 
 ---
 
 ## Licence
 
-[MIT](LICENSE) © SergeyLubivui-dev
+[MIT](../../LICENSE) © SergeyLubivui-dev
 
 Les glyphes vectoriels de `internal/icons` proviennent de [Reicon](https://reicon.dev), également
-sous MIT — voir [NOTICE](NOTICE).
+sous MIT — voir [NOTICE](../../NOTICE).
 
 > La documentation complète, y compris la section sur l'architecture du projet, se trouve dans la
-> [version anglaise](README.md).
+> [version anglaise](../../README.md).

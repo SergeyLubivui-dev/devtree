@@ -314,7 +314,7 @@ func architecture(th svg.Theme) string {
 		label, role, color string
 	}{
 		{"internal/cli", "flags, dispatch, and every line the user sees", th.InProgress},
-		{"internal/store · internal/render · internal/scaffold", "file format, Mermaid and Markdown, templates", th.Done},
+		{"internal/store · internal/render · internal/scaffold · internal/vcs", "the file format, Mermaid, templates, git", th.Done},
 		{"internal/render/svg · internal/draw", "layout, cards, themes, text measurement", th.Done},
 		{"internal/tree · internal/icons", "the domain and the glyphs — standard library only", th.Blocked},
 	}

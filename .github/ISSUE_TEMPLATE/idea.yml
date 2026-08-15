@@ -1,0 +1,33 @@
+name: Idea
+description: Something devtree could do that it does not
+labels: [idea]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        devtree stays small on purpose: five statuses, one flat file, no service, no dependencies.
+        The most useful ideas are the ones that fit inside that, or that make a good case for
+        widening it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you were trying to do
+      description: The situation, before the solution. This is the part that shapes the answer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: A command, a field, a flag, a drawing — whatever shape it takes.
+    validations:
+      required: false
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do today instead
+    validations:
+      required: false

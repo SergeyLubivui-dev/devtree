@@ -1,13 +1,13 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <img alt="devtree — древовидное планирование разработки внутри репозитория" src="docs/assets/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/hero-dark.svg">
+  <img alt="devtree — древовидное планирование разработки внутри репозитория" src="../assets/hero.svg" width="800">
 </picture>
 
-[English](README.md) · **Русский** · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
+[English](../../README.md) · **Русский** · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
 
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 План проекта — это файл `.devtree/tree.yaml`, который лежит рядом с кодом. Он версионируется вместе
 с кодом, ревьюится в пул-реквесте и мержится построчно. Из него devtree генерирует диаграмму
@@ -20,8 +20,8 @@
 ## Зачем держать план в репозитории
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
-  <img alt="Три причины: попадает в ревью, нормально мержится, остаётся честным" src="docs/assets/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/why-dark.svg">
+  <img alt="Три причины: попадает в ревью, нормально мержится, остаётся честным" src="../assets/why.svg" width="800">
 </picture>
 
 - **Попадает в ревью.** Правка плана видна в диффе, рядом с правкой кода.
@@ -38,8 +38,8 @@
 ## Как это работает
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="Цикл: правим tree.yaml, запускаем devtree render, файлы перезаписываются, GitHub их рисует" src="docs/assets/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/pipeline-dark.svg">
+  <img alt="Цикл: правим tree.yaml, запускаем devtree render, файлы перезаписываются, GitHub их рисует" src="../assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -184,8 +184,8 @@ devtree board
 Та же доска отрисовывается в SVG — достаточно назвать выходной файл `board.svg`:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
-  <img alt="Доска devtree: колонки работы по статусам" src="docs/assets/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/board-dark.svg">
+  <img alt="Доска devtree: колонки работы по статусам" src="../assets/board.svg">
 </picture>
 
 ---
@@ -255,8 +255,8 @@ devtree add -p mvp -s wip "Аутентификация"
 ### Статусы
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — и сокращения, которые принимает каждый" src="docs/assets/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — и сокращения, которые принимает каждый" src="../assets/statuses.svg" width="800">
 </picture>
 
 В файл всегда попадает каноническое написание, каким бы сокращением вы ни воспользовались.
@@ -333,7 +333,7 @@ devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
 карточку.
 
 Глифы взяты из [Reicon](https://reicon.dev) (MIT) как данные путей в `internal/icons` — см.
-[NOTICE](NOTICE). Во время отрисовки ничего не скачивается, зависимостей у бинарника по-прежнему нет.
+[NOTICE](../../NOTICE). Во время отрисовки ничего не скачивается, зависимостей у бинарника по-прежнему нет.
 
 ---
 
@@ -352,19 +352,19 @@ devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
 
 ## Документация
 
-Эта страница — обзор. Подробности лежат в [`docs/`](docs/): [быстрый старт](docs/getting-started.md),
-[формат файла](docs/file-format.md), [доска](docs/board.md),
-[законченная работа](docs/finished-work.md), [автоматизация](docs/automation.md),
-[вывод в SVG](docs/svg-output.md), [контейнер](docs/container.md),
-[архитектура](docs/architecture.md). Страницы на английском.
+Эта страница — обзор. Подробности лежат в [`docs/`](../): [быстрый старт](../getting-started.md),
+[формат файла](../file-format.md), [доска](../board.md),
+[законченная работа](../finished-work.md), [автоматизация](../automation.md),
+[вывод в SVG](../svg-output.md), [контейнер](../container.md),
+[архитектура](../architecture.md). Страницы на английском.
 
 ---
 
 ## Лицензия
 
-[MIT](LICENSE) © SergeyLubivui-dev
+[MIT](../../LICENSE) © SergeyLubivui-dev
 
 Векторные глифы в `internal/icons` взяты из [Reicon](https://reicon.dev), тоже MIT — см.
-[NOTICE](NOTICE).
+[NOTICE](../../NOTICE).
 
-> Полная документация, включая раздел об устройстве проекта, — в [английской версии](README.md).
+> Полная документация, включая раздел об устройстве проекта, — в [английской версии](../../README.md).

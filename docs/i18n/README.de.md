@@ -1,13 +1,13 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <img alt="devtree — baumförmige Entwicklungsplanung, die im Repository lebt" src="docs/assets/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/hero-dark.svg">
+  <img alt="devtree — baumförmige Entwicklungsplanung, die im Repository lebt" src="../assets/hero.svg" width="800">
 </picture>
 
-[English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · **Deutsch** · [Français](README.fr.md)
+[English](../../README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · **Deutsch** · [Français](README.fr.md)
 
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 Dein Plan ist eine Datei — `.devtree/tree.yaml` — und sie liegt direkt neben dem Code. Sie wird mit
 dem Code versioniert, im Pull Request reviewt und zeilenweise gemergt. Daraus erzeugt devtree ein
@@ -20,8 +20,8 @@ kein Bild, das von Hand neu exportiert werden muss, nichts zu hosten.
 ## Warum der Plan ins Repository gehört
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
-  <img alt="Drei Gründe: er wird reviewt, er lässt sich mergen, er bleibt ehrlich" src="docs/assets/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/why-dark.svg">
+  <img alt="Drei Gründe: er wird reviewt, er lässt sich mergen, er bleibt ehrlich" src="../assets/why.svg" width="800">
 </picture>
 
 - **Er wird reviewt.** Eine Änderung am Plan steht im Diff, direkt neben der Änderung am Code.
@@ -39,8 +39,8 @@ gibt.
 ## Wie es funktioniert
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="Der Kreislauf: tree.yaml bearbeiten, devtree render ausführen, Dateien werden neu geschrieben, GitHub zeichnet sie" src="docs/assets/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/pipeline-dark.svg">
+  <img alt="Der Kreislauf: tree.yaml bearbeiten, devtree render ausführen, Dateien werden neu geschrieben, GitHub zeichnet sie" src="../assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -186,8 +186,8 @@ Meilenstein stattdessen als Brotkrume. Leere Spalten werden gar nicht erst gezei
 Dasselbe Board gibt es als SVG; die Ausgabedatei muss nur `board.svg` heißen:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
-  <img alt="Das Board von devtree: Spalten mit Arbeit nach Status" src="docs/assets/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/board-dark.svg">
+  <img alt="Das Board von devtree: Spalten mit Arbeit nach Status" src="../assets/board.svg">
 </picture>
 
 ---
@@ -258,8 +258,8 @@ devtree add -p mvp -s wip "Authentication"
 ### Status
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — samt der jeweils akzeptierten Kurzformen" src="docs/assets/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — samt der jeweils akzeptierten Kurzformen" src="../assets/statuses.svg" width="800">
 </picture>
 
 In der Datei landet immer die kanonische Schreibweise, egal welche Kurzform du tippst.
@@ -338,7 +338,7 @@ Animationen ganz abgeschaltet: ein Renderer, der das erste Bild einer Einblendun
 sonst eine leere Karte aufs Papier bringen.
 
 Die Glyphen stammen aus [Reicon](https://reicon.dev) (MIT) als Pfaddaten in `internal/icons` — siehe
-[NOTICE](NOTICE). Beim Zeichnen wird nichts nachgeladen, und das Binary hat weiterhin keine
+[NOTICE](../../NOTICE). Beim Zeichnen wird nichts nachgeladen, und das Binary hat weiterhin keine
 Abhängigkeiten.
 
 ---
@@ -359,20 +359,20 @@ Abhängigkeiten.
 
 ## Dokumentation
 
-Diese Seite ist die Führung, die Einzelheiten stehen in [`docs/`](docs/):
-[Erste Schritte](docs/getting-started.md), [das Dateiformat](docs/file-format.md),
-[das Board](docs/board.md), [fertige Arbeit](docs/finished-work.md),
-[Automatisierung](docs/automation.md), [SVG-Ausgabe](docs/svg-output.md),
-[der Container](docs/container.md), [Architektur](docs/architecture.md). Die Seiten sind auf Englisch.
+Diese Seite ist die Führung, die Einzelheiten stehen in [`docs/`](../):
+[Erste Schritte](../getting-started.md), [das Dateiformat](../file-format.md),
+[das Board](../board.md), [fertige Arbeit](../finished-work.md),
+[Automatisierung](../automation.md), [SVG-Ausgabe](../svg-output.md),
+[der Container](../container.md), [Architektur](../architecture.md). Die Seiten sind auf Englisch.
 
 ---
 
 ## Lizenz
 
-[MIT](LICENSE) © SergeyLubivui-dev
+[MIT](../../LICENSE) © SergeyLubivui-dev
 
 Die Vektor-Glyphen in `internal/icons` stammen aus [Reicon](https://reicon.dev), ebenfalls MIT —
-siehe [NOTICE](NOTICE).
+siehe [NOTICE](../../NOTICE).
 
 > Die vollständige Dokumentation, samt Abschnitt zum Aufbau des Projekts, steht in der
-> [englischen Fassung](README.md).
+> [englischen Fassung](../../README.md).

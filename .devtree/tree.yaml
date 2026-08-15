@@ -96,3 +96,7 @@ nodes:
     title: "Container image on GHCR"
     status: "done"
     parent: "distribution"
+  - id: "docs-layout"
+    title: "Documentation folder and a tidy root"
+    status: "done"
+    parent: "v0-2"
