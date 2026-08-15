@@ -15,7 +15,10 @@ import (
 
 // Version is stamped at build time with
 // -ldflags "-X github.com/SergeyLubivui-dev/devtree/internal/cli.Version=v1.2.3".
-var Version = "0.1.0"
+//
+// The default is what a plain `go build` reports, so it tracks the last
+// release rather than sitting at whatever the first one happened to be.
+var Version = "0.2.0"
 
 // App holds everything a command needs from the outside world.
 type App struct {

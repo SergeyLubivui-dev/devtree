@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-08-15
+
+devtree draws its own pictures now, and knows how to lay work out as a board.
+
 ### Added
 
 - A native SVG renderer. Name an output `.svg` and devtree draws the plan itself instead of emitting
@@ -82,5 +86,6 @@ First public release.
 - Validation covering duplicate IDs, dangling parents, cycles, unknown fields, and unknown statuses,
   with `check --strict` turning advisory warnings into a failure for CI.
 
-[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SergeyLubivui-dev/devtree/releases/tag/v0.1.0
