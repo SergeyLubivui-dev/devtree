@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
-  <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/assets/hero.svg" width="800">
 </picture>
 
 **English** · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
@@ -21,8 +21,8 @@ image to regenerate by hand, nothing to host.
 ## Why keep the plan in the repository
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
-  <img alt="Three reasons: it gets reviewed, it gets merged, it stays honest" src="docs/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
+  <img alt="Three reasons: it gets reviewed, it gets merged, it stays honest" src="docs/assets/why.svg" width="800">
 </picture>
 
 A roadmap in a tracker drifts away from the branch it describes. A roadmap in a wiki is read once
@@ -33,8 +33,8 @@ and never again. A roadmap in the repository is a file people already have habit
 ## How it works
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
-  <img alt="The loop: edit tree.yaml, run devtree render, files are rewritten, GitHub draws them" src="docs/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="The loop: edit tree.yaml, run devtree render, files are rewritten, GitHub draws them" src="docs/assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -250,12 +250,12 @@ The same board renders to SVG. Name an output `board.svg` (or `anything.board.sv
 as columns instead of a tree:
 
 ```bash
-devtree init --outputs "docs/tree.svg, docs/board.svg, docs/board-dark.svg"
+devtree init --outputs "docs/assets/tree.svg, docs/assets/board.svg, docs/assets/board-dark.svg"
 ```
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
-  <img alt="devtree's own board: columns of work by status" src="docs/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
+  <img alt="devtree's own board: columns of work by status" src="docs/assets/board.svg">
 </picture>
 
 ---
@@ -326,8 +326,8 @@ devtree add -p mvp -s wip "Authentication"
 ### Statuses
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — with the shorthand each one accepts" src="docs/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — with the shorthand each one accepts" src="docs/assets/statuses.svg" width="800">
 </picture>
 
 The canonical spelling is what lands in the file, whichever shorthand you type.
@@ -417,7 +417,7 @@ node cannot carry an icon or a link no matter how the label is written. A file d
 has no such ceiling — so name an output `.svg` and you get the native renderer instead:
 
 ```bash
-devtree init --outputs "TREE.md, docs/tree.svg, docs/tree-dark.svg"
+devtree init --outputs "TREE.md, docs/assets/tree.svg, docs/assets/tree-dark.svg"
 ```
 
 The name decides everything, so `outputs` stays a plain list of destinations and `devtree render`
@@ -426,17 +426,17 @@ needs no arguments to reproduce it:
 | File name | What gets drawn |
 |---|---|
 | `TREE.md`, `README.md` | the Mermaid block, between markers |
-| `docs/tree.svg` | the tree, light palette |
-| `docs/tree-dark.svg` | the tree, dark palette |
-| `docs/board.svg` | the board |
+| `docs/assets/tree.svg` | the tree, light palette |
+| `docs/assets/tree-dark.svg` | the tree, dark palette |
+| `docs/assets/board.svg` | the board |
 | `docs/plan.board-dark.svg` | the board, dark, under a different name |
 
 Point a `<picture>` at a light and dark pair and GitHub switches it with the reader's theme:
 
 ```html
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/tree-dark.svg">
-  <img alt="Development tree" src="docs/tree.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/tree-dark.svg">
+  <img alt="Development tree" src="docs/assets/tree.svg" width="800">
 </picture>
 ```
 
@@ -482,8 +482,8 @@ regenerates them, and CI fails if they drift.
 ## How it is built
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.svg">
-  <img alt="Nested layers: cli around store, render and scaffold, around render/svg and draw, around tree and icons" src="docs/architecture.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-dark.svg">
+  <img alt="Nested layers: cli around store, render and scaffold, around render/svg and draw, around tree and icons" src="docs/assets/architecture.svg" width="800">
 </picture>
 
 `internal/tree` imports nothing but the standard library. It does not know that a file format
@@ -497,6 +497,25 @@ what a user would have seen.
 go test ./...
 go vet ./...
 ```
+
+The full layering, the rules that hold it, and how it is tested: [docs/architecture.md](docs/architecture.md).
+
+---
+
+## Documentation
+
+This page is the tour. [`docs/`](docs/) is the detail underneath it.
+
+| | |
+|---|---|
+| [Getting started](docs/getting-started.md) | A first plan, from an empty repository to a diagram in the README |
+| [The file format](docs/file-format.md) | Every field, every rule, and what the parser refuses |
+| [The board](docs/board.md) | Working by status instead of by structure |
+| [Finished work](docs/finished-work.md) | Archiving, restoring, closing tasks from merged branches |
+| [Automation](docs/automation.md) | The pre-commit hook and the GitHub Action, line by line |
+| [SVG output](docs/svg-output.md) | File naming, palettes, the animation vocabulary, the CSP it survives |
+| [The container](docs/container.md) | Running devtree without installing anything |
+| [Architecture](docs/architecture.md) | The layering and the rules that hold it |
 
 ---
 
@@ -520,8 +539,8 @@ Both of these come from the same `.devtree/tree.yaml` in this repository, regene
 push. First the SVG backend — GitHub swaps the file when you switch themes:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/tree-dark.svg">
-  <img alt="devtree's own development tree" src="docs/tree.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/tree-dark.svg">
+  <img alt="devtree's own development tree" src="docs/assets/tree.svg">
 </picture>
 
 And the same plan as a Mermaid block, injected straight into this README:

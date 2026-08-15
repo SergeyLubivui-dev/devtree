@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
-  <img alt="devtree — baumförmige Entwicklungsplanung, die im Repository lebt" src="docs/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="devtree — baumförmige Entwicklungsplanung, die im Repository lebt" src="docs/assets/hero.svg" width="800">
 </picture>
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · **Deutsch** · [Français](README.fr.md)
@@ -20,8 +20,8 @@ kein Bild, das von Hand neu exportiert werden muss, nichts zu hosten.
 ## Warum der Plan ins Repository gehört
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
-  <img alt="Drei Gründe: er wird reviewt, er lässt sich mergen, er bleibt ehrlich" src="docs/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
+  <img alt="Drei Gründe: er wird reviewt, er lässt sich mergen, er bleibt ehrlich" src="docs/assets/why.svg" width="800">
 </picture>
 
 - **Er wird reviewt.** Eine Änderung am Plan steht im Diff, direkt neben der Änderung am Code.
@@ -39,8 +39,8 @@ gibt.
 ## Wie es funktioniert
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
-  <img alt="Der Kreislauf: tree.yaml bearbeiten, devtree render ausführen, Dateien werden neu geschrieben, GitHub zeichnet sie" src="docs/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="Der Kreislauf: tree.yaml bearbeiten, devtree render ausführen, Dateien werden neu geschrieben, GitHub zeichnet sie" src="docs/assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -186,8 +186,8 @@ Meilenstein stattdessen als Brotkrume. Leere Spalten werden gar nicht erst gezei
 Dasselbe Board gibt es als SVG; die Ausgabedatei muss nur `board.svg` heißen:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
-  <img alt="Das Board von devtree: Spalten mit Arbeit nach Status" src="docs/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
+  <img alt="Das Board von devtree: Spalten mit Arbeit nach Status" src="docs/assets/board.svg">
 </picture>
 
 ---
@@ -258,8 +258,8 @@ devtree add -p mvp -s wip "Authentication"
 ### Status
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — samt der jeweils akzeptierten Kurzformen" src="docs/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — samt der jeweils akzeptierten Kurzformen" src="docs/assets/statuses.svg" width="800">
 </picture>
 
 In der Datei landet immer die kanonische Schreibweise, egal welche Kurzform du tippst.
@@ -323,9 +323,9 @@ zeichnet, hat diese Grenze nicht. Der Dateiname entscheidet alles:
 | Dateiname | Was gezeichnet wird |
 |---|---|
 | `TREE.md`, `README.md` | der Mermaid-Block zwischen den Markern |
-| `docs/tree.svg` | der Baum, helle Palette |
-| `docs/tree-dark.svg` | der Baum, dunkle Palette |
-| `docs/board.svg` | das Board |
+| `docs/assets/tree.svg` | der Baum, helle Palette |
+| `docs/assets/tree-dark.svg` | der Baum, dunkle Palette |
+| `docs/assets/board.svg` | das Board |
 
 Bewegt wird nur, was Information trägt: ein Strich wandert die Kante entlang, die zu laufender Arbeit
 führt; ein Symbol dreht sich, wenn die Aufgabe in Arbeit ist, und atmet, wenn sie blockiert ist — der
@@ -354,6 +354,16 @@ Abhängigkeiten.
   werden. Karten sind deshalb ein paar Pixel großzügiger.
 - Sehr breite Bäume (Hunderte Knoten) rendert der Browser langsam; verteile sie mit `--outputs` auf
   mehrere Ausgabedateien.
+
+---
+
+## Dokumentation
+
+Diese Seite ist die Führung, die Einzelheiten stehen in [`docs/`](docs/):
+[Erste Schritte](docs/getting-started.md), [das Dateiformat](docs/file-format.md),
+[das Board](docs/board.md), [fertige Arbeit](docs/finished-work.md),
+[Automatisierung](docs/automation.md), [SVG-Ausgabe](docs/svg-output.md),
+[der Container](docs/container.md), [Architektur](docs/architecture.md). Die Seiten sind auf Englisch.
 
 ---
 

@@ -12,7 +12,8 @@
 // visual languages. CI regenerates them and fails if the result differs.
 //
 // Everything is 800 points wide, which sits inside GitHub's README column at
-// full size on a desktop and scales down cleanly on a phone.
+// full size on a desktop and scales down cleanly on a phone. Output lands in
+// docs/assets, next to the plan diagrams devtree renders for itself.
 package main
 
 import (
@@ -45,7 +46,7 @@ func main() {
 		{"architecture", architecture},
 	}
 
-	dir := "docs"
+	dir := filepath.Join("docs", "assets")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		fail(err)
 	}

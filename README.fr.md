@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
-  <img alt="devtree — planification arborescente du développement, qui vit dans le dépôt" src="docs/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="devtree — planification arborescente du développement, qui vit dans le dépôt" src="docs/assets/hero.svg" width="800">
 </picture>
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Français**
@@ -20,8 +20,8 @@ aucune extension de navigateur, aucune image à réexporter à la main, rien à 
 ## Pourquoi garder le plan dans le dépôt
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
-  <img alt="Trois raisons : il est relu, il se fusionne, il reste honnête" src="docs/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
+  <img alt="Trois raisons : il est relu, il se fusionne, il reste honnête" src="docs/assets/why.svg" width="800">
 </picture>
 
 - **Il est relu.** Une modification du plan apparaît dans le diff, juste à côté de la modification du
@@ -40,8 +40,8 @@ lequel les habitudes existent déjà.
 ## Comment ça marche
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
-  <img alt="La boucle : modifier tree.yaml, lancer devtree render, les fichiers sont réécrits, GitHub les dessine" src="docs/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="La boucle : modifier tree.yaml, lancer devtree render, les fichiers sont réécrits, GitHub les dessine" src="docs/assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -188,8 +188,8 @@ son jalon en fil d'Ariane. Les colonnes vides ne sont pas dessinées du tout.
 Le même tableau se rend en SVG : il suffit de nommer le fichier de sortie `board.svg` :
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
-  <img alt="Le tableau de devtree : des colonnes de travail par statut" src="docs/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
+  <img alt="Le tableau de devtree : des colonnes de travail par statut" src="docs/assets/board.svg">
 </picture>
 
 ---
@@ -261,8 +261,8 @@ devtree add -p mvp -s wip "Authentication"
 ### Statuts
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — avec les abréviations acceptées" src="docs/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — avec les abréviations acceptées" src="docs/assets/statuses.svg" width="800">
 </picture>
 
 C'est toujours l'orthographe canonique qui atterrit dans le fichier, quelle que soit l'abréviation
@@ -327,9 +327,9 @@ n'a pas ce plafond. Le nom du fichier décide de tout :
 | Nom du fichier | Ce qui est dessiné |
 |---|---|
 | `TREE.md`, `README.md` | le bloc Mermaid, entre les marqueurs |
-| `docs/tree.svg` | l'arbre, palette claire |
-| `docs/tree-dark.svg` | l'arbre, palette sombre |
-| `docs/board.svg` | le tableau |
+| `docs/assets/tree.svg` | l'arbre, palette claire |
+| `docs/assets/tree-dark.svg` | l'arbre, palette sombre |
+| `docs/assets/board.svg` | le tableau |
 
 Ne bouge que ce qui porte une information : un tiret parcourt l'arête qui mène à un travail en cours ;
 une icône tourne quand la tâche avance et respire quand elle est bloquée — le seul état pour lequel il
@@ -357,6 +357,16 @@ reste sans dépendances.
   livrer une police. Les cartes sont donc dimensionnées un peu large.
 - Les arbres très larges (des centaines de nœuds) sont lents à afficher ; répartissez-les sur
   plusieurs fichiers de sortie avec `--outputs`.
+
+---
+
+## Documentation
+
+Cette page est la visite guidée ; le détail est dans [`docs/`](docs/) :
+[premiers pas](docs/getting-started.md), [le format de fichier](docs/file-format.md),
+[le tableau](docs/board.md), [le travail terminé](docs/finished-work.md),
+[l'automatisation](docs/automation.md), [la sortie SVG](docs/svg-output.md),
+[le conteneur](docs/container.md), [l'architecture](docs/architecture.md). Ces pages sont en anglais.
 
 ---
 

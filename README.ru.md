@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
-  <img alt="devtree — древовидное планирование разработки внутри репозитория" src="docs/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="devtree — древовидное планирование разработки внутри репозитория" src="docs/assets/hero.svg" width="800">
 </picture>
 
 [English](README.md) · **Русский** · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
@@ -20,8 +20,8 @@
 ## Зачем держать план в репозитории
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
-  <img alt="Три причины: попадает в ревью, нормально мержится, остаётся честным" src="docs/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
+  <img alt="Три причины: попадает в ревью, нормально мержится, остаётся честным" src="docs/assets/why.svg" width="800">
 </picture>
 
 - **Попадает в ревью.** Правка плана видна в диффе, рядом с правкой кода.
@@ -38,8 +38,8 @@
 ## Как это работает
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
-  <img alt="Цикл: правим tree.yaml, запускаем devtree render, файлы перезаписываются, GitHub их рисует" src="docs/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="Цикл: правим tree.yaml, запускаем devtree render, файлы перезаписываются, GitHub их рисует" src="docs/assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -184,8 +184,8 @@ devtree board
 Та же доска отрисовывается в SVG — достаточно назвать выходной файл `board.svg`:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
-  <img alt="Доска devtree: колонки работы по статусам" src="docs/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
+  <img alt="Доска devtree: колонки работы по статусам" src="docs/assets/board.svg">
 </picture>
 
 ---
@@ -255,8 +255,8 @@ devtree add -p mvp -s wip "Аутентификация"
 ### Статусы
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — и сокращения, которые принимает каждый" src="docs/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — и сокращения, которые принимает каждый" src="docs/assets/statuses.svg" width="800">
 </picture>
 
 В файл всегда попадает каноническое написание, каким бы сокращением вы ни воспользовались.
@@ -318,9 +318,9 @@ devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
 | Имя файла | Что рисуется |
 |---|---|
 | `TREE.md`, `README.md` | блок Mermaid между маркерами |
-| `docs/tree.svg` | дерево, светлая палитра |
-| `docs/tree-dark.svg` | дерево, тёмная палитра |
-| `docs/board.svg` | доска |
+| `docs/assets/tree.svg` | дерево, светлая палитра |
+| `docs/assets/tree-dark.svg` | дерево, тёмная палитра |
+| `docs/assets/board.svg` | доска |
 
 В отрисовке двигается ровно то, что несёт смысл: штрих бежит по ребру, ведущему в задачу «в работе»;
 глиф вращается на том, что прямо сейчас в движении, и пульсирует на заблокированном — единственном
@@ -347,6 +347,16 @@ devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
   Карточки на пару пикселей просторнее, чем нужно, чтобы это компенсировать.
 - Очень широкие деревья (сотни узлов) браузер рисует медленно; разносите их по нескольким выходным
   файлам через `--outputs`.
+
+---
+
+## Документация
+
+Эта страница — обзор. Подробности лежат в [`docs/`](docs/): [быстрый старт](docs/getting-started.md),
+[формат файла](docs/file-format.md), [доска](docs/board.md),
+[законченная работа](docs/finished-work.md), [автоматизация](docs/automation.md),
+[вывод в SVG](docs/svg-output.md), [контейнер](docs/container.md),
+[архитектура](docs/architecture.md). Страницы на английском.
 
 ---
 

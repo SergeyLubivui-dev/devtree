@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
-  <img alt="devtree — 住在仓库里的树形开发计划" src="docs/hero.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="devtree — 住在仓库里的树形开发计划" src="docs/assets/hero.svg" width="800">
 </picture>
 
 [English](README.md) · [Русский](README.ru.md) · **中文** · [Deutsch](README.de.md) · [Français](README.fr.md)
@@ -19,8 +19,8 @@
 ## 为什么把计划放进仓库
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
-  <img alt="三个理由：会被评审、能被合并、保持诚实" src="docs/why.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
+  <img alt="三个理由：会被评审、能被合并、保持诚实" src="docs/assets/why.svg" width="800">
 </picture>
 
 - **它会被评审。** 对计划的修改出现在 diff 里，就在对代码的修改旁边。
@@ -35,8 +35,8 @@
 ## 工作方式
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
-  <img alt="循环：编辑 tree.yaml，运行 devtree render，文件被重写，GitHub 渲染" src="docs/pipeline.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="循环：编辑 tree.yaml，运行 devtree render，文件被重写，GitHub 渲染" src="docs/assets/pipeline.svg" width="800">
 </picture>
 
 ---
@@ -174,8 +174,8 @@ devtree board
 同一个看板也能渲染成 SVG，只要把输出文件命名为 `board.svg`：
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
-  <img alt="devtree 自己的看板：按状态分列的工作" src="docs/board.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
+  <img alt="devtree 自己的看板：按状态分列的工作" src="docs/assets/board.svg">
 </picture>
 
 ---
@@ -241,8 +241,8 @@ devtree add -p mvp -s wip "Authentication"
 ### 状态
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
-  <img alt="todo、in_progress、blocked、done、dropped 以及各自接受的简写" src="docs/statuses.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
+  <img alt="todo、in_progress、blocked、done、dropped 以及各自接受的简写" src="docs/assets/statuses.svg" width="800">
 </picture>
 
 无论你输入哪种简写，落到文件里的始终是标准写法。
@@ -301,9 +301,9 @@ devtree 自己绘制的文件没有这个限制。文件名决定一切：
 | 文件名 | 画出什么 |
 |---|---|
 | `TREE.md`、`README.md` | 标记之间的 Mermaid 块 |
-| `docs/tree.svg` | 树，浅色配色 |
-| `docs/tree-dark.svg` | 树，深色配色 |
-| `docs/board.svg` | 看板 |
+| `docs/assets/tree.svg` | 树，浅色配色 |
+| `docs/assets/tree-dark.svg` | 树，深色配色 |
+| `docs/assets/board.svg` | 看板 |
 
 图里会动的东西都携带信息：虚线沿着通往"进行中"任务的连线流动；图标在推进中的任务上缓慢旋转，在被阻塞的
 任务上呼吸般脉动——那是唯一值得打断读者的状态；进度条在加载时增长一次；卡片依次淡入，而不是一齐出现。
@@ -325,6 +325,15 @@ devtree 自己绘制的文件没有这个限制。文件名决定一切：
   沙箱中。链接放在图下方那张折叠表格里。
 - SVG 中的文字宽度是估算的，而不是取自字体度量——否则就得随程序分发一份字体。卡片因此会宽出几个像素。
 - 非常宽的树（几百个节点）在浏览器里渲染很慢，用 `--outputs` 把它们拆到多个输出文件里。
+
+---
+
+## 文档
+
+本页是概览，细节在 [`docs/`](docs/) 里：[快速上手](docs/getting-started.md)、
+[文件格式](docs/file-format.md)、[看板](docs/board.md)、[已完结的工作](docs/finished-work.md)、
+[自动化](docs/automation.md)、[SVG 输出](docs/svg-output.md)、[容器](docs/container.md)、
+[架构](docs/architecture.md)。这些页面为英文。
 
 ---
 
