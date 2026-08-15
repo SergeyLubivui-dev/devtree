@@ -1,38 +1,45 @@
-# devtree
-
-**Tree-shaped development planning that lives inside your repository and draws itself in the GitHub viewport.**
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg">
+  <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/hero.svg" width="800">
+</picture>
 
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/SergeyLubivui-dev/devtree.svg)](https://pkg.go.dev/github.com/SergeyLubivui-dev/devtree)
-![Go 1.22+](https://img.shields.io/badge/go-1.22%2B-00ADD8?logo=go&logoColor=white)
-![Zero dependencies](https://img.shields.io/badge/dependencies-0-success)
+[![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-One Go binary. No dependencies, no service, no account.
 
 Your plan is a file — `.devtree/tree.yaml` — that sits next to the code. It is versioned with the
 code, reviewed in the pull request, and merged line by line. From it, devtree generates a
-[Mermaid](https://mermaid.js.org/) diagram into `TREE.md` or straight into your `README.md`, and
-GitHub and GitLab render it natively. No browser extension, no image to regenerate, nothing to host.
+[Mermaid](https://mermaid.js.org/) diagram into `TREE.md` or straight into your `README.md`, and a
+drawing of its own into `.svg`. GitHub and GitLab render both natively. No browser extension, no
+image to regenerate by hand, nothing to host.
 
 ---
 
-## Why
+## Why keep the plan in the repository
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/why-dark.svg">
+  <img alt="Three reasons: it gets reviewed, it gets merged, it stays honest" src="docs/why.svg" width="800">
+</picture>
 
 A roadmap in a tracker drifts away from the branch it describes. A roadmap in a wiki is read once
-and never again. Put it in the repository and three things follow for free:
+and never again. A roadmap in the repository is a file people already have habits for.
 
-| | |
-|---|---|
-| **It gets reviewed** | A change to the plan shows up in the diff, next to the change to the code. |
-| **It gets merged** | The node list is flat, so two branches that each added a task merge cleanly. |
-| **It stays honest** | A pre-commit hook and a CI check refuse to let the diagram drift from the plan. |
+---
+
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/pipeline-dark.svg">
+  <img alt="The loop: edit tree.yaml, run devtree render, files are rewritten, GitHub draws them" src="docs/pipeline.svg" width="800">
+</picture>
 
 ---
 
 ## What it looks like
 
-This is a real `devtree` diagram — GitHub draws it right here in the page:
+The Mermaid backend, which GitHub draws right here in the page:
 
 ```mermaid
 flowchart TD
@@ -59,9 +66,7 @@ flowchart TD
     n_openapi_schema["☐ OpenAPI schema"]:::todo
 ```
 
-> ☐ not started · ◐ in progress · ⛔ blocked · ✔ done · ✖ dropped
-
-The same plan in the terminal:
+The same plan in your terminal:
 
 ```text
 Payment Gateway
@@ -79,6 +84,9 @@ Payment Gateway
 ██░░░░░░░░░░░░░░░░░░  1/9
 ```
 
+And the SVG backend, which devtree draws itself — [further down](#devtrees-own-plan), rendering this
+repository's own plan.
+
 ---
 
 ## Install
@@ -87,20 +95,16 @@ Payment Gateway
 go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
-Or build it from source — Go 1.22 or newer, nothing else:
+Prebuilt binaries for Linux, macOS, and Windows are attached to every
+[release](https://github.com/SergeyLubivui-dev/devtree/releases/latest), with checksums.
+
+Or build from source — Go 1.22 or newer, nothing else:
 
 ```bash
 git clone https://github.com/SergeyLubivui-dev/devtree.git
 cd devtree
 go test ./...
 go build -o devtree .
-```
-
-Cross-compiling is the usual one-liner:
-
-```bash
-GOOS=darwin GOARCH=arm64 go build -o devtree .
-GOOS=windows GOARCH=amd64 go build -o devtree.exe .
 ```
 
 ---
@@ -118,7 +122,7 @@ devtree add "Password reset"  -p authentication -s blocked -n "waiting on SMTP"
 
 devtree ls                                   # the tree, in your terminal
 devtree done oauth-providers
-git add . && git commit -m "feat: oauth"     # the hook refreshes TREE.md for you
+git add . && git commit -m "feat: oauth"     # the hook refreshes the diagram for you
 ```
 
 IDs are derived from titles — "OAuth providers" becomes `oauth-providers`, and non-Latin titles are
@@ -137,13 +141,10 @@ transliterated so the ID stays typeable. Pass `--id` when you want to choose one
 | `mv ID PARENT\|root` | Re-parents a task |
 | `rm ID [--cascade]` | Deletes a task; without `--cascade` its children move up to its parent |
 | `ls [-s STATUS]` | Prints the tree in the terminal |
-| `render [--file F] [--quiet]` | Regenerates the diagram |
+| `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
 | `install hook\|action\|all` | Installs the pre-commit hook and the GitHub Action |
 | `outputs` | Prints the files the diagram is written to |
-
-Statuses are `todo`, `in_progress`, `blocked`, `done`, and `dropped`. Shorthand works everywhere a
-status is accepted: `wip`, `b`, `d`, `x`, `ok`, `doing`, `cancel`, and friends.
 
 Flags may come before or after the title, so both of these do the same thing:
 
@@ -151,6 +152,15 @@ Flags may come before or after the title, so both of these do the same thing:
 devtree add "Authentication" -p mvp -s wip
 devtree add -p mvp -s wip "Authentication"
 ```
+
+### Statuses
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/statuses-dark.svg">
+  <img alt="todo, in_progress, blocked, done, dropped — with the shorthand each one accepts" src="docs/statuses.svg" width="800">
+</picture>
+
+The canonical spelling is what lands in the file, whichever shorthand you type.
 
 ---
 
@@ -199,7 +209,7 @@ devtree: .devtree/tree.yaml: line 14: unknown node field "assignee"
 
 **Pre-commit hook** — `devtree install hook`
 
-Validates the plan, regenerates the diagram, and stages the result along with your commit. An
+Validates the plan, regenerates every output, and stages the result along with your commit. An
 existing hook is preserved as `pre-commit.devtree-backup`. Teammates who have not installed devtree
 are not blocked: the hook notices the binary is missing and steps aside.
 
@@ -241,19 +251,17 @@ devtree init --outputs "TREE.md, docs/tree.svg, docs/tree-dark.svg"
 ```
 
 The format follows the file extension, and the palette follows the file name: anything ending in
-`-dark.svg` is rendered with the dark palette. Nothing is hidden — `outputs` lists exactly the files
-that get written.
-
-Then point a `<picture>` at the pair, and GitHub switches it with the reader's theme:
+`-dark.svg` is rendered dark. Nothing is hidden — `outputs` lists exactly the files that get written.
+Point a `<picture>` at the pair and GitHub switches it with the reader's theme:
 
 ```html
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/tree-dark.svg">
-  <img alt="Development tree" src="docs/tree.svg">
+  <img alt="Development tree" src="docs/tree.svg" width="800">
 </picture>
 ```
 
-What the renderer adds over the Mermaid block: status glyphs on a 24×24 grid, a progress bar and a
+What the drawing adds over the Mermaid block: status glyphs on a 24×24 grid, a progress bar and a
 completion ratio on every parent, branch, issue, pull request, owner and tags on a second line under
 each title, a status key along the bottom, and rounded elbow connectors that stay readable when a
 milestone grows a dozen children.
@@ -264,24 +272,18 @@ file survives that. The one thing sandboxing costs is interactivity: an SVG rend
 cannot carry links, so branch and issue links still live in the table under the Mermaid block.
 
 Glyphs are vendored from [Reicon](https://reicon.dev) (MIT) as path data in `internal/icons` — see
-[NOTICE](NOTICE). Nothing is fetched at render time, and the binary still has no dependencies.
+[NOTICE](NOTICE). Nothing is fetched at render time, and the binary still has no dependencies. Every
+picture in this README is drawn by the same code that draws your plan; `go run ./internal/art`
+regenerates them, and CI fails if they drift.
 
 ---
 
 ## How it is built
 
-Four layers, and the dependencies only ever point inward:
-
-```text
-main.go                      ~20 lines: parse nothing, print nothing, just wire and exit
-└── internal/cli             flags, dispatch, and every line the user sees
-    ├── internal/store       the strict YAML subset: parse, marshal, atomic save
-    ├── internal/render      Mermaid, Markdown, ASCII — pure string functions
-    │   └── render/svg       the native drawing: layout, cards, connectors, themes
-    │       └── internal/icons   vendored glyph paths, no I/O of any kind
-    ├── internal/scaffold    hook, workflow, and .gitattributes templates
-    └── internal/tree        the domain: nodes, parents, statuses, validation
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.svg">
+  <img alt="Nested layers: cli around store, render and scaffold, around render/svg and draw, around tree and icons" src="docs/architecture.svg" width="800">
+</picture>
 
 `internal/tree` imports nothing but the standard library. It does not know that a file format
 exists, and it certainly does not know about Mermaid — which is why the rules about what a valid
@@ -289,8 +291,6 @@ plan *is* live in one place and stay there. Everything below the CLI is silent: 
 `os.Exit`, errors returned as values. `App` takes its working directory and its two writers as
 fields, so the test suite drives whole commands against a temporary directory and reads back exactly
 what a user would have seen.
-
-Run the tests the usual way:
 
 ```bash
 go test ./...
@@ -305,7 +305,7 @@ go vet ./...
   block scalars, and nested mappings are not supported and will be rejected with a line number.
 - Nothing rendered into a README is clickable: GitHub's Mermaid ignores `click` directives, and an
   SVG served as an image is sandboxed. Links live in the collapsed table under the Mermaid block.
-  An interactive HTML export is on the plan above.
+  An interactive HTML export is on the plan below.
 - Text in the SVG output is measured by estimate rather than by font metrics — shipping real metrics
   would mean shipping a font. Cards are sized a few pixels generously to compensate.
 - Very wide trees (hundreds of nodes) render slowly in the browser. Split them across several output

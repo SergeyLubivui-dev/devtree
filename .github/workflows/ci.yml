@@ -81,10 +81,14 @@ jobs:
       - name: Render the diagram
         run: go run . render
 
-      - name: Fail if the diagram is stale
+      # The README's own pictures are generated too, by the same drawing code.
+      - name: Redraw the README artwork
+        run: go run ./internal/art
+
+      - name: Fail if anything generated is stale
         run: |
           if ! git diff --quiet; then
-            echo "::error::The diagram is out of date. Run 'devtree render' and commit the result."
+            echo "::error::Generated files are out of date. Run 'devtree render' and 'go run ./internal/art', then commit the result."
             git diff --stat
             exit 1
           fi

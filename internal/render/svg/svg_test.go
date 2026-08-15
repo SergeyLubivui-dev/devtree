@@ -201,16 +201,3 @@ func TestLongTitlesAreClipped(t *testing.T) {
 		t.Error("the full over-long title was drawn past the card edge")
 	}
 }
-
-func TestClipKeepsWhatFits(t *testing.T) {
-	if got := clip("short", 500, 12); got != "short" {
-		t.Errorf("clip trimmed a string that fits: %q", got)
-	}
-	got := clip("Аутентификация через OAuth 2.0", 60, 12)
-	if !strings.HasSuffix(got, "…") || len([]rune(got)) >= len([]rune("Аутентификация через OAuth 2.0")) {
-		t.Errorf("clip did not shorten a multi-byte string: %q", got)
-	}
-	if strings.Contains(got, "�") {
-		t.Errorf("clip cut a rune in half: %q", got)
-	}
-}

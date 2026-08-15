@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SergeyLubivui-dev/devtree/internal/icons"
+	"github.com/SergeyLubivui-dev/devtree/internal/draw"
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
 
@@ -45,7 +45,7 @@ func Render(t *tree.Tree, th Theme) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `<svg xmlns="http://www.w3.org/2000/svg" width="%.0f" height="%.0f" `+
 		`viewBox="0 0 %.0f %.0f" font-family="%s" role="img" aria-label="%s">`,
-		width, height, width, height, fontStack, escapeXML(ariaLabel(t)))
+		width, height, width, height, draw.FontStack, draw.Escape(ariaLabel(t)))
 
 	// The panel is what keeps the diagram legible outside GitHub too: a bare
 	// transparent background would leave the dark rendering as pale text on a
@@ -90,7 +90,7 @@ func ariaLabel(t *tree.Tree) string {
 }
 
 func headerWidth(t *tree.Tree) float64 {
-	return 32 + textWidth(projectName(t), 17)
+	return 32 + draw.TextWidth(projectName(t), 17)
 }
 
 func projectName(t *tree.Tree) string {
@@ -102,9 +102,9 @@ func projectName(t *tree.Tree) string {
 
 // header draws the wordmark, the project name, and the overall progress.
 func header(b *strings.Builder, t *tree.Tree, th Theme, width float64) {
-	icon(b, "tree", pad, pad-2, 22, th.Done)
+	draw.Icon(b, "tree", pad, pad-2, 22, th.Done)
 	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="17" font-weight="600" fill="%s">%s</text>`,
-		pad+30, pad+15, th.Text, escapeXML(clip(projectName(t), width-pad*2-40, 17)))
+		pad+30, pad+15, th.Text, draw.Escape(draw.Clip(projectName(t), width-pad*2-40, 17)))
 
 	done, total := t.Totals()
 	const barW = 208.0
@@ -133,7 +133,7 @@ func card(b *strings.Builder, p placement, w, x, y float64, th Theme) {
 	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="3" height="%.1f" rx="1.5" fill="%s"/>`,
 		x+1, y+11, cardH-22, color)
 
-	icon(b, statusIcon[status], x+13, y+(cardH-iconSize)/2, iconSize, color)
+	draw.Icon(b, statusIcon[status], x+13, y+(cardH-iconSize)/2, iconSize, color)
 
 	right := rightPad
 	if p.ratio != "" {
@@ -150,7 +150,7 @@ func card(b *strings.Builder, p placement, w, x, y float64, th Theme) {
 		strike = ` text-decoration="line-through"`
 	}
 	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="%.1f" font-weight="500" fill="%s"%s>%s</text>`,
-		x+textLeft, titleY, titleSize, th.Text, strike, escapeXML(clip(p.title, available, titleSize)))
+		x+textLeft, titleY, titleSize, th.Text, strike, draw.Escape(draw.Clip(p.title, available, titleSize)))
 
 	if len(p.meta) > 0 {
 		meta(b, p.meta, x+textLeft, y+35, available, th)
@@ -175,7 +175,7 @@ func card(b *strings.Builder, p placement, w, x, y float64, th Theme) {
 func meta(b *strings.Builder, items []metaItem, x, baseline, available float64, th Theme) {
 	cursor := x
 	for i, m := range items {
-		w := textWidth(m.text, metaSize)
+		w := draw.TextWidth(m.text, metaSize)
 		if m.icon != "" {
 			w += metaIcon + 3
 		}
@@ -188,12 +188,12 @@ func meta(b *strings.Builder, items []metaItem, x, baseline, available float64, 
 		}
 		cursor += gap
 		if m.icon != "" {
-			icon(b, m.icon, cursor, baseline-metaIcon+1.5, metaIcon, th.Muted)
+			draw.Icon(b, m.icon, cursor, baseline-metaIcon+1.5, metaIcon, th.Muted)
 			cursor += metaIcon + 3
 		}
 		fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="%.1f" fill="%s">%s</text>`,
-			cursor, baseline, metaSize, th.Muted, escapeXML(m.text))
-		cursor += textWidth(m.text, metaSize)
+			cursor, baseline, metaSize, th.Muted, draw.Escape(m.text))
+		cursor += draw.TextWidth(m.text, metaSize)
 	}
 }
 
@@ -253,18 +253,18 @@ func legend(b *strings.Builder, th Theme, height float64) {
 	cursor := pad
 
 	for _, s := range tree.Statuses {
-		icon(b, statusIcon[s], cursor, y-11, 13, th.color(s))
+		draw.Icon(b, statusIcon[s], cursor, y-11, 13, th.color(s))
 		cursor += 13 + 4
 		fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="10.5" fill="%s">%s</text>`,
-			cursor, y, th.Muted, escapeXML(s.Label()))
-		cursor += textWidth(s.Label(), 10.5) + 16
+			cursor, y, th.Muted, draw.Escape(s.Label()))
+		cursor += draw.TextWidth(s.Label(), 10.5) + 16
 	}
 }
 
 func legendWidth() float64 {
 	var w float64
 	for _, s := range tree.Statuses {
-		w += 13 + 4 + textWidth(s.Label(), 10.5) + 16
+		w += 13 + 4 + draw.TextWidth(s.Label(), 10.5) + 16
 	}
 	return w - 16
 }
@@ -272,20 +272,9 @@ func legendWidth() float64 {
 // empty says what to do instead of drawing a blank panel.
 func empty(b *strings.Builder, th Theme, width, height float64) {
 	const message = "Nothing planned yet — add a task with: devtree add \"Task title\""
-	x := width/2 - textWidth(message, 13)/2
+	x := width/2 - draw.TextWidth(message, 13)/2
 	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="13" fill="%s">%s</text>`,
-		x, (height+headerH-legendH)/2, th.Muted, escapeXML(message))
-}
-
-// icon stamps a glyph at a size, colored through currentColor so the vendored
-// path data never has to be rewritten.
-func icon(b *strings.Builder, name string, x, y, size float64, color string) {
-	body, ok := icons.Get(name)
-	if !ok {
-		return
-	}
-	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f) scale(%.4f)" style="color:%s">%s</g>`,
-		x, y, size/icons.GridSize, color, body)
+		x, (height+headerH-legendH)/2, th.Muted, draw.Escape(message))
 }
 
 func absF(v float64) float64 {

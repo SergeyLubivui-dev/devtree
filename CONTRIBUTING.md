@@ -17,11 +17,12 @@ Go 1.22 or newer. There is nothing else to install.
 ## Before you open a pull request
 
 ```bash
-gofmt -l .        # must print nothing
+gofmt -l .             # must print nothing
 go vet ./...
 go test -race ./...
 go run . check --strict
-go run . render   # must leave the working tree clean
+go run . render        # must leave the working tree clean
+go run ./internal/art  # likewise — the README's pictures are generated
 ```
 
 CI runs exactly these on Linux, macOS, and Windows. The last two are the same checks devtree
@@ -36,11 +37,13 @@ The dependencies point inward, and pull requests are reviewed with that in mind:
 |---|---|---|
 | `internal/tree` | nodes, parents, statuses, validation | standard library only |
 | `internal/icons` | vendored glyph paths | standard library only |
+| `internal/draw` | measuring, wrapping, escaping, stamping a glyph | `icons` |
 | `internal/store` | the strict YAML subset: parse, marshal, save | `tree` |
 | `internal/render` | Mermaid, Markdown, ASCII — pure functions | `tree` |
-| `internal/render/svg` | the native drawing: layout, cards, themes | `tree`, `icons` |
+| `internal/render/svg` | the native drawing: layout, cards, themes | `tree`, `draw` |
 | `internal/scaffold` | hook, workflow, `.gitattributes` templates | — |
 | `internal/cli` | flags, dispatch, everything the user sees | all of the above |
+| `internal/art` | the README's pictures — a tool, not part of the binary | `draw`, `render/svg` |
 
 Two rules follow from that table, and they are the ones most likely to come up in review:
 

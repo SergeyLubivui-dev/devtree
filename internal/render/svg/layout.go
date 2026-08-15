@@ -3,6 +3,7 @@ package svg
 import (
 	"fmt"
 
+	"github.com/SergeyLubivui-dev/devtree/internal/draw"
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
 
@@ -154,7 +155,7 @@ func metaWidth(items []metaItem) float64 {
 		if m.icon != "" {
 			w += metaIcon + 3
 		}
-		w += textWidth(m.text, metaSize)
+		w += draw.TextWidth(m.text, metaSize)
 	}
 	return w
 }
@@ -171,7 +172,7 @@ func naturalWidth(p placement) float64 {
 	if p.ratio != "" {
 		right = rightWide
 	}
-	content := textWidth(p.title, titleSize)
+	content := draw.TextWidth(p.title, titleSize)
 	if m := metaWidth(p.meta); m > content {
 		content = m
 	}
