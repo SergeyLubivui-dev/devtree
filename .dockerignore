@@ -1,0 +1,10 @@
+# The build needs the Go source and nothing else. Everything below either
+# cannot be used inside the image or would only invalidate its cache.
+.git
+.github
+docs
+*.md
+!go.mod
+devtree
+devtree.exe
+dist

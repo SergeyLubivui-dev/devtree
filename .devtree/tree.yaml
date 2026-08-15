@@ -92,3 +92,7 @@ nodes:
     title: "Close tasks from merged branches"
     status: "done"
     parent: "v0-2"
+  - id: "container"
+    title: "Container image on GHCR"
+    status: "done"
+    parent: "distribution"

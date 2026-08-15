@@ -63,6 +63,20 @@ go test ./...
 go build -o devtree .
 ```
 
+### Dans un conteneur
+
+Si vous préférez ne rien installer du tout, montez le dépôt et lancez l'image :
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree render
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree board
+```
+
+Sous Linux, ajoutez `--user "$(id -u):$(id -g)"` pour que les fichiers écrits vous appartiennent au
+lieu d'appartenir à root. Le tag `latest` suit la dernière release, `edge` suit `main` ; les deux sont
+publiés pour `amd64` et `arm64`. L'image embarque git, donc `devtree sync` y fonctionne aussi — c'est
+la seule raison pour laquelle elle n'est pas construite `FROM scratch`.
+
 ---
 
 ## Démarrage rapide

@@ -61,6 +61,20 @@ go test ./...
 go build -o devtree .
 ```
 
+### В контейнере
+
+Если ставить не хочется вообще ничего — примонтируйте репозиторий и запустите образ:
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree render
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree board
+```
+
+На Linux добавьте `--user "$(id -u):$(id -g)"`, чтобы записанные файлы принадлежали вам, а не root.
+Тег `latest` следует за последним релизом, `edge` — за `main`; оба собираются для `amd64` и `arm64`.
+Внутри образа есть git, поэтому `devtree sync` там тоже работает — это единственная причина, по
+которой он собран не `FROM scratch`.
+
 ---
 
 ## Быстрый старт

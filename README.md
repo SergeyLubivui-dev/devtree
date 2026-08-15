@@ -109,6 +109,27 @@ go test ./...
 go build -o devtree .
 ```
 
+### In a container
+
+If you would rather not install anything at all, mount the repository and run the image:
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree render
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree board
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree add "Search filters" -p mvp
+```
+
+On Linux, add `--user "$(id -u):$(id -g)"` so the files it writes belong to you rather than to root.
+Tag `latest` follows the last release, `edge` follows `main`; both are published for `amd64` and
+`arm64`. A shell alias makes it disappear into the background:
+
+```bash
+alias devtree='docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree'
+```
+
+The image carries git, so `devtree sync` works inside it too. That is the only reason it is not built
+`FROM scratch`: everything else devtree does needs the plan file and nothing more.
+
 ---
 
 ## Quickstart
@@ -510,7 +531,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-███████████░░░░░░░░░ **13 / 22** tasks done
+████████████░░░░░░░░ **14 / 23** tasks done
 
 ```mermaid
 flowchart TD
@@ -553,13 +574,15 @@ flowchart TD
     n_archive["✔ Archive and restore finished work"]:::done
     n_v0_2 --> n_sync
     n_sync["✔ Close tasks from merged branches"]:::done
-    n_distribution["◐ Distribution<br/><i>1/3</i>"]:::in_progress
+    n_distribution["◐ Distribution<br/><i>2/4</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done
     n_distribution --> n_homebrew
     n_homebrew["☐ Homebrew tap"]:::todo
     n_distribution --> n_gitlab
     n_gitlab["☐ GitLab CI template"]:::todo
+    n_distribution --> n_container
+    n_container["✔ Container image on GHCR"]:::done
 ```
 
 > ☐ not started · ◐ in progress · ⛔ blocked · ✔ done · ✖ dropped

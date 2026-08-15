@@ -57,6 +57,19 @@ go test ./...
 go build -o devtree .
 ```
 
+### 在容器里运行
+
+如果你什么都不想安装，把仓库挂进去直接跑镜像即可：
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree render
+docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree board
+```
+
+在 Linux 上加上 `--user "$(id -u):$(id -g)"`，写出的文件才属于你而不是 root。`latest` 跟随最新发行版，
+`edge` 跟随 `main`，两者都提供 `amd64` 与 `arm64`。镜像里带着 git，所以 `devtree sync` 也能用——这也是
+它没有基于 `scratch` 构建的唯一原因。
+
 ---
 
 ## 快速上手
