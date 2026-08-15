@@ -56,12 +56,35 @@ func TestMermaidEscapesLabels(t *testing.T) {
 	}
 }
 
+func TestMermaidLeavesTheThemeAlone(t *testing.T) {
+	got := diagram(t, Block(sample(t)))
+
+	// One block serves a light page and a dark one and cannot theme itself.
+	// Setting a fill glares on dark; setting a light label color is unreadable
+	// there, because Mermaid keeps a pale node fill in its dark theme. Both
+	// were tried against a real Mermaid build. So neither is set, and the
+	// status rides on the stroke.
+	for _, forbidden := range []string{"fill:", "color:#"} {
+		if strings.Contains(got, forbidden) {
+			t.Errorf("the diagram sets %q, which one of the two themes will get wrong:\n%s", forbidden, got)
+		}
+	}
+	for _, s := range []string{"stroke:#8c959f", "stroke:#bf8700", "stroke:#cf222e", "stroke:#1a7f37"} {
+		if !strings.Contains(got, s) {
+			t.Errorf("status color %s is missing from the borders", s)
+		}
+	}
+	if !strings.Contains(got, "stroke-dasharray") {
+		t.Error("dropped work should still be distinguishable")
+	}
+}
+
 func TestMermaidStructure(t *testing.T) {
 	got := diagram(t, Block(sample(t)))
 
 	for _, want := range []string{
 		"flowchart TD",
-		"classDef in_progress",
+		"classDef in_progress stroke:#bf8700",
 		"n_mvp --> n_auth",
 		"n_pay --> n_sbp",
 		":::blocked",

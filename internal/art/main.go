@@ -24,6 +24,7 @@ import (
 
 	"github.com/SergeyLubivui-dev/devtree/internal/draw"
 	"github.com/SergeyLubivui-dev/devtree/internal/render/svg"
+	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
 
 const (
@@ -40,6 +41,7 @@ type asset struct {
 func main() {
 	assets := []asset{
 		{"hero", hero},
+		{"example", example},
 		{"why", why},
 		{"pipeline", pipeline},
 		{"statuses", statuses},
@@ -114,6 +116,41 @@ func hero(th svg.Theme) string {
 	marquee(&b, pad, 182, width-pad*2, 46, th)
 
 	return closeDoc(&b)
+}
+
+// example is the sample plan from the README, drawn by the real renderer.
+//
+// The README used to show only the Mermaid block for this plan, which is the
+// default output but not the one devtree is proud of. Generating the drawing
+// from the same sample keeps the two honest about being the same plan.
+func example(th svg.Theme) string {
+	return svg.Render(samplePlan(), th)
+}
+
+// samplePlan is the Payment Gateway plan the documentation uses throughout.
+func samplePlan() *tree.Tree {
+	t := tree.New("Payment Gateway")
+	t.Repo = "https://github.com/acme/pay"
+
+	for _, n := range []*tree.Node{
+		{ID: "mvp", Title: "MVP", Status: tree.InProgress},
+		{ID: "authentication", Title: "Authentication", Status: tree.InProgress, Parent: "mvp",
+			Branch: "feat/auth", Issue: "12", Owner: "ann"},
+		{ID: "oauth-providers", Title: "OAuth providers", Status: tree.InProgress,
+			Parent: "authentication", Branch: "feat/oauth", PR: "31"},
+		{ID: "password-reset", Title: "Password reset", Status: tree.Blocked,
+			Parent: "authentication", Note: "waiting on SMTP"},
+		{ID: "payments", Title: "Payments", Status: tree.InProgress, Parent: "mvp"},
+		{ID: "stripe", Title: "Stripe", Status: tree.Done, Parent: "payments", PR: "44"},
+		{ID: "apple-pay", Title: "Apple Pay", Parent: "payments", Issue: "51"},
+		{ID: "public-api-v2", Title: "Public API v2"},
+		{ID: "openapi-schema", Title: "OpenAPI schema", Parent: "public-api-v2"},
+	} {
+		if err := t.Add(n); err != nil {
+			fail(err)
+		}
+	}
+	return t
 }
 
 // ticker is one card on the moving strip.

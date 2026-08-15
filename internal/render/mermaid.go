@@ -7,15 +7,24 @@ import (
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
 
-// classDefs colors the nodes with GitHub's own status palette, so the diagram
-// looks native in both light and dark themes: the fills are light enough for
-// the dark theme's white-ish canvas and the explicit `color:` keeps the label
-// readable when GitHub inverts the page.
-const classDefs = `    classDef todo fill:#f6f8fa,stroke:#8c959f,color:#1f2328
-    classDef in_progress fill:#fff8c5,stroke:#bf8700,color:#1f2328
-    classDef blocked fill:#ffebe9,stroke:#cf222e,color:#1f2328
-    classDef done fill:#dafbe1,stroke:#1a7f37,color:#1f2328
-    classDef dropped fill:#eaeef2,stroke:#8c959f,color:#6e7781,stroke-dasharray:4 3
+// classDefs carries the status in the border and nothing else.
+//
+// One Mermaid block has to serve a light page and a dark one, and it cannot
+// theme itself. Setting a fill and a label color — as this did — produces a
+// readable diagram that glares on a dark page; setting a light label color
+// instead makes it unreadable there, because Mermaid keeps a pale node fill in
+// its dark theme. Both were tried against a real Mermaid build before this
+// comment was written.
+//
+// So the fill and the text are left to whichever theme GitHub picked, and only
+// the stroke is ours. The diagram then looks native on both pages, and the
+// status still reads at a glance — from the border and from the glyph in the
+// label.
+const classDefs = `    classDef todo stroke:#8c959f,stroke-width:1.5px
+    classDef in_progress stroke:#bf8700,stroke-width:2px
+    classDef blocked stroke:#cf222e,stroke-width:2px
+    classDef done stroke:#1a7f37,stroke-width:2px
+    classDef dropped stroke:#8c959f,stroke-width:1.5px,stroke-dasharray:4 3
 `
 
 // Mermaid renders the diagram, fenced and ready to drop into Markdown.

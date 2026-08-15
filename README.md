@@ -42,15 +42,23 @@ and never again. A roadmap in the repository is a file people already have habit
 
 ## What it looks like
 
-The Mermaid backend, which GitHub draws right here in the page:
+devtree's own drawing of a plan — cards, progress, and the branch, issue and owner behind each task:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/example-dark.svg">
+  <img alt="A sample plan drawn by devtree" src="docs/assets/example.svg">
+</picture>
+
+The same plan as the Mermaid block devtree writes by default, which GitHub draws right here in the
+page:
 
 ```mermaid
 flowchart TD
-    classDef todo fill:#f6f8fa,stroke:#8c959f,color:#1f2328
-    classDef in_progress fill:#fff8c5,stroke:#bf8700,color:#1f2328
-    classDef blocked fill:#ffebe9,stroke:#cf222e,color:#1f2328
-    classDef done fill:#dafbe1,stroke:#1a7f37,color:#1f2328
-    classDef dropped fill:#eaeef2,stroke:#8c959f,color:#6e7781,stroke-dasharray:4 3
+    classDef todo stroke:#8c959f,stroke-width:1.5px
+    classDef in_progress stroke:#bf8700,stroke-width:2px
+    classDef blocked stroke:#cf222e,stroke-width:2px
+    classDef done stroke:#1a7f37,stroke-width:2px
+    classDef dropped stroke:#8c959f,stroke-width:1.5px,stroke-dasharray:4 3
     n_mvp["◐ MVP<br/><i>1/6</i>"]:::in_progress
     n_mvp --> n_authentication
     n_authentication["◐ Authentication<br/><i>0/2 · feat/auth · #35;12 · @ann</i>"]:::in_progress
@@ -69,7 +77,10 @@ flowchart TD
     n_openapi_schema["☐ OpenAPI schema"]:::todo
 ```
 
-The same plan in your terminal:
+The status lives in the border and in the glyph, and the fill and the text are left to whichever
+theme you are reading in — so the block looks native on a light page and on a dark one.
+
+And the same plan in your terminal:
 
 ```text
 Payment Gateway
@@ -86,8 +97,6 @@ Payment Gateway
 
 ██░░░░░░░░░░░░░░░░░░  1/9
 ```
-
-And devtree's own drawing — [further down](#devtrees-own-plan), rendering this repository's plan.
 
 ---
 
@@ -448,11 +457,11 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ```mermaid
 flowchart TD
-    classDef todo fill:#f6f8fa,stroke:#8c959f,color:#1f2328
-    classDef in_progress fill:#fff8c5,stroke:#bf8700,color:#1f2328
-    classDef blocked fill:#ffebe9,stroke:#cf222e,color:#1f2328
-    classDef done fill:#dafbe1,stroke:#1a7f37,color:#1f2328
-    classDef dropped fill:#eaeef2,stroke:#8c959f,color:#6e7781,stroke-dasharray:4 3
+    classDef todo stroke:#8c959f,stroke-width:1.5px
+    classDef in_progress stroke:#bf8700,stroke-width:2px
+    classDef blocked stroke:#cf222e,stroke-width:2px
+    classDef done stroke:#1a7f37,stroke-width:2px
+    classDef dropped stroke:#8c959f,stroke-width:1.5px,stroke-dasharray:4 3
     n_v0_1["✔ v0.1 - first release<br/><i>6/6</i>"]:::done
     n_v0_1 --> n_domain
     n_domain["✔ Domain model and validation"]:::done

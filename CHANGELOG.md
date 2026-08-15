@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The Mermaid block no longer fights the reader's theme. It pinned a light fill and a dark label
+  color, which glared on a dark GitHub page; a translucent tint was tried instead and turned out
+  unreadable there, because Mermaid keeps the label dark in its dark theme. Both were rendered
+  against a real Mermaid build before the choice was made. The status now rides on the stroke and on
+  the glyph, and nothing else is set, so the block looks native on either page.
+
+### Changed
+
+- "What it looks like" in the README leads with devtree's own drawing of the sample plan — generated
+  by the real renderer from the same plan the Mermaid block describes — rather than with the plainest
+  of the three renderings.
+
 ## [0.5.0] — 2026-08-16
 
 The plan can now tell you where it has been, and devtree meets you wherever you build.
