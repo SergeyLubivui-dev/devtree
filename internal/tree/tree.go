@@ -159,6 +159,43 @@ func (t *Tree) Progress(n *Node) (done, total int) {
 	return done, total
 }
 
+// Finished reports whether a node and everything under it has been settled —
+// every task either done or dropped.
+//
+// It is the rule that decides what may leave the active plan for the archive.
+// Anything looser would let live work disappear from the board along with the
+// milestone above it.
+func (t *Tree) Finished(n *Node) bool {
+	for _, x := range t.Subtree(n) {
+		if x.Status != Done && x.Status != Dropped {
+			return false
+		}
+	}
+	return true
+}
+
+// Archivable returns the topmost nodes whose whole subtree is finished.
+//
+// Only the topmost: if a milestone is finished then its children are finished
+// too, and listing them separately would offer to archive the same work twice.
+func (t *Tree) Archivable() []*Node {
+	var out []*Node
+	var walk func(n *Node)
+	walk = func(n *Node) {
+		if t.Finished(n) {
+			out = append(out, n)
+			return
+		}
+		for _, c := range n.children {
+			walk(c)
+		}
+	}
+	for _, r := range t.roots {
+		walk(r)
+	}
+	return out
+}
+
 // Totals counts the whole plan, using the same rule about dropped work.
 func (t *Tree) Totals() (done, total int) {
 	for _, n := range t.Nodes {

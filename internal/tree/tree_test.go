@@ -1,6 +1,9 @@
 package tree
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // sample builds the small plan the tests share: one milestone with two tasks
 // under it, one of them finished.
@@ -158,6 +161,52 @@ func TestMoveToRoot(t *testing.T) {
 	}
 	if got := len(tr.Roots()); got != 2 {
 		t.Fatalf("%d roots, want 2", got)
+	}
+}
+
+func TestFinishedAndArchivable(t *testing.T) {
+	tr := sample(t) // mvp (in progress) with auth (done) and pay (todo) under it
+
+	mvp, _ := tr.Get("mvp")
+	if tr.Finished(mvp) {
+		t.Error("a milestone with unfinished work under it is not finished")
+	}
+	auth, _ := tr.Get("auth")
+	if !tr.Finished(auth) {
+		t.Error("a done leaf is finished")
+	}
+
+	// Only the topmost finished node is offered: once a milestone qualifies,
+	// listing its children too would offer the same work twice.
+	if err := tr.Add(&Node{ID: "docs", Title: "Docs", Status: Done}); err != nil {
+		t.Fatal(err)
+	}
+	if err := tr.Add(&Node{ID: "api", Title: "API", Status: Done, Parent: "docs"}); err != nil {
+		t.Fatal(err)
+	}
+
+	var ids []string
+	for _, n := range tr.Archivable() {
+		ids = append(ids, n.ID)
+	}
+	got := strings.Join(ids, ",")
+	if got != "auth,docs" {
+		t.Fatalf("Archivable() = %q, want %q", got, "auth,docs")
+	}
+}
+
+func TestDroppedWorkCountsAsFinished(t *testing.T) {
+	tr := New("x")
+	if err := tr.Add(&Node{ID: "a", Title: "A", Status: Dropped}); err != nil {
+		t.Fatal(err)
+	}
+	if err := tr.Add(&Node{ID: "b", Title: "B", Status: Done, Parent: "a"}); err != nil {
+		t.Fatal(err)
+	}
+
+	a, _ := tr.Get("a")
+	if !tr.Finished(a) {
+		t.Error("abandoned work is settled work: it should be archivable")
 	}
 }
 

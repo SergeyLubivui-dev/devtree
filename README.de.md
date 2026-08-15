@@ -178,6 +178,42 @@ Dasselbe Board gibt es als SVG; die Ausgabedatei muss nur `board.svg` heißen:
 
 ---
 
+## Fertige Arbeit
+
+Ein Plan, der jede jemals erledigte Aufgabe behält, ist kein Plan mehr, sondern ein Protokoll: Das
+Board füllt sich mit Spalten erledigter Arbeit, und das Diagramm bekommt einen Schwanz, den niemand
+liest. Das Archiv behält den Nachweis, ohne das Rauschen zu behalten.
+
+```bash
+devtree archive          # was fertig ist und umziehen könnte
+devtree archive --all    # nach .devtree/archive.yaml verschieben
+devtree archive v1       # oder nur diesen Zweig des Plans
+devtree archive --list   # was bereits gegangen ist
+devtree restore v1       # zurückholen, mit allem darunter
+```
+
+Bis du es sagst, bewegt sich nichts: `devtree archive` allein berichtet nur. Ein Knoten kommt
+infrage, wenn sein ganzer Teilbaum `done` oder `dropped` ist — laufende Arbeit kann also nie
+zusammen mit dem Meilenstein darüber verschwinden. Archivierte Aufgaben behalten ihren Elternknoten,
+so erinnern sie sich, woher sie kamen; ist der beim Zurückholen verschwunden, kommt die Aufgabe als
+Wurzel zurück und sagt es dir.
+
+Das Archiv verwendet dasselbe Format wie der Plan: kein zweiter Parser, nichts Neues im Diff.
+
+**Schließen, was git ohnehin schon weiß:**
+
+```bash
+devtree sync           # Aufgaben auflisten, deren Branch bereits gemergt ist
+devtree sync --apply   # und sie als erledigt markieren
+```
+
+Der Befehl schlägt vor, statt zu handeln. git weiß, welche Branches gemergt wurden, aber nicht,
+welche davon *fertig* gemergt wurden: ein hinter einem Feature-Flag gemergter Branch ist keine
+erledigte Aufgabe. Es ist der einzige Befehl, der ein anderes Programm startet; alles andere
+arbeitet allein auf der Datei.
+
+---
+
 ## Befehle
 
 | Befehl | Was er tut |
@@ -190,6 +226,9 @@ Dasselbe Board gibt es als SVG; die Ausgabedatei muss nur `board.svg` heißen:
 | `rm ID [--cascade]` | Löscht eine Aufgabe; ohne `--cascade` rücken die Kinder zum Elternknoten auf |
 | `ls [-s STATUS]` | Gibt den Baum im Terminal aus |
 | `board [-s STATUS]` | Gibt die Arbeit nach Status gruppiert aus |
+| `archive [ID...] [--all] [--list]` | Verschiebt fertige Zweige des Plans ins Archiv |
+| `restore ID [ID...]` | Holt archivierte Arbeit zurück |
+| `sync [--apply]` | Schließt Aufgaben, deren Branch git bereits gemergt hat |
 | `render [--file F] [--quiet]` | Erzeugt alle Ausgabedateien neu |
 | `check [--strict]` | Prüft den Plan — für CI und Hooks |
 | `install hook\|action\|all` | Installiert Pre-Commit-Hook und GitHub Action |

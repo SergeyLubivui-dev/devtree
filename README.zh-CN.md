@@ -167,6 +167,37 @@ devtree board
 
 ---
 
+## 已完结的工作
+
+一份保留了历史上每一个已完成任务的计划就不再是计划，而是日志：看板被"已完成"的列塞满，图上长出一条
+没人会读的尾巴。归档保留记录，但不保留噪声。
+
+```bash
+devtree archive          # 哪些已经完结、可以移走
+devtree archive --all    # 移入 .devtree/archive.yaml
+devtree archive v1       # 或者只移这一支
+devtree archive --list   # 已经移走的有哪些
+devtree restore v1       # 连同它下面的一切一起取回
+```
+
+在你开口之前什么都不会动：单独的 `devtree archive` 只做汇报。只有当一个节点的整个子树都是 `done`
+或 `dropped` 时它才够格，所以活着的工作绝不会随着上面的里程碑一起消失。归档的任务保留原来的父节点，
+这是它记住自己来处的方式；如果取回时父节点已经不在了，任务会作为根节点回来，并且明确告诉你。
+
+归档使用和计划完全相同的格式：没有第二套解析器要学，diff 里也不会出现新东西。
+
+**关掉 git 已经知道的事情：**
+
+```bash
+devtree sync           # 列出分支已被合并的任务
+devtree sync --apply   # 把它们标记为完成
+```
+
+它只提议，不动手。git 知道哪些分支被合并了，却不知道其中哪些是*做完了*才合并的——在功能开关后面合并
+的分支并不等于任务已完成。这是唯一会调用外部程序的命令，其余一切只和文件打交道。
+
+---
+
 ## 命令
 
 | 命令 | 作用 |
@@ -179,6 +210,9 @@ devtree board
 | `rm ID [--cascade]` | 删除任务；不加 `--cascade` 时子节点上移到它的父节点 |
 | `ls [-s 状态]` | 在终端打印这棵树 |
 | `board [-s 状态]` | 按状态分组打印工作 |
+| `archive [ID...] [--all] [--list]` | 把已完结的计划分支移入归档 |
+| `restore ID [ID...]` | 把归档里的工作取回来 |
+| `sync [--apply]` | 关闭那些分支已被 git 合并的任务 |
 | `render [--file F] [--quiet]` | 重新生成所有输出文件 |
 | `check [--strict]` | 校验计划——供 CI 和钩子使用 |
 | `install hook\|action\|all` | 安装提交前钩子和 GitHub Action |

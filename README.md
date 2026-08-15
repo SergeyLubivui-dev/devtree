@@ -239,6 +239,42 @@ devtree init --outputs "docs/tree.svg, docs/board.svg, docs/board-dark.svg"
 
 ---
 
+## Finished work
+
+A plan that keeps every task ever completed stops being a plan and becomes a log: the board fills
+with columns of done work and the diagram grows a tail nobody reads. Archiving keeps the record
+without keeping the noise.
+
+```bash
+devtree archive          # what is finished and could move
+devtree archive --all    # move it into .devtree/archive.yaml
+devtree archive v1       # or just this branch of the plan
+devtree archive --list   # what has already left
+devtree restore v1       # bring it back, with everything under it
+```
+
+Nothing moves until you say so — plain `devtree archive` only reports. A node qualifies only when
+its whole subtree is done or dropped, so live work can never vanish along with the milestone above
+it. Archived tasks keep the parent they had, which is how they remember where they came from; if
+that parent is gone by the time you restore, the task comes back as a root and tells you.
+
+The archive uses the same format as the plan, so there is no second parser to learn and nothing new
+to review in a diff.
+
+**Closing what git already knows about:**
+
+```bash
+devtree sync           # list tasks whose branch is already merged
+devtree sync --apply   # mark them done
+```
+
+It proposes instead of acting, because git knows which branches were merged but not which of them
+were merged *finished* — a branch merged behind a feature flag is not a task that is done. This is
+the only command that runs another program; everything else works on the file alone, which is what
+lets devtree run in a tarball or a container with no repository at all.
+
+---
+
 ## Commands
 
 | Command | What it does |
@@ -251,6 +287,9 @@ devtree init --outputs "docs/tree.svg, docs/board.svg, docs/board-dark.svg"
 | `rm ID [--cascade]` | Deletes a task; without `--cascade` its children move up to its parent |
 | `ls [-s STATUS]` | Prints the tree in the terminal |
 | `board [-s STATUS]` | Prints the work grouped by status, like a board |
+| `archive [ID...] [--all] [--list]` | Moves finished branches of the plan into the archive |
+| `restore ID [ID...]` | Brings archived work back |
+| `sync [--apply]` | Closes tasks whose branch git has already merged |
 | `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
 | `install hook\|action\|all` | Installs the pre-commit hook and the GitHub Action |
@@ -465,7 +504,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-███████████░░░░░░░░░ **11 / 20** tasks done
+███████████░░░░░░░░░ **13 / 22** tasks done
 
 ```mermaid
 flowchart TD
@@ -487,7 +526,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>3/8</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>5/10</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["☐ Filter ls by owner and tag"]:::todo
     n_v0_2 --> n_focus
@@ -504,6 +543,10 @@ flowchart TD
     n_animation["✔ Animation in the SVG output"]:::done
     n_v0_2 --> n_board
     n_board["✔ Board layout, in the terminal and in SVG"]:::done
+    n_v0_2 --> n_archive
+    n_archive["✔ Archive and restore finished work"]:::done
+    n_v0_2 --> n_sync
+    n_sync["✔ Close tasks from merged branches"]:::done
     n_distribution["◐ Distribution<br/><i>1/3</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done

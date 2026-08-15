@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `devtree archive`, `devtree archive --all`, `devtree archive ID`, `devtree archive --list`, and
+  `devtree restore ID` — finished branches of a plan move to `.devtree/archive.yaml` and come back
+  from it. A node qualifies only when its whole subtree is done or dropped, so live work can never
+  leave with the milestone above it, and plain `devtree archive` reports without moving anything.
+  The archive uses the same format as the plan, so there is no second parser.
+- `devtree sync` closes tasks whose branch git has already merged. It lists the changes and only
+  writes them with `--apply`, because git knows which branches were merged but not which were merged
+  *finished*. `internal/vcs` is the only package that runs another program, and it is reached only
+  from this command.
+
 ## [0.2.0] — 2026-08-15
 
 devtree draws its own pictures now, and knows how to lay work out as a board.

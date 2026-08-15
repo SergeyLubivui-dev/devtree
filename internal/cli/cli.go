@@ -69,6 +69,12 @@ func (a *App) Execute(args []string) int {
 		err = a.cmdList(rest)
 	case "board", "b":
 		err = a.cmdBoard(rest)
+	case "archive":
+		err = a.cmdArchive(rest)
+	case "restore":
+		err = a.cmdRestore(rest)
+	case "sync":
+		err = a.cmdSync(rest)
 	case "render":
 		err = a.cmdRender(rest)
 	case "check":
@@ -112,6 +118,9 @@ COMMANDS
   rm        Delete a task
   ls        Print the tree in the terminal
   board     Print the work grouped by status, like a board
+  archive   Move finished work out of the active plan
+  restore   Bring archived work back
+  sync      Close tasks whose branch has already been merged
   render    Regenerate the diagram
   check     Validate the plan, for CI and hooks
   install   Install the pre-commit hook and the GitHub Action
@@ -151,6 +160,16 @@ OTHER COMMANDS
   devtree ls [-s STATUS]          Print the tree, optionally filtered
   devtree board [-s STATUS]       Print the work grouped by status
   devtree render [--file F] [--quiet]
+
+FINISHED WORK
+  devtree archive                 Show which branches of the plan are finished
+  devtree archive --all           Move all of them to .devtree/archive.yaml
+  devtree archive ID [ID...]      Move only these, with everything under them
+  devtree archive --list          Show what is already archived
+  devtree restore ID [ID...]      Bring archived work back into the plan
+
+  devtree sync                    List tasks whose branch is already merged
+  devtree sync --apply            ...and mark them done
 
 OUTPUT FILES
   The name decides the drawing. TREE.md and README.md get the Mermaid block;

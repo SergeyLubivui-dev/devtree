@@ -65,24 +65,28 @@ func Load(root string) (*tree.Tree, error) {
 	return t, nil
 }
 
-// Save writes the plan atomically: a temp file in the same directory, then a
-// rename. A crash mid-write can leave the old plan or the new one, never a
-// half-written file that no longer parses.
+// Save writes the plan atomically.
 func Save(root string, t *tree.Tree) error {
-	dir := filepath.Join(root, DirName)
+	return writeAtomic(Path(root), Marshal(t))
+}
+
+// writeAtomic writes through a temp file in the same directory and renames it
+// into place. A crash mid-write leaves either the old file or the new one,
+// never a half-written plan that no longer parses.
+func writeAtomic(final string, data []byte) error {
+	dir := filepath.Dir(final)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
-	final := Path(root)
-	tmp, err := os.CreateTemp(dir, FileName+".tmp-*")
+	tmp, err := os.CreateTemp(dir, filepath.Base(final)+".tmp-*")
 	if err != nil {
 		return err
 	}
 	tmpName := tmp.Name()
 	defer os.Remove(tmpName) // no-op once the rename succeeds
 
-	if _, err := tmp.Write(Marshal(t)); err != nil {
+	if _, err := tmp.Write(data); err != nil {
 		tmp.Close()
 		return err
 	}

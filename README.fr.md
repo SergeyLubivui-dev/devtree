@@ -180,6 +180,43 @@ Le même tableau se rend en SVG : il suffit de nommer le fichier de sortie `boar
 
 ---
 
+## Travail terminé
+
+Un plan qui conserve chaque tâche jamais achevée cesse d'être un plan et devient un journal : le
+tableau se remplit de colonnes de travail terminé et le diagramme se dote d'une queue que personne
+ne lit. L'archive garde la trace sans garder le bruit.
+
+```bash
+devtree archive          # ce qui est terminé et pourrait déménager
+devtree archive --all    # déplacer vers .devtree/archive.yaml
+devtree archive v1       # ou seulement cette branche du plan
+devtree archive --list   # ce qui est déjà parti
+devtree restore v1       # le ramener, avec tout ce qui est dessous
+```
+
+Rien ne bouge tant que vous ne le dites pas : `devtree archive` seul se contente de rapporter. Un
+nœud n'est éligible que si tout son sous-arbre est `done` ou `dropped` : le travail vivant ne peut
+donc jamais disparaître avec le jalon qui le surplombe. Les tâches archivées conservent leur parent,
+c'est ainsi qu'elles se souviennent d'où elles viennent ; si ce parent a disparu au moment du
+retour, la tâche revient à la racine et vous le dit.
+
+L'archive utilise le même format que le plan : aucun second analyseur à apprendre, rien de nouveau
+dans le diff.
+
+**Clore ce que git sait déjà :**
+
+```bash
+devtree sync           # lister les tâches dont la branche est déjà fusionnée
+devtree sync --apply   # et les marquer terminées
+```
+
+La commande propose au lieu d'agir. git sait quelles branches ont été fusionnées, pas lesquelles
+l'ont été *terminées* : une branche fusionnée derrière un drapeau de fonctionnalité n'est pas une
+tâche achevée. C'est la seule commande qui lance un autre programme ; tout le reste travaille sur le
+seul fichier.
+
+---
+
 ## Commandes
 
 | Commande | Ce qu'elle fait |
@@ -192,6 +229,9 @@ Le même tableau se rend en SVG : il suffit de nommer le fichier de sortie `boar
 | `rm ID [--cascade]` | Supprime une tâche ; sans `--cascade`, ses enfants remontent à son parent |
 | `ls [-s STATUT]` | Affiche l'arbre dans le terminal |
 | `board [-s STATUT]` | Affiche le travail groupé par statut |
+| `archive [ID...] [--all] [--list]` | Déplace les branches terminées du plan vers l'archive |
+| `restore ID [ID...]` | Ramène du travail archivé |
+| `sync [--apply]` | Clôt les tâches dont la branche est déjà fusionnée par git |
 | `render [--file F] [--quiet]` | Régénère toutes les sorties |
 | `check [--strict]` | Valide le plan — pour la CI et les hooks |
 | `install hook\|action\|all` | Installe le hook de pre-commit et la GitHub Action |
