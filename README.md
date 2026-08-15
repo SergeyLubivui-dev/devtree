@@ -3,6 +3,8 @@
   <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/hero.svg" width="800">
 </picture>
 
+**English** · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
+
 [![CI](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyLubivui-dev/devtree/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/SergeyLubivui-dev/devtree.svg)](https://pkg.go.dev/github.com/SergeyLubivui-dev/devtree)
 [![Release](https://img.shields.io/github/v/release/SergeyLubivui-dev/devtree?color=1a7f37)](https://github.com/SergeyLubivui-dev/devtree/releases/latest)

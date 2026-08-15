@@ -35,6 +35,14 @@ All notable changes to this project are documented here. The format follows
   milestone as a breadcrumb. Empty columns are left out.
 - A recipes section in the README: starting a feature, breaking work down, picking up a ticket,
   parking something blocked, and the three commands worth running on a Monday.
+- Translations of the README into Russian, Chinese, German, and French, reachable from a language
+  bar at the top of each one. Every example in them was run before it was written down — the
+  Russian quickstart shows the IDs transliteration actually produces, not plausible-looking ones.
+
+### Removed
+
+- The throwaway `SPIKE.md` and `spike/` files, which proved that GitHub renders a repository SVG
+  with a themed `<picture>` before the renderer was built. The real drawing in `docs/` replaced them.
 
 ### Changed
 

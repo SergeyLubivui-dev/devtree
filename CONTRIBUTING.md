@@ -52,6 +52,18 @@ Two rules follow from that table, and they are the ones most likely to come up i
 - **Nothing calls `os.Exit` except `main`.** Commands return errors; `Execute` turns them into an
   exit code.
 
+## Translations
+
+`README.md` is the source. `README.ru.md`, `README.zh-CN.md`, `README.de.md`, and `README.fr.md`
+cover everything a user needs — install, quickstart, recipes, board, commands, format, automation,
+SVG output, limits — and point back to the English file for the architecture section, which is aimed
+at people reading the code anyway.
+
+If a change alters what a user does or sees, update the translations in the same pull request. If it
+only touches internals, leave them alone. A translation that quietly drifts is worse than one that
+was never written, so the command output and IDs in every example are taken from real runs, not
+invented.
+
 ## Style
 
 Comments explain *why*, not *what* — the code already says what it does. If a line looks strange,
