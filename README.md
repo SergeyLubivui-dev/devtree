@@ -130,6 +130,113 @@ transliterated so the ID stays typeable. Pass `--id` when you want to choose one
 
 ---
 
+## Everyday recipes
+
+Short, real things people do with a plan. Copy one and change the words.
+
+**Start a feature, finish a feature.** The task and the branch are named together, so anyone reading
+the diagram knows where the code is:
+
+```bash
+devtree add "Search filters" -p mvp -b feat/search -i 214 -o you -s wip
+git switch -c feat/search
+# ...write the code...
+devtree done search-filters
+git commit -am "feat: search filters"        # the hook refreshes the diagram
+```
+
+**Break something big into something doable.** Parents count their children automatically, so the
+milestone reports progress you never have to update by hand:
+
+```bash
+devtree add "Billing" -s wip
+devtree add "Invoices" -p billing
+devtree add "Refunds"  -p billing
+devtree add "Dunning"  -p billing -s blocked -n "needs the payments API"
+devtree ls
+```
+
+```text
+◐ Billing  (billing)  [0/3]
+├─ ☐ Invoices  (invoices)
+├─ ☐ Refunds  (refunds)
+└─ ⛔ Dunning  (dunning)
+```
+
+**Pick up a ticket.** Give it the issue number and it becomes a link in the table under the diagram:
+
+```bash
+devtree add "Fix timezone drift" -i 512 -o ann -s wip --tags bug
+```
+
+**Park what you cannot finish.** A blocked task with no note is the one thing `check` complains
+about, because "blocked" without a reason is a task nobody can pick up:
+
+```bash
+devtree set password-reset -s blocked -n "waiting on the SMTP contract"
+devtree board -s blocked
+```
+
+**Monday morning, in three commands:**
+
+```bash
+devtree board          # what is in flight, what is stuck, what is waiting
+devtree ls -s blocked  # only the branches that need a decision
+devtree check          # anything marked done that still has open work under it?
+```
+
+**Two people, two branches, one plan.** Both add tasks, both commit, and the merge is boring — the
+node list is flat and `.gitattributes` says `merge=union`. If two branches happen to pick the same
+ID, `devtree check` fails on the spot with the duplicate named.
+
+---
+
+## The board
+
+The tree says how the work is organized. The board says what state it is in this morning — same
+file, different question:
+
+```bash
+devtree board
+```
+
+```text
+Payment Gateway
+
+☐ not started · 1
+  Apple Pay        Payments  #51
+
+◐ in progress · 1
+  OAuth providers  Authentication  !31
+
+⛔ blocked · 1
+  Password reset   Authentication  — waiting on SMTP
+
+✔ done · 1
+  Stripe           Payments  !44
+
+██░░░░░░░░░░░░░░░░░░  1/7
+```
+
+Only leaves appear. A milestone is a container, not a task, and a board that lists containers next
+to the work inside them stops being a board — so each card carries its milestone as a breadcrumb
+instead. Empty columns are left out entirely: a board with nothing blocked should not spend a fifth
+of its width saying so.
+
+The same board renders to SVG. Name an output `board.svg` (or `anything.board.svg`) and it is drawn
+as columns instead of a tree:
+
+```bash
+devtree init --outputs "docs/tree.svg, docs/board.svg, docs/board-dark.svg"
+```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/board-dark.svg">
+  <img alt="devtree's own board: columns of work by status" src="docs/board.svg">
+</picture>
+
+---
+
 ## Commands
 
 | Command | What it does |
@@ -141,6 +248,7 @@ transliterated so the ID stays typeable. Pass `--id` when you want to choose one
 | `mv ID PARENT\|root` | Re-parents a task |
 | `rm ID [--cascade]` | Deletes a task; without `--cascade` its children move up to its parent |
 | `ls [-s STATUS]` | Prints the tree in the terminal |
+| `board [-s STATUS]` | Prints the work grouped by status, like a board |
 | `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
 | `install hook\|action\|all` | Installs the pre-commit hook and the GitHub Action |
@@ -250,9 +358,18 @@ has no such ceiling — so name an output `.svg` and you get the native renderer
 devtree init --outputs "TREE.md, docs/tree.svg, docs/tree-dark.svg"
 ```
 
-The format follows the file extension, and the palette follows the file name: anything ending in
-`-dark.svg` is rendered dark. Nothing is hidden — `outputs` lists exactly the files that get written.
-Point a `<picture>` at the pair and GitHub switches it with the reader's theme:
+The name decides everything, so `outputs` stays a plain list of destinations and `devtree render`
+needs no arguments to reproduce it:
+
+| File name | What gets drawn |
+|---|---|
+| `TREE.md`, `README.md` | the Mermaid block, between markers |
+| `docs/tree.svg` | the tree, light palette |
+| `docs/tree-dark.svg` | the tree, dark palette |
+| `docs/board.svg` | the board |
+| `docs/plan.board-dark.svg` | the board, dark, under a different name |
+
+Point a `<picture>` at a light and dark pair and GitHub switches it with the reader's theme:
 
 ```html
 <picture>
@@ -346,7 +463,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-██████████░░░░░░░░░░ **10 / 19** tasks done
+███████████░░░░░░░░░ **11 / 20** tasks done
 
 ```mermaid
 flowchart TD
@@ -368,7 +485,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>2/7</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>3/8</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["☐ Filter ls by owner and tag"]:::todo
     n_v0_2 --> n_focus
@@ -383,6 +500,8 @@ flowchart TD
     n_html_export["☐ Interactive HTML export"]:::todo
     n_v0_2 --> n_animation
     n_animation["✔ Animation in the SVG output"]:::done
+    n_v0_2 --> n_board
+    n_board["✔ Board layout, in the terminal and in SVG"]:::done
     n_distribution["◐ Distribution<br/><i>1/3</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done

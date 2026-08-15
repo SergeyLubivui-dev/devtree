@@ -300,6 +300,46 @@ func TestSVGOutputsAreChosenByExtension(t *testing.T) {
 	}
 }
 
+func TestBoardGroupsWorkByStatus(t *testing.T) {
+	h := newHarness(t)
+	h.run("init", "--empty")
+	h.run("add", "MVP", "-s", "wip")
+	h.run("add", "Authentication", "-p", "mvp", "-s", "wip", "-b", "feat/auth")
+	h.run("add", "Password reset", "-p", "mvp", "-s", "blocked", "-n", "waiting on SMTP")
+	h.run("add", "Stripe", "-p", "mvp", "-s", "done")
+
+	out := h.run("board")
+	for _, want := range []string{"in progress · 1", "blocked · 1", "done · 1", "feat/auth", "waiting on SMTP"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q in:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "\n  MVP") {
+		t.Errorf("the milestone should not be a card:\n%s", out)
+	}
+
+	if filtered := h.run("board", "-s", "blocked"); strings.Contains(filtered, "Stripe") {
+		t.Errorf("the filter did not apply:\n%s", filtered)
+	}
+}
+
+func TestBoardOutputFileIsChosenByName(t *testing.T) {
+	h := newHarness(t)
+	h.run("init", "--project", "Demo", "--outputs", "docs/tree.svg, docs/board.svg")
+	h.run("add", "Ship it", "-p", "mvp", "-s", "wip")
+
+	treeDoc, boardDoc := h.read("docs/tree.svg"), h.read("docs/board.svg")
+	if !strings.Contains(treeDoc, "dt-card-") {
+		t.Error("tree.svg should hold the tree drawing")
+	}
+	if !strings.Contains(boardDoc, "dt-col-") || !strings.Contains(boardDoc, "in progress") {
+		t.Error("board.svg should hold the board drawing")
+	}
+	if treeDoc == boardDoc {
+		t.Error("both files rendered the same drawing")
+	}
+}
+
 func TestCheckWarnsWithoutFailing(t *testing.T) {
 	h := newHarness(t)
 	h.run("init", "--empty")

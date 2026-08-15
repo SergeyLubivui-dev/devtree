@@ -3,7 +3,7 @@
 version: 1
 project: "devtree"
 repo: "https://github.com/SergeyLubivui-dev/devtree"
-outputs: "README.md, docs/tree.svg, docs/tree-dark.svg"
+outputs: "README.md, docs/tree.svg, docs/tree-dark.svg, docs/board.svg, docs/board-dark.svg"
 nodes:
   - id: "v0-1"
     title: "v0.1 - first release"
@@ -80,3 +80,7 @@ nodes:
     status: "done"
     parent: "v0-2"
     note: "flow on live edges, growing bars, turning glyphs"
+  - id: "board"
+    title: "Board layout, in the terminal and in SVG"
+    status: "done"
+    parent: "v0-2"

@@ -64,6 +64,8 @@ func (a *App) Execute(args []string) int {
 		err = a.cmdRemove(rest)
 	case "ls", "tree", "list":
 		err = a.cmdList(rest)
+	case "board", "b":
+		err = a.cmdBoard(rest)
 	case "render":
 		err = a.cmdRender(rest)
 	case "check":
@@ -106,6 +108,7 @@ COMMANDS
   mv        Re-parent a task
   rm        Delete a task
   ls        Print the tree in the terminal
+  board     Print the work grouped by status, like a board
   render    Regenerate the diagram
   check     Validate the plan, for CI and hooks
   install   Install the pre-commit hook and the GitHub Action
@@ -143,7 +146,17 @@ OTHER COMMANDS
   devtree mv ID PARENT|root       Re-parent a task
   devtree rm ID [--cascade]       Delete a task; --cascade takes its subtree
   devtree ls [-s STATUS]          Print the tree, optionally filtered
+  devtree board [-s STATUS]       Print the work grouped by status
   devtree render [--file F] [--quiet]
+
+OUTPUT FILES
+  The name decides the drawing. TREE.md and README.md get the Mermaid block;
+  an .svg file gets devtree's own drawing, as a tree or as a board:
+
+    docs/tree.svg        the tree, light palette
+    docs/tree-dark.svg   the tree, dark palette
+    docs/board.svg       the board
+    docs/plan.board.svg  the board, named something else
   devtree check [--strict]        --strict turns warnings into a failure
   devtree install hook|action|all
 

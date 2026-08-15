@@ -62,7 +62,7 @@ func (a *App) writeOutputs(root string, t *tree.Tree, quiet bool) error {
 		)
 		switch strings.ToLower(filepath.Ext(output)) {
 		case ".svg":
-			state, err = writeFile(path, svg.Render(t, svg.ThemeForFilename(output)))
+			state, err = writeFile(path, svg.RenderFor(t, output))
 		default:
 			state, err = writeBlock(path, block)
 		}
@@ -430,6 +430,37 @@ func (a *App) cmdList(args []string) error {
 
 	fmt.Fprintf(a.Out, "%s\n\n", t.Project)
 	fmt.Fprint(a.Out, render.ASCII(t, filter))
+
+	done, total := t.Totals()
+	fmt.Fprintf(a.Out, "\n%s  %d/%d\n", render.ProgressBar(done, total), done, total)
+	return nil
+}
+
+// cmdBoard is the day-to-day view: what is in flight, what is stuck, what is
+// waiting, grouped by status instead of by structure.
+func (a *App) cmdBoard(args []string) error {
+	fs := newFlagSet("board")
+	statusFlag := fs.String("s", "", "show only this column")
+	fs.StringVar(statusFlag, "status", "", "show only this column")
+	if _, err := parseArgs(fs, args); err != nil {
+		return err
+	}
+
+	_, t, err := a.load()
+	if err != nil {
+		return err
+	}
+
+	var filter tree.Status
+	if *statusFlag != "" {
+		filter, err = tree.ParseStatus(*statusFlag)
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Fprintf(a.Out, "%s\n\n", t.Project)
+	fmt.Fprint(a.Out, render.Board(t, filter))
 
 	done, total := t.Totals()
 	fmt.Fprintf(a.Out, "\n%s  %d/%d\n", render.ProgressBar(done, total), done, total)

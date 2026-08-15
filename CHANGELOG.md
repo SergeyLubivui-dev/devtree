@@ -29,6 +29,13 @@ All notable changes to this project are documented here. The format follows
   survives GitHub's `default-src 'none'; sandbox` — and it stops entirely for readers who ask their
   system for reduced motion, leaving a picture that still reads correctly.
 
+- A board view, in both places it is useful: `devtree board` groups the work by status in the
+  terminal, and an output named `board.svg` (or `anything.board.svg`) draws the same thing as
+  columns. Only leaves appear — a milestone is a container, not a card — and each task carries its
+  milestone as a breadcrumb. Empty columns are left out.
+- A recipes section in the README: starting a feature, breaking work down, picking up a ticket,
+  parking something blocked, and the three commands worth running on a Monday.
+
 ### Changed
 
 - Cards now carry the status color as a stripe down the full height of their left edge, clipped to
