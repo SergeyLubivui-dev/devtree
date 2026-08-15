@@ -18,7 +18,7 @@ import (
 //
 // The default is what a plain `go build` reports, so it tracks the last
 // release rather than sitting at whatever the first one happened to be.
-var Version = "0.3.0"
+var Version = "0.4.0"
 
 // App holds everything a command needs from the outside world.
 type App struct {
