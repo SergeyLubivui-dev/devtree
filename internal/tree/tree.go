@@ -159,6 +159,47 @@ func (t *Tree) Progress(n *Node) (done, total int) {
 	return done, total
 }
 
+// Slice returns a new tree containing one node and everything under it.
+//
+// The copy is what makes `--root` cost nothing elsewhere: every renderer, every
+// filter, and every progress rollup works on a *Tree, so slicing one out means
+// they all draw a subtree without knowing there is such a thing.
+//
+// The nodes are copied rather than shared, so the slice can be re-rooted —
+// and mutated by a caller — without reaching back into the original plan.
+func (t *Tree) Slice(id string) (*Tree, error) {
+	n, ok := t.index[id]
+	if !ok {
+		return nil, fmt.Errorf("no such task: %q", id)
+	}
+
+	title := n.Title
+	if title == "" {
+		title = n.ID
+	}
+
+	out := &Tree{
+		Version: t.Version,
+		Project: title,
+		Repo:    t.Repo,
+		Outputs: t.Outputs,
+	}
+	if t.Project != "" {
+		out.Project = t.Project + " · " + title
+	}
+
+	for _, x := range t.Subtree(n) {
+		clone := *x
+		clone.children = nil
+		if x.ID == n.ID {
+			clone.Parent = "" // the slice stands on its own
+		}
+		out.Nodes = append(out.Nodes, &clone)
+	}
+
+	return out, out.Build()
+}
+
 // Finished reports whether a node and everything under it has been settled —
 // every task either done or dropped.
 //

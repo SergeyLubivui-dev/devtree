@@ -18,10 +18,10 @@ import (
 // Only leaves are listed. A milestone is a container, and a board that mixes
 // containers in with the work makes both harder to scan. Each task shows the
 // milestone it belongs to instead.
-func Board(t *tree.Tree, filter tree.Status) string {
+func Board(t *tree.Tree, filter Filter) string {
 	groups := map[tree.Status][]*tree.Node{}
 	for _, n := range t.Nodes {
-		if len(n.Children()) > 0 {
+		if len(n.Children()) > 0 || !filter.Match(n) {
 			continue
 		}
 		groups[n.Status] = append(groups[n.Status], n)
@@ -44,7 +44,7 @@ func Board(t *tree.Tree, filter tree.Status) string {
 	var b strings.Builder
 	for _, s := range tree.Statuses {
 		nodes := groups[s]
-		if len(nodes) == 0 || (filter != "" && s != filter) {
+		if len(nodes) == 0 {
 			continue
 		}
 

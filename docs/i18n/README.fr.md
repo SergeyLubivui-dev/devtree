@@ -243,6 +243,7 @@ seul fichier.
 | `rm ID [--cascade]` | Supprime une tâche ; sans `--cascade`, ses enfants remontent à son parent |
 | `ls [-s STATUT]` | Affiche l'arbre dans le terminal |
 | `board [-s STATUT]` | Affiche le travail groupé par statut |
+| `open ID [--issue\|--pr\|--branch] [--print]` | Ouvre ce que la tâche désigne |
 | `archive [ID...] [--all] [--list]` | Déplace les branches terminées du plan vers l'archive |
 | `restore ID [ID...]` | Ramène du travail archivé |
 | `sync [--apply]` | Clôt les tâches dont la branche est déjà fusionnée par git |
@@ -250,6 +251,16 @@ seul fichier.
 | `check [--strict]` | Valide le plan — pour la CI et les hooks |
 | `install hook\|action\|all` | Installe le hook de pre-commit et la GitHub Action |
 | `outputs` | Affiche les fichiers de sortie |
+
+`ls` et `board` acceptent les quatre mêmes filtres, et ils se combinent : `-s STATUT`, `-o QUI`,
+`--tag a,b` (l'un suffit), `--root ID` (une seule branche du plan). `render` accepte `--root` aussi,
+si bien qu'un jalon peut avoir son propre dessin :
+
+```bash
+devtree board -o ann --tag billing
+devtree render --root mvp --file docs/mvp.svg
+devtree open authentication          # ouvre la pull request, l'issue ou la branche
+```
 
 Les drapeaux peuvent précéder ou suivre le titre, les deux formes sont équivalentes :
 

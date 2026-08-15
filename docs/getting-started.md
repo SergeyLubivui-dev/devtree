@@ -53,6 +53,14 @@ devtree board    # the same work, grouped by status
 `ls` answers how the work is organized. `board` answers what state it is in this morning. Both read
 the same file; neither stores anything.
 
+Both narrow the same way — `-s blocked`, `-o ann`, `--tag billing`, `--root mvp` — and the filters
+combine. When you want the thing a task points at rather than the task itself:
+
+```bash
+devtree open authentication          # opens the pull request, issue, or branch
+devtree open authentication --print  # prints the URL, for a machine with no browser
+```
+
 ## 4. Put the diagram where people will see it
 
 The plan lists its own output files, and the file name decides what gets drawn:

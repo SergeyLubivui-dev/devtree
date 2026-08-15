@@ -233,7 +233,7 @@ func TestInjectCreatesTheBodyOfAnEmptyFile(t *testing.T) {
 }
 
 func TestASCIIDrawsTheTree(t *testing.T) {
-	got := ASCII(sample(t), "")
+	got := ASCII(sample(t), Filter{})
 
 	for _, want := range []string{
 		"◐ MVP  (mvp)",
@@ -251,7 +251,7 @@ func TestASCIIDrawsTheTree(t *testing.T) {
 }
 
 func TestASCIIFiltersByStatus(t *testing.T) {
-	got := ASCII(sample(t), tree.Blocked)
+	got := ASCII(sample(t), Filter{Status: tree.Blocked})
 
 	if !strings.Contains(got, "Instant transfers") {
 		t.Errorf("the blocked task should be listed:\n%s", got)
@@ -262,7 +262,7 @@ func TestASCIIFiltersByStatus(t *testing.T) {
 }
 
 func TestASCIISaysWhenNothingMatches(t *testing.T) {
-	if got := ASCII(sample(t), tree.Dropped); !strings.Contains(got, "nothing") {
+	if got := ASCII(sample(t), Filter{Status: tree.Dropped}); !strings.Contains(got, "nothing") {
 		t.Fatalf("got %q", got)
 	}
 }

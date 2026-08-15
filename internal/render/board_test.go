@@ -27,7 +27,7 @@ func board(t *testing.T) *tree.Tree {
 }
 
 func TestBoardGroupsByStatus(t *testing.T) {
-	out := Board(board(t), "")
+	out := Board(board(t), Filter{})
 
 	for _, want := range []string{
 		"in progress · 1",
@@ -46,7 +46,7 @@ func TestBoardGroupsByStatus(t *testing.T) {
 }
 
 func TestBoardLeavesContainersOut(t *testing.T) {
-	out := Board(board(t), "")
+	out := Board(board(t), Filter{})
 
 	// A milestone may appear as a breadcrumb on its children, but never as a
 	// card of its own — so look at what each listed line is *titled*.
@@ -80,13 +80,13 @@ func TestBoardShowsTheParentAsContext(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if !strings.Contains(Board(tr, ""), "MVP") {
+	if !strings.Contains(Board(tr, Filter{}), "MVP") {
 		t.Error("a task should carry the milestone it belongs to")
 	}
 }
 
 func TestBoardFilter(t *testing.T) {
-	out := Board(board(t), tree.Blocked)
+	out := Board(board(t), Filter{Status: tree.Blocked})
 	if !strings.Contains(out, "Password reset") {
 		t.Errorf("the blocked column should be shown:\n%s", out)
 	}
@@ -106,7 +106,7 @@ func TestBoardAlignsMultiByteTitles(t *testing.T) {
 		}
 	}
 
-	out := Board(tr, "")
+	out := Board(tr, Filter{})
 	var columns []int
 	for _, line := range strings.Split(out, "\n") {
 		if i := strings.Index(line, "@"); i >= 0 {
@@ -124,7 +124,7 @@ func TestBoardAlignsMultiByteTitles(t *testing.T) {
 }
 
 func TestBoardOfAnEmptyPlan(t *testing.T) {
-	if out := Board(tree.New("x"), ""); !strings.Contains(out, "nothing") {
+	if out := Board(tree.New("x"), Filter{}); !strings.Contains(out, "nothing") {
 		t.Errorf("got %q", out)
 	}
 }

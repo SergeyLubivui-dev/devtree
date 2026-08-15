@@ -195,6 +195,44 @@ func TestFinishedAndArchivable(t *testing.T) {
 	}
 }
 
+func TestSliceStandsOnItsOwn(t *testing.T) {
+	tr := sample(t)
+	if err := tr.Add(&Node{ID: "cards", Title: "Cards", Parent: "pay"}); err != nil {
+		t.Fatal(err)
+	}
+
+	slice, err := tr.Slice("pay")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(slice.Nodes) != 2 {
+		t.Fatalf("the slice holds %d nodes, want the branch and its child", len(slice.Nodes))
+	}
+	if got := len(slice.Roots()); got != 1 {
+		t.Fatalf("%d roots in the slice, want 1", got)
+	}
+	pay, _ := slice.Get("pay")
+	if pay.Parent != "" {
+		t.Errorf("the slice root still points at %q", pay.Parent)
+	}
+	if slice.Project != "Test project · Payments" {
+		t.Errorf("heading is %q — it should name both the project and the branch", slice.Project)
+	}
+
+	// The copy is a copy: editing it must not reach back into the plan.
+	pay.Title = "Rewritten"
+	if original, _ := tr.Get("pay"); original.Title != "Payments" {
+		t.Error("the slice shares nodes with the plan it came from")
+	}
+}
+
+func TestSliceRejectsAnUnknownID(t *testing.T) {
+	if _, err := sample(t).Slice("nope"); err == nil {
+		t.Fatal("slicing an unknown id should fail")
+	}
+}
+
 func TestDroppedWorkCountsAsFinished(t *testing.T) {
 	tr := New("x")
 	if err := tr.Add(&Node{ID: "a", Title: "A", Status: Dropped}); err != nil {

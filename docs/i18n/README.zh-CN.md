@@ -223,6 +223,7 @@ devtree sync --apply   # 把它们标记为完成
 | `rm ID [--cascade]` | 删除任务；不加 `--cascade` 时子节点上移到它的父节点 |
 | `ls [-s 状态]` | 在终端打印这棵树 |
 | `board [-s 状态]` | 按状态分组打印工作 |
+| `open ID [--issue\|--pr\|--branch] [--print]` | 打开任务指向的东西 |
 | `archive [ID...] [--all] [--list]` | 把已完结的计划分支移入归档 |
 | `restore ID [ID...]` | 把归档里的工作取回来 |
 | `sync [--apply]` | 关闭那些分支已被 git 合并的任务 |
@@ -230,6 +231,15 @@ devtree sync --apply   # 把它们标记为完成
 | `check [--strict]` | 校验计划——供 CI 和钩子使用 |
 | `install hook\|action\|all` | 安装提交前钩子和 GitHub Action |
 | `outputs` | 打印输出文件列表 |
+
+`ls` 和 `board` 共用四个筛选条件，并且可以叠加：`-s 状态`、`-o 负责人`、`--tag a,b`（命中任意一个）、
+`--root ID`（只看计划的这一支）。`render` 同样支持 `--root`，于是一个里程碑可以拥有自己的图：
+
+```bash
+devtree board -o ann --tag billing
+devtree render --root mvp --file docs/mvp.svg
+devtree open authentication          # 打开 PR、issue 或分支
+```
 
 标志位放在标题前后都可以，两种写法完全等价：
 

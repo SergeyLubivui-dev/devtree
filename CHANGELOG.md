@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `devtree open ID` opens what a task points at — its pull request, its issue, or its branch, in
+  that order of specificity, or whichever one `--issue`, `--pr`, or `--branch` names. `--print`
+  writes the URL instead, and a machine with no browser gets the URL rather than an error.
+- Filters shared by both views: `ls` and `board` take `-s STATUS`, `-o OWNER`, `--tag a,b`, and
+  `--root ID`. They combine with and, except tags, which combine with or. Owners and tags ignore
+  case.
+- `--root` on `render`, so one branch of a plan can have a picture of its own:
+  `devtree render --root mvp --file docs/mvp.svg`. It works by slicing the plan into a smaller plan,
+  which is why every renderer, rollup, and filter supports it without knowing it exists.
+
 ### Changed
 
 - The repository root holds only what belongs there. The four translated READMEs moved to

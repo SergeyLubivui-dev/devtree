@@ -267,6 +267,7 @@ More: [docs/finished-work.md](docs/finished-work.md).
 | `rm ID [--cascade]` | Deletes a task; without `--cascade` its children move up to its parent |
 | `ls [-s STATUS]` | Prints the tree in the terminal |
 | `board [-s STATUS]` | Prints the work grouped by status |
+| `open ID [--issue\|--pr\|--branch] [--print]` | Opens what a task points at |
 | `archive [ID...] [--all] [--list]` | Moves finished branches of the plan into the archive |
 | `restore ID [ID...]` | Brings archived work back |
 | `sync [--apply]` | Closes tasks whose branch git has already merged |
@@ -280,6 +281,30 @@ Flags may come before or after the title, so both of these do the same thing:
 ```bash
 devtree add "Authentication" -p mvp -s wip
 devtree add -p mvp -s wip "Authentication"
+```
+
+### Narrowing the view
+
+`ls` and `board` take the same four filters, and they combine:
+
+```bash
+devtree ls -s blocked              # one status
+devtree board -o ann               # one person's work
+devtree ls --tag billing,payments  # any of these tags
+devtree board --root mvp           # one branch of the plan
+```
+
+`render` takes `--root` too, so a milestone can have a picture of its own:
+
+```bash
+devtree render --root mvp --file docs/mvp.svg
+```
+
+And when you want the thing itself rather than the plan:
+
+```bash
+devtree open authentication          # its pull request, issue, or branch
+devtree open authentication --print  # print the URL instead of opening it
 ```
 
 ### Statuses
@@ -382,7 +407,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-████████████░░░░░░░░ **15 / 24** tasks done
+███████████████░░░░░ **18 / 24** tasks done
 
 ```mermaid
 flowchart TD
@@ -404,13 +429,13 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>6/11</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>9/11</i>"]:::in_progress
     n_v0_2 --> n_filters
-    n_filters["☐ Filter ls by owner and tag"]:::todo
+    n_filters["✔ Filter ls by owner and tag"]:::done
     n_v0_2 --> n_focus
-    n_focus["☐ Render one subtree with --root"]:::todo
+    n_focus["✔ Render one subtree with --root"]:::done
     n_v0_2 --> n_open
-    n_open["☐ devtree open ID - jump to the issue or PR"]:::todo
+    n_open["✔ devtree open ID - jump to the issue or PR"]:::done
     n_v0_2 --> n_history
     n_history["☐ Progress history from git log"]:::todo
     n_v0_2 --> n_svg_output

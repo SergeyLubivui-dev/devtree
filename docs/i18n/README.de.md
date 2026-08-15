@@ -240,6 +240,7 @@ arbeitet allein auf der Datei.
 | `rm ID [--cascade]` | Löscht eine Aufgabe; ohne `--cascade` rücken die Kinder zum Elternknoten auf |
 | `ls [-s STATUS]` | Gibt den Baum im Terminal aus |
 | `board [-s STATUS]` | Gibt die Arbeit nach Status gruppiert aus |
+| `open ID [--issue\|--pr\|--branch] [--print]` | Öffnet, worauf eine Aufgabe zeigt |
 | `archive [ID...] [--all] [--list]` | Verschiebt fertige Zweige des Plans ins Archiv |
 | `restore ID [ID...]` | Holt archivierte Arbeit zurück |
 | `sync [--apply]` | Schließt Aufgaben, deren Branch git bereits gemergt hat |
@@ -247,6 +248,16 @@ arbeitet allein auf der Datei.
 | `check [--strict]` | Prüft den Plan — für CI und Hooks |
 | `install hook\|action\|all` | Installiert Pre-Commit-Hook und GitHub Action |
 | `outputs` | Gibt die Ausgabedateien aus |
+
+`ls` und `board` nehmen dieselben vier Filter, und sie lassen sich kombinieren: `-s STATUS`,
+`-o WER`, `--tag a,b` (einer genügt), `--root ID` (nur dieser Zweig). `render` versteht `--root`
+ebenfalls, also kann ein Meilenstein sein eigenes Bild bekommen:
+
+```bash
+devtree board -o ann --tag billing
+devtree render --root mvp --file docs/mvp.svg
+devtree open authentication          # öffnet Pull Request, Issue oder Branch
+```
 
 Flags dürfen vor oder nach dem Titel stehen, beides ist dasselbe:
 

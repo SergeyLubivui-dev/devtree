@@ -409,8 +409,8 @@ func (a *App) cmdRemove(args []string) error {
 
 func (a *App) cmdList(args []string) error {
 	fs := newFlagSet("ls")
-	statusFlag := fs.String("s", "", "show only tasks with this status")
-	fs.StringVar(statusFlag, "status", "", "show only tasks with this status")
+	view := &viewFlags{}
+	view.register(fs)
 	if _, err := parseArgs(fs, args); err != nil {
 		return err
 	}
@@ -419,13 +419,9 @@ func (a *App) cmdList(args []string) error {
 	if err != nil {
 		return err
 	}
-
-	var filter tree.Status
-	if *statusFlag != "" {
-		filter, err = tree.ParseStatus(*statusFlag)
-		if err != nil {
-			return err
-		}
+	t, filter, err := view.apply(t)
+	if err != nil {
+		return err
 	}
 
 	fmt.Fprintf(a.Out, "%s\n\n", t.Project)
@@ -440,8 +436,8 @@ func (a *App) cmdList(args []string) error {
 // waiting, grouped by status instead of by structure.
 func (a *App) cmdBoard(args []string) error {
 	fs := newFlagSet("board")
-	statusFlag := fs.String("s", "", "show only this column")
-	fs.StringVar(statusFlag, "status", "", "show only this column")
+	view := &viewFlags{}
+	view.register(fs)
 	if _, err := parseArgs(fs, args); err != nil {
 		return err
 	}
@@ -450,13 +446,9 @@ func (a *App) cmdBoard(args []string) error {
 	if err != nil {
 		return err
 	}
-
-	var filter tree.Status
-	if *statusFlag != "" {
-		filter, err = tree.ParseStatus(*statusFlag)
-		if err != nil {
-			return err
-		}
+	t, filter, err := view.apply(t)
+	if err != nil {
+		return err
 	}
 
 	fmt.Fprintf(a.Out, "%s\n\n", t.Project)
@@ -471,6 +463,7 @@ func (a *App) cmdRender(args []string) error {
 	fs := newFlagSet("render")
 	quiet := fs.Bool("quiet", false, "print nothing on success")
 	file := fs.String("file", "", "render into this file instead of the configured outputs")
+	from := fs.String("root", "", "render only this task and everything under it")
 	if _, err := parseArgs(fs, args); err != nil {
 		return err
 	}
@@ -478,6 +471,11 @@ func (a *App) cmdRender(args []string) error {
 	root, t, err := a.load()
 	if err != nil {
 		return err
+	}
+	if *from != "" {
+		if t, err = t.Slice(*from); err != nil {
+			return err
+		}
 	}
 	if *file != "" {
 		// A one-off override, not a saved setting: the plan on disk keeps its

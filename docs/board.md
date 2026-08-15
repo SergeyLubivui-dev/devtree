@@ -67,6 +67,25 @@ Columns get a heading with the status glyph and a count, a hairline in the statu
 that carry the same full-height accent stripe as the tree diagram. The rules above hold here too:
 leaves only, empty columns dropped.
 
+## Narrowing it
+
+The board and the tree take the same four filters, so a habit learned on one works on the other:
+
+```bash
+devtree board -s blocked              # one status
+devtree board -o ann                  # one person
+devtree board --tag billing,payments  # any of these tags
+devtree board --root mvp              # one branch of the plan
+```
+
+They combine with and, except tags, which combine with or — "anything touching billing or payments"
+is the question people actually ask. Owners and tags ignore case, and `-o @ann` works as well as
+`-o ann`.
+
+`--root` slices the plan to one branch and hands the slice to the same renderer, which is why it
+costs nothing: progress rollups, filters, and drawings all work on a plan, and a branch of a plan is
+a plan.
+
 ## What it is not
 
 There are no WIP limits, no swimlanes, no drag and drop, and no state that lives anywhere but the

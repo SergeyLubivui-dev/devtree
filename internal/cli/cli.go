@@ -69,6 +69,8 @@ func (a *App) Execute(args []string) int {
 		err = a.cmdList(rest)
 	case "board", "b":
 		err = a.cmdBoard(rest)
+	case "open":
+		err = a.cmdOpen(rest)
 	case "archive":
 		err = a.cmdArchive(rest)
 	case "restore":
@@ -118,6 +120,7 @@ COMMANDS
   rm        Delete a task
   ls        Print the tree in the terminal
   board     Print the work grouped by status, like a board
+  open      Open what a task points at: its pull request, issue, or branch
   archive   Move finished work out of the active plan
   restore   Bring archived work back
   sync      Close tasks whose branch has already been merged
@@ -157,11 +160,23 @@ OTHER COMMANDS
   devtree done ID                 Mark a task done
   devtree mv ID PARENT|root       Re-parent a task
   devtree rm ID [--cascade]       Delete a task; --cascade takes its subtree
-  devtree ls [-s STATUS]          Print the tree, optionally filtered
-  devtree board [-s STATUS]       Print the work grouped by status
-  devtree render [--file F] [--quiet]
+  devtree ls [filters]            Print the tree
+  devtree board [filters]         Print the work grouped by status
+  devtree open ID [--print]       Open its pull request, issue, or branch
+  devtree render [--file F] [--root ID] [--quiet]
   devtree check [--strict]        --strict turns warnings into a failure
   devtree install hook|action|all
+
+FILTERS
+  ls and board take the same four, and they combine:
+
+    -s STATUS       only this status
+    -o OWNER        only this person's tasks
+    --tag a,b       only tasks carrying any of these tags
+    --root ID       start from this task instead of the whole plan
+
+  render takes --root too, so one branch of a plan can have a picture of its
+  own:  devtree render --root mvp --file docs/mvp.svg
 
 FINISHED WORK
   devtree archive                 Show which branches of the plan are finished

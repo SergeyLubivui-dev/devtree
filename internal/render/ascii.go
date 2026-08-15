@@ -8,9 +8,9 @@ import (
 )
 
 // ASCII draws the plan for a terminal. An empty filter shows everything;
-// otherwise only nodes with that status are printed, while the tree is still
-// walked in full so nothing below a hidden node disappears.
-func ASCII(t *tree.Tree, filter tree.Status) string {
+// otherwise only matching nodes are printed, while the tree is still walked in
+// full so nothing below a hidden node disappears with it.
+func ASCII(t *tree.Tree, filter Filter) string {
 	var b strings.Builder
 
 	var walk func(n *tree.Node, prefix string, last bool, depth int)
@@ -24,7 +24,7 @@ func ASCII(t *tree.Tree, filter tree.Status) string {
 			branch, childPrefix = "", ""
 		}
 
-		if filter == "" || n.Status == filter {
+		if filter.Match(n) {
 			var meta strings.Builder
 			if n.Branch != "" {
 				fmt.Fprintf(&meta, "  %s", n.Branch)
