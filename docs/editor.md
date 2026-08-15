@@ -6,12 +6,14 @@ devtree serve --open     # ...and open a browser at it
 devtree serve --port 8080
 ```
 
+In a container, add `--host 0.0.0.0` — see [the container](container.md#the-editor-from-the-container).
+
 The plan on the left, drawn on the right, live. Click a task to edit it; the drawing redraws as you
 save.
 
 ## What it is, and what it deliberately is not
 
-It is a **local editor**, not a service. It binds to the loopback interface and nothing else, it is
+It is a **local editor**, not a service. It binds to the loopback interface, it is
 started by a command and dies with it, and it stores nothing of its own: every change goes through
 the same domain rules as `devtree set` and lands in the same `.devtree/tree.yaml`. You can have the
 editor open in one window and a terminal in the other, edit in both, and neither loses a change —
@@ -19,6 +21,11 @@ the page listens for the file changing and reloads itself within a second.
 
 There is no account, no database, no sync, and no build step. The page is three files compiled into
 the binary, and the API is a handful of JSON endpoints.
+
+`--host` is the one way out of loopback, and it exists for containers, where loopback belongs to the
+container and a published port would reach nothing. Anywhere else it hands an editor with no
+authentication to whoever can reach the machine, which is why devtree says so on startup whenever
+the address is not `127.0.0.1`.
 
 ## The panes
 

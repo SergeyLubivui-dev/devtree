@@ -272,7 +272,7 @@ More: [docs/finished-work.md](docs/finished-work.md).
 | `restore ID [ID...]` | Brings archived work back |
 | `sync [--apply]` | Closes tasks whose branch git has already merged |
 | `history [--limit N]` | Reads past versions of the plan out of git and shows how far along it was |
-| `serve [--port N] [--open]` | Opens the local editor on 127.0.0.1 |
+| `serve [--port N] [--host H] [--open]` | Opens the local editor on 127.0.0.1 |
 | `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
 | `install hook\|action\|gitlab\|all` | Installs the pre-commit hook, the GitHub Action, or the GitLab job |

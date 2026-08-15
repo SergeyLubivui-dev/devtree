@@ -11,6 +11,33 @@ docker run --rm -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree add "Search fi
 `/work` is where the repository gets mounted. Nothing is baked into the image, and the container
 writes only what devtree writes: the plan file and the outputs it names.
 
+## The editor, from the container
+
+```bash
+docker run --rm -p 9312:9312 -v "$PWD:/work" \
+  ghcr.io/sergeylubivui-dev/devtree serve --host 0.0.0.0
+```
+
+Then open <http://127.0.0.1:9312/>.
+
+`--host 0.0.0.0` is not optional here, and it is worth knowing why. The editor binds to loopback by
+default, and inside a container loopback is the *container's* — a published port would arrive at an
+interface nobody is listening on. Binding to every interface is what makes the published port reach
+it.
+
+That also means the usual protection is gone: the editor has no authentication, so anything that can
+reach the port can edit the plan. Published as `-p 9312:9312` it is reachable from your network, not
+just your machine. Bind it to your own address if you want the container's behaviour and loopback's
+reach:
+
+```bash
+docker run --rm -p 127.0.0.1:9312:9312 -v "$PWD:/work" \
+  ghcr.io/sergeylubivui-dev/devtree serve --host 0.0.0.0
+```
+
+devtree prints a warning whenever it is bound anywhere but loopback, so the terminal always says
+which of the two you got.
+
 ## Tags
 
 | Tag | Follows |

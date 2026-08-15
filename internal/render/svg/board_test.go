@@ -1,6 +1,7 @@
 package svg
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -141,4 +142,69 @@ func TestRenderForPicksBothLayoutAndPalette(t *testing.T) {
 	if !strings.Contains(treeDoc, "dt-card-") {
 		t.Error("a plain .svg file should get the tree")
 	}
+}
+
+func TestBoardShrinksRatherThanStretchingOneColumn(t *testing.T) {
+	// Late in a project every status but one empties out. The board that is
+	// left should be a column, not a column stretched across the whole canvas.
+	plan := tree.New("Nearly there")
+	for _, n := range []*tree.Node{
+		{ID: "a", Title: "Ship it", Status: tree.Done},
+		{ID: "b", Title: "Write it down", Status: tree.Done},
+	} {
+		if err := plan.Add(n); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	one := widthOf(t, Board(plan, Light))
+	if one > 340 {
+		t.Errorf("a one-column board is %.0f wide", one)
+	}
+
+	// Add work in other statuses and the board opens back up to its full size.
+	for _, n := range []*tree.Node{
+		{ID: "c", Title: "Next up", Status: tree.Todo},
+		{ID: "d", Title: "In flight", Status: tree.InProgress},
+	} {
+		if err := plan.Add(n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	three := widthOf(t, Board(plan, Light))
+	if three <= one {
+		t.Errorf("three columns (%.0f) should be wider than one (%.0f)", three, one)
+	}
+	if three != boardW {
+		t.Errorf("a board that fits should keep the usual width, got %.0f", three)
+	}
+
+	// And a board with more statuses than fit grows instead of squeezing.
+	for _, n := range []*tree.Node{
+		{ID: "e", Title: "Stuck", Status: tree.Blocked},
+		{ID: "f", Title: "Never mind", Status: tree.Dropped},
+	} {
+		if err := plan.Add(n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if five := widthOf(t, Board(plan, Light)); five < three {
+		t.Errorf("five columns (%.0f) should not be narrower than three (%.0f)", five, three)
+	}
+}
+
+// widthOf reads the width the drawing declares for itself.
+func widthOf(t *testing.T, doc string) float64 {
+	t.Helper()
+	const key = `width="`
+	i := strings.Index(doc, key)
+	if i < 0 {
+		t.Fatal("the drawing declares no width")
+	}
+	rest := doc[i+len(key):]
+	var w float64
+	if _, err := fmt.Sscanf(rest[:strings.Index(rest, `"`)], "%f", &w); err != nil {
+		t.Fatal(err)
+	}
+	return w
 }

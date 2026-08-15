@@ -15,6 +15,8 @@ const (
 	boardCardH = 44.0
 	boardGap   = 8.0
 	minColW    = 150.0
+	maxColW    = 260.0
+	boardW     = 800.0
 )
 
 // Board draws the plan as columns of work, one per status.
@@ -29,16 +31,21 @@ const (
 func Board(t *tree.Tree, th Theme) string {
 	columns := boardColumns(t)
 
-	width := 800.0
-	if n := float64(len(columns)); n > 0 {
-		if needed := pad*2 + n*minColW + (n-1)*colGutter; needed > width {
-			width = needed
-		}
+	// A column is sized for the card in it, not for the canvas. Columns share a
+	// board of the usual width, but they stop growing at a comfortable reading
+	// measure and stop shrinking at a legible one — and the board then takes
+	// whatever width that leaves it. Late in a project, when every status but
+	// one is empty, the alternative is a single column stretched across eight
+	// hundred pixels with a short title floating in it.
+	colW := maxColW
+	n := float64(len(columns))
+	if n > 0 {
+		colW = clampWidth((boardW-pad*2-(n-1)*colGutter)/n, minColW, maxColW)
 	}
 
-	colW := minColW
-	if n := float64(len(columns)); n > 0 {
-		colW = (width - pad*2 - (n-1)*colGutter) / n
+	width := boardW
+	if n > 0 {
+		width = pad*2 + n*colW + (n-1)*colGutter
 	}
 
 	tallest := 0
@@ -186,4 +193,16 @@ func boardCardAt(b *strings.Builder, c boardCard, column, arrival int, x, y, w f
 	if c.parent != "" {
 		draw.Text(b, draw.Clip(c.parent, available, 10), x+14, y+34, 10, th.Muted, "", "")
 	}
+}
+
+// clampWidth keeps a measurement inside a range. Named rather than inlined
+// because the reason it exists is the comment above its one caller.
+func clampWidth(v, lo, hi float64) float64 {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
 }

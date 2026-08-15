@@ -14,6 +14,9 @@ All notable changes to this project are documented here. The format follows
   nothing of its own, and every change goes through the same domain rules and lands in the same
   plan file the command line writes, so the editor and a terminal can be used in the same minute.
   The page listens for the file changing, so an edit made in either shows up in the other.
+- `devtree serve --host` for running the editor from the container, where loopback belongs to the
+  container and a published port would otherwise reach nothing. Binding anywhere but `127.0.0.1`
+  prints a warning, because the editor has no authentication.
 - The editor's motion is the Transitions.dev set, each snippet doing a job: a pill slides between
   tabs, the status menu drops from its control, the theme icon swaps with a blur, a check draws
   itself after a save, a skeleton holds the layout while a drawing is fetched, the title shimmers
@@ -34,6 +37,9 @@ All notable changes to this project are documented here. The format follows
   block is still written, still native on GitHub and GitLab, and still one link away in `TREE.md` —
   it is simply no longer what a visitor meets first. This repository now renders into `TREE.md`
   rather than injecting into its own README.
+- The board sizes its columns for the cards in them rather than for the canvas. Late in a project,
+  when every status but one has emptied out, the board is now a column instead of one column
+  stretched across the whole drawing.
 
 ## [0.5.0] — 2026-08-16
 

@@ -73,12 +73,21 @@ func (s *Server) Handler() http.Handler {
 	return mux
 }
 
-// ListenAndServe starts the editor on the loopback interface.
+// DefaultHost is the only interface an editor with no authentication has any
+// business listening on.
+const DefaultHost = "127.0.0.1"
+
+// ListenAndServe starts the editor.
 //
-// The address is not configurable beyond the port on purpose: an editor with
-// no authentication has no business listening on anything but this machine.
-func (s *Server) ListenAndServe(port int) error {
-	addr := fmt.Sprintf("127.0.0.1:%d", port)
+// The host is a knob rather than a constant for exactly one reason: inside a
+// container, loopback means the container's own loopback, and a published port
+// would reach nothing. Anywhere else, changing it hands an unauthenticated
+// editor to the network, which is why the CLI says so out loud.
+func (s *Server) ListenAndServe(host string, port int) error {
+	if host == "" {
+		host = DefaultHost
+	}
+	addr := net.JoinHostPort(host, fmt.Sprint(port))
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -92,7 +101,8 @@ func (s *Server) ListenAndServe(port int) error {
 	return server.Serve(listener)
 }
 
-// URL is where a browser should be pointed.
+// URL is where a browser should be pointed. A server bound to every interface
+// is still reached from this machine over loopback, so that is what is shown.
 func URL(port int) string { return fmt.Sprintf("http://127.0.0.1:%d/", port) }
 
 // ---------------------------------------------------------------------------

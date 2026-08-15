@@ -37,6 +37,17 @@ COPY --from=build /out/devtree /usr/local/bin/devtree
 # /work is where the repository gets mounted. Nothing is baked into the image.
 WORKDIR /work
 
+# Only `devtree serve` listens, and only when asked. The port is declared here
+# so `docker run -P` and every tool that reads image metadata know which one it
+# is; running the editor still takes an explicit command:
+#
+#   docker run --rm -p 9312:9312 -v "$PWD:/work" ghcr.io/sergeylubivui-dev/devtree \
+#     serve --host 0.0.0.0
+#
+# --host is required because a container's loopback is its own: bound to
+# 127.0.0.1, the editor would be unreachable from the published port.
+EXPOSE 9312
+
 # git refuses to work in a directory owned by someone else, which is exactly
 # what a bind-mounted repository looks like from inside a container.
 RUN git config --global --add safe.directory '*'
