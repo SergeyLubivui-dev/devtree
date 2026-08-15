@@ -1,0 +1,6 @@
+# Line endings are LF everywhere. Go tooling treats a CRLF file as unformatted,
+# and the shell scripts devtree installs have to run on Linux runners.
+* text=auto eol=lf
+
+# devtree: a flat task list merges line by line
+.devtree/tree.yaml merge=union

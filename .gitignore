@@ -1,0 +1,16 @@
+# Build output. The binary is named after the module, so it lands here on a
+# plain `go build` with no -o flag.
+/devtree
+/devtree.exe
+/dist/
+
+# Test and coverage artifacts
+*.test
+*.out
+coverage.txt
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
