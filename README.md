@@ -328,9 +328,10 @@ The plan lists its own output files, and the **name decides the drawing**:
 | `docs/tree.svg` | devtree's own drawing of the tree, light palette |
 | `docs/tree-dark.svg` | the same, dark palette |
 | `docs/board.svg` | the board |
+| `docs/plan.html` | a page you can click: links, filters, tooltips |
 
 ```yaml
-outputs: "README.md, docs/tree.svg, docs/tree-dark.svg, docs/board.svg"
+outputs: "README.md, docs/tree.svg, docs/tree-dark.svg, docs/board.svg, docs/plan.html"
 ```
 
 Everything outside the markers is left exactly as you wrote it, and re-rendering an unchanged plan
@@ -344,6 +345,18 @@ get a still picture.
 
 File naming rules, palettes, the animation vocabulary, and the content security policy all of it has
 to survive: [docs/svg-output.md](docs/svg-output.md).
+
+### The one thing a diagram cannot do
+
+Neither backend can carry a link: GitHub's Mermaid ignores `click`, and an SVG served as an image is
+sandboxed. So there is a third one. Name an output `.html` and devtree writes a page where every
+task that points somewhere **is** a link to its pull request, issue, or branch — with a tree view, a
+board view, filters by status, owner and tag, and notes as tooltips.
+
+It is one self-contained file with no script, no fonts and no images: the whole interface is CSS
+built on `:has()`. Open it from a checkout, drop it on a shared drive, or point GitHub Pages at it.
+This repository's own is [docs/plan.html](docs/plan.html) — see
+[docs/html-export.md](docs/html-export.md).
 
 ---
 
@@ -407,7 +420,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-███████████████░░░░░ **18 / 24** tasks done
+███████████████░░░░░ **19 / 24** tasks done
 
 ```mermaid
 flowchart TD
@@ -429,7 +442,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>9/11</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>10/11</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["✔ Filter ls by owner and tag"]:::done
     n_v0_2 --> n_focus
@@ -441,7 +454,7 @@ flowchart TD
     n_v0_2 --> n_svg_output
     n_svg_output["✔ Native SVG output with embedded icons"]:::done
     n_v0_2 --> n_html_export
-    n_html_export["☐ Interactive HTML export"]:::todo
+    n_html_export["✔ Interactive HTML export"]:::done
     n_v0_2 --> n_animation
     n_animation["✔ Animation in the SVG output"]:::done
     n_v0_2 --> n_board

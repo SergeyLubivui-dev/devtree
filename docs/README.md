@@ -10,6 +10,7 @@ thing does, and why it was built that way.
 | [The board](board.md) | Working by status instead of by structure |
 | [Finished work](finished-work.md) | Archiving, restoring, and closing tasks from merged branches |
 | [Automation](automation.md) | The pre-commit hook and the GitHub Action, line by line |
+| [The HTML export](html-export.md) | The page you can click: links, filters, tooltips |
 | [SVG output](svg-output.md) | File naming, palettes, the animation vocabulary, and the CSP it survives |
 | [The container](container.md) | Running devtree without installing anything |
 | [Architecture](architecture.md) | The layering, the rules that hold it, and how it is tested |

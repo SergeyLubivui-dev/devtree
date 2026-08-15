@@ -82,7 +82,8 @@ web fonts (system stack only), no images, no scripts, and no external references
 constraint was measured against the live headers before the renderer was written, not assumed.
 
 The same sandbox is why an SVG rendered as an image cannot carry links. Branch and issue links live
-in the collapsed table under the Mermaid block instead.
+in the collapsed table under the Mermaid block instead — or in [the HTML export](html-export.md),
+which exists precisely because neither diagram backend can be clicked.
 
 ## Text without font metrics
 

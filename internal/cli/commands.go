@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/SergeyLubivui-dev/devtree/internal/render"
+	"github.com/SergeyLubivui-dev/devtree/internal/render/html"
 	"github.com/SergeyLubivui-dev/devtree/internal/render/svg"
 	"github.com/SergeyLubivui-dev/devtree/internal/scaffold"
 	"github.com/SergeyLubivui-dev/devtree/internal/store"
@@ -63,6 +64,8 @@ func (a *App) writeOutputs(root string, t *tree.Tree, quiet bool) error {
 		switch strings.ToLower(filepath.Ext(output)) {
 		case ".svg":
 			state, err = writeFile(path, svg.RenderFor(t, output))
+		case ".html", ".htm":
+			state, err = writeFile(path, html.Render(t))
 		default:
 			state, err = writeBlock(path, block)
 		}

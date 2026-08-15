@@ -17,6 +17,13 @@ All notable changes to this project are documented here. The format follows
 - `--root` on `render`, so one branch of a plan can have a picture of its own:
   `devtree render --root mvp --file docs/mvp.svg`. It works by slicing the plan into a smaller plan,
   which is why every renderer, rollup, and filter supports it without knowing it exists.
+- An HTML export. Name an output `.html` and devtree writes one self-contained page where every task
+  that points somewhere is a link to its pull request, issue, or branch — the one thing neither
+  diagram backend can do, because GitHub's Mermaid ignores `click` and an SVG served as an image is
+  sandboxed. The page carries a tree view, a board view, filters by status, owner and tag, and notes
+  as tooltips. No script, no fonts, no images: the whole interface is CSS built on `:has()`.
+- `.editorconfig`, a security policy, issue forms, and a pull request template, all under `.github/`
+  where GitHub looks for them.
 
 ### Changed
 
@@ -26,15 +33,14 @@ All notable changes to this project are documented here. The format follows
 - The README is the tour again: the deep sections it had grown — the full file format, the hook line
   by line, SVG naming and motion — now live in `docs/`, which is where they belong and where they
   are not duplicated.
-
-### Added
-
-- `.editorconfig`, a security policy, issue forms, and a pull request template, all under `.github/`
-  where GitHub looks for them.
+- CONTRIBUTING is organised around scenarios rather than rules: a typo, a bug, a new field, a new
+  command, a change to a drawing, a translation.
 
 ### Fixed
 
 - The architecture picture was missing `internal/vcs`, which arrived with `devtree sync`.
+
+## [0.3.0] — 2026-08-15
 
 Finished work can leave the plan, git can close tasks on its own, the pictures move where movement
 means something, and none of it needs anything installed.

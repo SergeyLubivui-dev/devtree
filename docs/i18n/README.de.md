@@ -337,6 +337,7 @@ zeichnet, hat diese Grenze nicht. Der Dateiname entscheidet alles:
 | `docs/assets/tree.svg` | der Baum, helle Palette |
 | `docs/assets/tree-dark.svg` | der Baum, dunkle Palette |
 | `docs/assets/board.svg` | das Board |
+| `docs/plan.html` | eine Seite, die man anklicken kann |
 
 Bewegt wird nur, was Information trägt: ein Strich wandert die Kante entlang, die zu laufender Arbeit
 führt; ein Symbol dreht sich, wenn die Aufgabe in Arbeit ist, und atmet, wenn sie blockiert ist — der
@@ -347,6 +348,18 @@ Datei zieht ein Kartenband endlos vorbei. Alles andere steht still.
 Wer vom System weniger Bewegung anfordert, bekommt ein stehendes Bild. Beim Drucken werden die
 Animationen ganz abgeschaltet: ein Renderer, der das erste Bild einer Einblendung einfriert, würde
 sonst eine leere Karte aufs Papier bringen.
+
+### Das eine, was kein Diagramm kann
+
+Weder Mermaid noch ein als Bild ausgeliefertes SVG kann einen Link tragen: das erste ignoriert
+`click`, das zweite läuft in einer Sandbox. Deshalb gibt es einen dritten Ausgabeweg. Nenn eine
+Ausgabe `.html`, und jede Aufgabe, die irgendwohin zeigt, **wird** zum Link auf ihren Pull Request,
+ihr Issue oder ihren Branch. Dazu Baum- und Board-Ansicht, Filter nach Status, Person und Tag, und
+Notizen als Tooltip.
+
+Es ist eine einzige, in sich geschlossene Datei: kein Skript, keine Schriften, keine Bilder — die
+gesamte Bedienung ist CSS mit `:has()`. Beispiel: [docs/plan.html](../plan.html), Details in
+[docs/html-export.md](../html-export.md).
 
 Die Glyphen stammen aus [Reicon](https://reicon.dev) (MIT) als Pfaddaten in `internal/icons` — siehe
 [NOTICE](../../NOTICE). Beim Zeichnen wird nichts nachgeladen, und das Binary hat weiterhin keine

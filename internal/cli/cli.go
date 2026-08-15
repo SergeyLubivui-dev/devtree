@@ -196,6 +196,7 @@ OUTPUT FILES
     docs/tree-dark.svg   the tree, dark palette
     docs/board.svg       the board
     docs/plan.board.svg  the board, named something else
+    docs/plan.html       a page you can click: links, filters, tooltips
 
 STATUSES
   `+statusHelp()+`

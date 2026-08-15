@@ -341,6 +341,7 @@ n'a pas ce plafond. Le nom du fichier décide de tout :
 | `docs/assets/tree.svg` | l'arbre, palette claire |
 | `docs/assets/tree-dark.svg` | l'arbre, palette sombre |
 | `docs/assets/board.svg` | le tableau |
+| `docs/plan.html` | une page sur laquelle on peut cliquer |
 
 Ne bouge que ce qui porte une information : un tiret parcourt l'arête qui mène à un travail en cours ;
 une icône tourne quand la tâche avance et respire quand elle est bloquée — le seul état pour lequel il
@@ -350,6 +351,18 @@ sans fin. Tout le reste est immobile.
 
 Qui demande moins d'animation à son système obtient une image fixe. À l'impression, les animations sont
 coupées : un moteur de rendu figé sur la première image d'un fondu imprimerait sinon une carte vide.
+
+### La seule chose qu'aucun diagramme ne sait faire
+
+Ni Mermaid ni un SVG servi comme image ne peut porter un lien : le premier ignore `click`, le second
+est en bac à sable. D'où un troisième format de sortie. Nommez un fichier `.html` et chaque tâche qui
+désigne quelque chose **devient** un lien vers sa pull request, son issue ou sa branche. S'y ajoutent
+la vue arbre et la vue tableau, des filtres par statut, personne et étiquette, et les notes en
+info-bulle.
+
+C'est un fichier autonome : aucun script, aucune police, aucune image — toute l'interface est du CSS
+bâti sur `:has()`. Exemple : [docs/plan.html](../plan.html), détails dans
+[docs/html-export.md](../html-export.md).
 
 Les glyphes proviennent de [Reicon](https://reicon.dev) (MIT), stockés comme données de chemin dans
 `internal/icons` — voir [NOTICE](../../NOTICE). Rien n'est téléchargé au moment du rendu, et le binaire

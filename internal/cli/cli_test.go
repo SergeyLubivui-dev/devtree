@@ -340,6 +340,31 @@ func TestBoardOutputFileIsChosenByName(t *testing.T) {
 	}
 }
 
+func TestHTMLOutputIsAPageYouCanClick(t *testing.T) {
+	h := newHarness(t)
+	h.run("init", "--project", "Demo", "--repo", "https://github.com/acme/pay",
+		"--empty", "--outputs", "TREE.md, docs/plan.html")
+	h.run("add", "Authentication", "-s", "wip", "-i", "12", "-o", "ann")
+
+	page := h.read("docs/plan.html")
+	if !strings.HasPrefix(page, "<!doctype html>") {
+		t.Error("the .html output should be a page, not a Mermaid block")
+	}
+	if !strings.Contains(page, `href="https://github.com/acme/pay/issues/12"`) {
+		t.Error("a task with an issue should be a link")
+	}
+	if !strings.Contains(page, "Authentication") {
+		t.Error("the task is missing")
+	}
+	if strings.Contains(h.read("TREE.md"), "<!doctype") {
+		t.Error("the Markdown output was replaced by a page")
+	}
+
+	if out := h.run("render"); strings.Count(out, "unchanged") != 2 {
+		t.Errorf("a second render should leave both files alone:\n%s", out)
+	}
+}
+
 func TestCheckWarnsWithoutFailing(t *testing.T) {
 	h := newHarness(t)
 	h.run("init", "--empty")
