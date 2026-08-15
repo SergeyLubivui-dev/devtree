@@ -6,6 +6,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A native SVG renderer. Name an output `.svg` and devtree draws the plan itself instead of emitting
+  a Mermaid block: status glyphs, a progress bar and ratio on every parent, branch / issue / pull
+  request / owner / tags under each title, a status key, and rounded elbow connectors. The output
+  format follows the file extension, so `outputs` stays a list of destinations rather than a list of
+  settings.
+- Light and dark palettes, chosen by file name: an output ending in `-dark.svg` renders dark. Point
+  a `<picture>` at the pair and GitHub switches it with the reader's theme.
+- `internal/icons`, holding twelve glyph paths vendored from Reicon (MIT, see NOTICE). No network
+  access at render time and no new dependency — the binary is still self-contained.
+
+### Fixed
+
+- Markdown injection no longer treats prose that *mentions* the `devtree:begin` / `devtree:end`
+  markers as the region to replace. Only markers that start their own line count, so a README that
+  documents devtree can safely be a devtree output itself.
+
 ## [0.1.0] — 2026-08-15
 
 First public release.

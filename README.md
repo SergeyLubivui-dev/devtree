@@ -130,7 +130,7 @@ transliterated so the ID stays typeable. Pass `--id` when you want to choose one
 
 | Command | What it does |
 |---|---|
-| `init [--project N] [--repo URL] [--outputs F] [--hook] [--action] [--empty]` | Creates `.devtree/tree.yaml`, `.gitattributes`, and the first diagram |
+| `init [--project N] [--repo URL] [--outputs F] [--hook] [--action] [--empty]` | Creates `.devtree/tree.yaml`, `.gitattributes`, and the first diagram. `--outputs` takes any mix of `.md` and `.svg` files |
 | `add "Title" [-p ID] [-s STATUS] [-b BRANCH] [-i N] [--pr N] [-o WHO] [--tags a,b] [-n NOTE] [--id ID]` | Adds a task |
 | `set ID [--title T] [-s ...] [-p ...] [...]` | Changes fields on a task; only the flags you pass are touched |
 | `done ID [ID...]` | Marks tasks done |
@@ -230,17 +230,57 @@ and which survive a fork or a move to another host.
 
 ---
 
+## Drawing to SVG
+
+Mermaid has a ceiling. GitHub renders it with a strict sanitizer and a page-level CSP, so a diagram
+node cannot carry an icon or a link no matter how the label is written. A file devtree draws itself
+has no such ceiling — so name an output `.svg` and you get the native renderer instead:
+
+```bash
+devtree init --outputs "TREE.md, docs/tree.svg, docs/tree-dark.svg"
+```
+
+The format follows the file extension, and the palette follows the file name: anything ending in
+`-dark.svg` is rendered with the dark palette. Nothing is hidden — `outputs` lists exactly the files
+that get written.
+
+Then point a `<picture>` at the pair, and GitHub switches it with the reader's theme:
+
+```html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/tree-dark.svg">
+  <img alt="Development tree" src="docs/tree.svg">
+</picture>
+```
+
+What the renderer adds over the Mermaid block: status glyphs on a 24×24 grid, a progress bar and a
+completion ratio on every parent, branch, issue, pull request, owner and tags on a second line under
+each title, a status key along the bottom, and rounded elbow connectors that stay readable when a
+milestone grows a dozen children.
+
+The output is self-contained by design — no external fonts, no images, no script, no CSS custom
+properties. GitHub serves repository SVGs under `default-src 'none'; sandbox`, and everything in the
+file survives that. The one thing sandboxing costs is interactivity: an SVG rendered as an image
+cannot carry links, so branch and issue links still live in the table under the Mermaid block.
+
+Glyphs are vendored from [Reicon](https://reicon.dev) (MIT) as path data in `internal/icons` — see
+[NOTICE](NOTICE). Nothing is fetched at render time, and the binary still has no dependencies.
+
+---
+
 ## How it is built
 
 Four layers, and the dependencies only ever point inward:
 
 ```text
-main.go                  ~20 lines: parse nothing, print nothing, just wire and exit
-└── internal/cli         flags, dispatch, and every line the user sees
-    ├── internal/store   the strict YAML subset: parse, marshal, atomic save
-    ├── internal/render  Mermaid, Markdown, ASCII — pure string functions
-    ├── internal/scaffold  hook, workflow, and .gitattributes templates
-    └── internal/tree    the domain: nodes, parents, statuses, validation
+main.go                      ~20 lines: parse nothing, print nothing, just wire and exit
+└── internal/cli             flags, dispatch, and every line the user sees
+    ├── internal/store       the strict YAML subset: parse, marshal, atomic save
+    ├── internal/render      Mermaid, Markdown, ASCII — pure string functions
+    │   └── render/svg       the native drawing: layout, cards, connectors, themes
+    │       └── internal/icons   vendored glyph paths, no I/O of any kind
+    ├── internal/scaffold    hook, workflow, and .gitattributes templates
+    └── internal/tree        the domain: nodes, parents, statuses, validation
 ```
 
 `internal/tree` imports nothing but the standard library. It does not know that a file format
@@ -263,8 +303,11 @@ go vet ./...
 
 - The storage format is a strict subset of YAML — a flat list of scalar fields. Anchors, multi-line
   block scalars, and nested mappings are not supported and will be rejected with a line number.
-- GitHub's Mermaid renderer ignores `click` directives, so a node in the diagram cannot itself be a
-  link. The links live in the collapsed table underneath instead.
+- Nothing rendered into a README is clickable: GitHub's Mermaid ignores `click` directives, and an
+  SVG served as an image is sandboxed. Links live in the collapsed table under the Mermaid block.
+  An interactive HTML export is on the plan above.
+- Text in the SVG output is measured by estimate rather than by font metrics — shipping real metrics
+  would mean shipping a font. Cards are sized a few pixels generously to compensate.
 - Very wide trees (hundreds of nodes) render slowly in the browser. Split them across several output
   files with `--outputs`.
 
@@ -272,14 +315,22 @@ go vet ./...
 
 ## devtree's own plan
 
-Rendered by devtree, from this repository, on every push:
+Both of these come from the same `.devtree/tree.yaml` in this repository, regenerated on every
+push. First the SVG backend — GitHub swaps the file when you switch themes:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/tree-dark.svg">
+  <img alt="devtree's own development tree" src="docs/tree.svg">
+</picture>
+
+And the same plan as a Mermaid block, injected straight into this README:
 
 <!-- devtree:begin -->
 <!-- Generated by devtree. Do not edit by hand: edit .devtree/tree.yaml instead. -->
 
 ## 🌳 devtree
 
-██████████░░░░░░░░░░ **8 / 16** tasks done
+██████████░░░░░░░░░░ **9 / 18** tasks done
 
 ```mermaid
 flowchart TD
@@ -301,7 +352,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["☐ v0.2 - sharper day-to-day use<br/><i>0/4</i>"]:::todo
+    n_v0_2["☐ v0.2 - sharper day-to-day use<br/><i>1/6</i>"]:::todo
     n_v0_2 --> n_filters
     n_filters["☐ Filter ls by owner and tag"]:::todo
     n_v0_2 --> n_focus
@@ -310,6 +361,10 @@ flowchart TD
     n_open["☐ devtree open ID - jump to the issue or PR"]:::todo
     n_v0_2 --> n_history
     n_history["☐ Progress history from git log"]:::todo
+    n_v0_2 --> n_svg_output
+    n_svg_output["✔ Native SVG output with embedded icons"]:::done
+    n_v0_2 --> n_html_export
+    n_html_export["☐ Interactive HTML export"]:::todo
     n_distribution["☐ Distribution<br/><i>1/3</i>"]:::todo
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done
@@ -326,3 +381,6 @@ flowchart TD
 ## License
 
 [MIT](LICENSE) © SergeyLubivui-dev
+
+The vector glyphs in `internal/icons` are vendored from [Reicon](https://reicon.dev), also MIT —
+see [NOTICE](NOTICE).

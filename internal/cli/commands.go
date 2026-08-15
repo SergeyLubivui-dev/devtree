@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/SergeyLubivui-dev/devtree/internal/render"
+	"github.com/SergeyLubivui-dev/devtree/internal/render/svg"
 	"github.com/SergeyLubivui-dev/devtree/internal/scaffold"
 	"github.com/SergeyLubivui-dev/devtree/internal/store"
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
@@ -44,20 +45,55 @@ func (a *App) saveAndRender(root string, t *tree.Tree, quiet bool) error {
 	return a.writeOutputs(root, t, quiet)
 }
 
-// writeOutputs injects the generated block into every configured output file.
+// writeOutputs refreshes every configured output file.
+//
+// The format follows the file extension, so `outputs` reads as a list of
+// destinations rather than a list of settings: .svg gets the native renderer,
+// anything else gets the Mermaid block injected between markers.
 func (a *App) writeOutputs(root string, t *tree.Tree, quiet bool) error {
 	block := render.Block(t)
+
 	for _, output := range t.Outputs {
 		path := filepath.Join(root, filepath.FromSlash(output))
-		state, err := writeBlock(path, block)
+
+		var (
+			state string
+			err   error
+		)
+		switch strings.ToLower(filepath.Ext(output)) {
+		case ".svg":
+			state, err = writeFile(path, svg.Render(t, svg.ThemeForFilename(output)))
+		default:
+			state, err = writeBlock(path, block)
+		}
 		if err != nil {
 			return fmt.Errorf("%s: %w", output, err)
 		}
 		if !quiet {
-			fmt.Fprintf(a.Out, "  %-20s %s\n", output, state)
+			fmt.Fprintf(a.Out, "  %-24s %s\n", output, state)
 		}
 	}
 	return nil
+}
+
+// writeFile replaces a whole generated file and reports what happened to it.
+//
+// Identical content is left alone rather than rewritten: that is what lets the
+// CI check treat "the working tree changed" as "the diagram is stale".
+func writeFile(path, content string) (string, error) {
+	existing, err := os.ReadFile(path)
+	switch {
+	case os.IsNotExist(err):
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return "", err
+		}
+		return "created", os.WriteFile(path, []byte(content), 0o644)
+	case err != nil:
+		return "", err
+	case string(existing) == content:
+		return "unchanged", nil
+	}
+	return "updated", os.WriteFile(path, []byte(content), 0o644)
 }
 
 // writeBlock updates one file and reports what happened to it.

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/SergeyLubivui-dev/devtree/internal/render/svg"
 	"github.com/SergeyLubivui-dev/devtree/internal/store"
 )
 
@@ -259,6 +260,43 @@ func TestRenderFileOverrideIsNotSaved(t *testing.T) {
 	}
 	if out := h.run("outputs"); strings.TrimSpace(out) != "TREE.md" {
 		t.Fatalf("the override leaked into the saved plan: %q", out)
+	}
+}
+
+func TestSVGOutputsAreChosenByExtension(t *testing.T) {
+	h := newHarness(t)
+	h.run("init", "--project", "Demo", "--outputs", "TREE.md, docs/tree.svg, docs/tree-dark.svg")
+	h.run("add", "Authentication", "-p", "mvp", "-s", "wip", "-b", "feat/auth")
+
+	markdown := h.read("TREE.md")
+	if !strings.Contains(markdown, "```mermaid") {
+		t.Error("the Markdown output should still get the Mermaid block")
+	}
+
+	light, dark := h.read("docs/tree.svg"), h.read("docs/tree-dark.svg")
+	for name, doc := range map[string]string{"tree.svg": light, "tree-dark.svg": dark} {
+		if !strings.HasPrefix(doc, "<svg") {
+			t.Errorf("%s does not start with an svg element", name)
+		}
+		if !strings.Contains(doc, "Authentication") {
+			t.Errorf("%s is missing the new task", name)
+		}
+		if strings.Contains(doc, "```mermaid") {
+			t.Errorf("%s got the Markdown block instead of a drawing", name)
+		}
+	}
+
+	// The -dark suffix is the whole configuration: same plan, other palette.
+	if light == dark {
+		t.Error("both SVG files rendered identically; the -dark suffix did nothing")
+	}
+	if !strings.Contains(dark, svg.Dark.Canvas) {
+		t.Error("tree-dark.svg is not using the dark palette")
+	}
+
+	out := h.run("render")
+	if strings.Count(out, "unchanged") != 3 {
+		t.Errorf("a second render should leave all three files alone, got:\n%s", out)
 	}
 }
 

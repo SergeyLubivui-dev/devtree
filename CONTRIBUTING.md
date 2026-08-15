@@ -35,8 +35,10 @@ The dependencies point inward, and pull requests are reviewed with that in mind:
 | Package | Holds | May import |
 |---|---|---|
 | `internal/tree` | nodes, parents, statuses, validation | standard library only |
+| `internal/icons` | vendored glyph paths | standard library only |
 | `internal/store` | the strict YAML subset: parse, marshal, save | `tree` |
 | `internal/render` | Mermaid, Markdown, ASCII — pure functions | `tree` |
+| `internal/render/svg` | the native drawing: layout, cards, themes | `tree`, `icons` |
 | `internal/scaffold` | hook, workflow, `.gitattributes` templates | — |
 | `internal/cli` | flags, dispatch, everything the user sees | all of the above |
 

@@ -3,7 +3,7 @@
 version: 1
 project: "devtree"
 repo: "https://github.com/SergeyLubivui-dev/devtree"
-outputs: "README.md"
+outputs: "README.md, docs/tree.svg, docs/tree-dark.svg"
 nodes:
   - id: "v0-1"
     title: "v0.1 - first release"
@@ -66,3 +66,12 @@ nodes:
     title: "GitLab CI template"
     status: "todo"
     parent: "distribution"
+  - id: "svg-output"
+    title: "Native SVG output with embedded icons"
+    status: "done"
+    parent: "v0-2"
+  - id: "html-export"
+    title: "Interactive HTML export"
+    status: "todo"
+    parent: "v0-2"
+    note: "clickable nodes, tooltips, filters"
