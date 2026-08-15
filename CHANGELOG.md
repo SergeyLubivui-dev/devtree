@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-16
+
+The plan can now tell you where it has been, and devtree meets you wherever you build.
+
 ### Added
 
 - `devtree history` reads past versions of the plan out of git and shows how far along it was each
@@ -172,7 +176,8 @@ First public release.
 - Validation covering duplicate IDs, dangling parents, cycles, unknown fields, and unknown statuses,
   with `check --strict` turning advisory warnings into a failure for CI.
 
-[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.1.0...v0.2.0
