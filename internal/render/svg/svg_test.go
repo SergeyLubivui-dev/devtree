@@ -195,6 +195,42 @@ func TestMotionMarksTheLivePathOnly(t *testing.T) {
 	}
 }
 
+func TestBlockedWorkBreathesAndSettledWorkDoesNot(t *testing.T) {
+	doc := Render(sample(t), Light)
+
+	// One blocked node in the sample, and nothing else may pulse: the point of
+	// spending motion on it is that it is rare.
+	if n := strings.Count(doc, `class="`+"dt-pulse"+`"`); n != 1 {
+		t.Errorf("%d glyphs are pulsing, want exactly the blocked one", n)
+	}
+	if glyphMotion(tree.Done) != "" || glyphMotion(tree.Todo) != "" || glyphMotion(tree.Dropped) != "" {
+		t.Error("settled work should hold still")
+	}
+}
+
+func TestCardsArriveInSequence(t *testing.T) {
+	doc := Render(sample(t), Light)
+
+	if n := strings.Count(doc, `class="dt-rise"`); n != 5 {
+		t.Errorf("%d cards fade in, want one per node", n)
+	}
+	if !strings.Contains(doc, "animation-delay:0.00s") || !strings.Contains(doc, "animation-delay:0.04s") {
+		t.Errorf("the stagger is missing:\n%s", doc)
+	}
+
+	// The delay must stop growing, or a plan with sixty nodes would spend
+	// three seconds assembling itself.
+	big := tree.New("big")
+	for i := 0; i < 60; i++ {
+		if err := big.Add(&tree.Node{ID: fmt.Sprintf("n%d", i), Title: "Task"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if strings.Contains(Render(big, Light), "animation-delay:1.") {
+		t.Error("the entrance stagger should be capped well under a second")
+	}
+}
+
 func TestProgressBarsGrowIn(t *testing.T) {
 	doc := Render(sample(t), Light)
 	if !strings.Contains(doc, `class="dt-grow"`) {

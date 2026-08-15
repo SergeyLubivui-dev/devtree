@@ -313,10 +313,15 @@ zeichnet, hat diese Grenze nicht. Der Dateiname entscheidet alles:
 | `docs/tree-dark.svg` | der Baum, dunkle Palette |
 | `docs/board.svg` | das Board |
 
-Drei Dinge bewegen sich, und jedes davon trägt Information: ein Strich wandert die Kante entlang, die
-zu laufender Arbeit führt, das Symbol einer Aufgabe in Arbeit dreht sich, und ein Fortschrittsbalken
-wächst beim Laden einmal ein. Alles andere steht still. Wer vom System weniger Bewegung anfordert,
-bekommt ein stehendes Bild.
+Bewegt wird nur, was Information trägt: ein Strich wandert die Kante entlang, die zu laufender Arbeit
+führt; ein Symbol dreht sich, wenn die Aufgabe in Arbeit ist, und atmet, wenn sie blockiert ist — der
+eine Zustand, für den es sich lohnt, den Lesenden zu unterbrechen; ein Fortschrittsbalken wächst beim
+Laden einmal ein; Karten blenden nacheinander auf, statt alle gleichzeitig da zu sein. Oben in dieser
+Datei zieht ein Kartenband endlos vorbei. Alles andere steht still.
+
+Wer vom System weniger Bewegung anfordert, bekommt ein stehendes Bild. Beim Drucken werden die
+Animationen ganz abgeschaltet: ein Renderer, der das erste Bild einer Einblendung einfriert, würde
+sonst eine leere Karte aufs Papier bringen.
 
 Die Glyphen stammen aus [Reicon](https://reicon.dev) (MIT) als Pfaddaten in `internal/icons` — siehe
 [NOTICE](NOTICE). Beim Zeichnen wird nichts nachgeladen, und das Binary hat weiterhin keine

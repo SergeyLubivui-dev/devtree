@@ -118,8 +118,33 @@ func TestIconClassKeepsThePlacementTransform(t *testing.T) {
 	}
 }
 
+func TestEntranceStaggerIsCapped(t *testing.T) {
+	var early, late strings.Builder
+	OpenRise(&early, 1)
+	OpenRise(&late, 500)
+
+	if !strings.Contains(early.String(), "animation-delay:0.04s") {
+		t.Errorf("got %q", early.String())
+	}
+	// A plan with hundreds of nodes must not take minutes to finish appearing.
+	if !strings.Contains(late.String(), "animation-delay:0.70s") {
+		t.Errorf("the stagger should stop growing, got %q", late.String())
+	}
+}
+
+func TestPrintingAndReducedMotionStopEverything(t *testing.T) {
+	// A renderer that freezes the first frame of a fade-in would print a blank
+	// card, so printing has to switch the animations off entirely.
+	if !strings.Contains(Stylesheet, "print") {
+		t.Error("the stylesheet should disable animation for print")
+	}
+	if !strings.Contains(Stylesheet, "backwards") || strings.Contains(Stylesheet, "dt-rise .55s cubic-bezier(.2,.8,.2,1) both") {
+		t.Error("the entrance should end on the element's own style, not in the animation's last frame")
+	}
+}
+
 func TestStylesheetIsSafeAndSwitchable(t *testing.T) {
-	for _, want := range []string{ClassFlow, ClassGrow, ClassSpin, "prefers-reduced-motion"} {
+	for _, want := range []string{ClassFlow, ClassGrow, ClassSpin, ClassRise, ClassPulse, ClassMarquee, "prefers-reduced-motion"} {
 		if !strings.Contains(Stylesheet, want) {
 			t.Errorf("the stylesheet is missing %q", want)
 		}

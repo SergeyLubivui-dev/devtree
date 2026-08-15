@@ -432,13 +432,19 @@ Three things move, and each one is information rather than decoration:
 |---|---|
 | A dash travels down an edge | that edge leads into work that is in progress — it marks the live path through the plan |
 | A glyph turns | that task is in flight right now |
+| A glyph breathes | that task is blocked, the one state worth interrupting a reader for |
 | A bar grows in, once | how much of a milestone is finished |
+| A card fades up | it just arrived, in sequence with its neighbours — the picture assembles instead of appearing |
 
 Everything else holds still. The motion is CSS inside the file: GitHub serves repository SVGs under
 `default-src 'none'; style-src 'unsafe-inline'; sandbox`, which permits a stylesheet and forbids
 script, so declarative animation is the only kind that survives — and the only kind worth having in
-a diagram. Readers who ask their system for less motion get a still picture, because every animated
-element is drawn over something that already reads correctly without it.
+a diagram.
+
+Two rules keep it from ever costing a reader anything. Anyone whose system asks for less motion gets
+a still picture, because every animated element is drawn over something that already reads correctly
+without it. And printing switches the animations off outright: a renderer that froze the first frame
+of a fade-in would otherwise put a blank card on the page.
 
 The output is self-contained by design — no external fonts, no images, no script, no CSS custom
 properties. GitHub serves repository SVGs under `default-src 'none'; sandbox`, and everything in the

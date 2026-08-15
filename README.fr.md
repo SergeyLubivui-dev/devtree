@@ -317,10 +317,14 @@ n'a pas ce plafond. Le nom du fichier décide de tout :
 | `docs/tree-dark.svg` | l'arbre, palette sombre |
 | `docs/board.svg` | le tableau |
 
-Trois choses bougent, et chacune porte une information : un tiret parcourt l'arête qui mène à un
-travail en cours, l'icône d'une tâche en cours tourne, et une barre de progression grandit une fois
-au chargement. Tout le reste est immobile. Qui demande moins d'animation à son système obtient une
-image fixe.
+Ne bouge que ce qui porte une information : un tiret parcourt l'arête qui mène à un travail en cours ;
+une icône tourne quand la tâche avance et respire quand elle est bloquée — le seul état pour lequel il
+vaut la peine d'interrompre la lecture ; une barre de progression grandit une fois au chargement ; les
+cartes apparaissent en cascade plutôt que d'un bloc. En haut de ce fichier, un bandeau de cartes défile
+sans fin. Tout le reste est immobile.
+
+Qui demande moins d'animation à son système obtient une image fixe. À l'impression, les animations sont
+coupées : un moteur de rendu figé sur la première image d'un fondu imprimerait sinon une carte vide.
 
 Les glyphes proviennent de [Reicon](https://reicon.dev) (MIT), stockés comme données de chemin dans
 `internal/icons` — voir [NOTICE](NOTICE). Rien n'est téléchargé au moment du rendu, et le binaire

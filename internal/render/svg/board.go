@@ -75,9 +75,12 @@ func Board(t *tree.Tree, th Theme) string {
 		return b.String()
 	}
 
+	// A running index across all columns, so the cards cascade in reading
+	// order instead of every column starting over.
+	arrival := 0
 	for i, c := range columns {
 		x := pad + float64(i)*(colW+colGutter)
-		boardColumn(&b, c, i, x, colW, th)
+		arrival = boardColumn(&b, c, i, arrival, x, colW, th)
 	}
 
 	b.WriteString("</svg>\n")
@@ -141,16 +144,13 @@ func boardLabel(t *tree.Tree) string {
 	return name + " board"
 }
 
-// boardColumn draws a heading and the cards under it.
-func boardColumn(b *strings.Builder, c column, index int, x, w float64, th Theme) {
+// boardColumn draws a heading and the cards under it, and returns the arrival
+// index the next column should continue from.
+func boardColumn(b *strings.Builder, c column, index, arrival int, x, w float64, th Theme) int {
 	color := th.color(c.status)
 	y := headerH
 
-	glyphClass := ""
-	if c.status == tree.InProgress {
-		glyphClass = draw.ClassSpin
-	}
-	draw.IconClass(b, statusIcon[c.status], glyphClass, x, y-2, 15, color)
+	draw.IconClass(b, statusIcon[c.status], glyphMotion(c.status), x, y-2, 15, color)
 	draw.Text(b, draw.Clip(c.status.Label(), w-60, 11.5), x+20, y+10, 11.5, th.Text, "600", "")
 	draw.Text(b, fmt.Sprintf("%d", len(c.cards)), x+w, y+10, 11.5, th.Muted, "", "end")
 
@@ -160,11 +160,15 @@ func boardColumn(b *strings.Builder, c column, index int, x, w float64, th Theme
 
 	for i, card := range c.cards {
 		cardY := headerH + colHead + float64(i)*(boardCardH+boardGap)
-		boardCardAt(b, card, index, x, cardY, w, color, th)
+		boardCardAt(b, card, index, arrival+i, x, cardY, w, color, th)
 	}
+	return arrival + len(c.cards)
 }
 
-func boardCardAt(b *strings.Builder, c boardCard, column int, x, y, w float64, color string, th Theme) {
+func boardCardAt(b *strings.Builder, c boardCard, column, arrival int, x, y, w float64, color string, th Theme) {
+	draw.OpenRise(b, arrival)
+	defer draw.CloseGroup(b)
+
 	draw.RoundRect(b, x, y, w, boardCardH, 9, th.Card, th.Border)
 	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f)" clip-path="url(#dt-col-%d)">`, x, y, column)
 	draw.RoundRect(b, 0, 0, accentW, boardCardH, 0, color, "")

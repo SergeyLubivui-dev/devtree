@@ -62,8 +62,8 @@ func Render(t *tree.Tree, th Theme) string {
 	} else {
 		// Edges first so the cards sit on top of the line ends.
 		edges(&b, places, columns, th)
-		for _, p := range places {
-			card(&b, p, columns[p.depth], columnX(columns, p.depth), rowY(p.row), clipID(p.depth), th)
+		for i, p := range places {
+			card(&b, p, i, columns[p.depth], columnX(columns, p.depth), rowY(p.row), clipID(p.depth), th)
 		}
 	}
 
@@ -140,10 +140,14 @@ func header(b *strings.Builder, t *tree.Tree, th Theme, width float64) {
 		pad+barW+10, y+6, th.Muted, done, total)
 }
 
-// card draws one node.
-func card(b *strings.Builder, p placement, w, x, y float64, clip string, th Theme) {
+// card draws one node. The index only feeds the entrance stagger, so the
+// diagram assembles itself instead of arriving all at once.
+func card(b *strings.Builder, p placement, index int, w, x, y float64, clip string, th Theme) {
 	status := p.node.Status
 	color := th.color(status)
+
+	draw.OpenRise(b, index)
+	defer draw.CloseGroup(b)
 
 	draw.RoundRect(b, x, y, w, cardH, 9, th.Card, th.Border)
 
@@ -154,12 +158,7 @@ func card(b *strings.Builder, p placement, w, x, y float64, clip string, th Them
 	draw.RoundRect(b, 0, 0, accentW, cardH, 0, color, "")
 	b.WriteString(`</g>`)
 
-	// Work genuinely in flight turns; everything else holds still.
-	glyphClass := ""
-	if status == tree.InProgress {
-		glyphClass = draw.ClassSpin
-	}
-	draw.IconClass(b, statusIcon[status], glyphClass, x+13, y+(cardH-iconSize)/2, iconSize, color)
+	draw.IconClass(b, statusIcon[status], glyphMotion(status), x+13, y+(cardH-iconSize)/2, iconSize, color)
 
 	right := rightPad
 	if p.ratio != "" {
@@ -191,6 +190,22 @@ func card(b *strings.Builder, p placement, w, x, y float64, clip string, th Them
 		if p.done > 0 {
 			draw.RoundRectClass(b, draw.ClassGrow, bx, by, barW*float64(p.done)/float64(p.total), 4, 2, th.Done, "")
 		}
+	}
+}
+
+// glyphMotion decides whether a status glyph moves, and how.
+//
+// Two states earn motion and the other three do not: work in flight turns,
+// because it is turning; blocked work breathes, because it is the one state a
+// reader should not scroll past. Settled work holds still.
+func glyphMotion(s tree.Status) string {
+	switch s {
+	case tree.InProgress:
+		return draw.ClassSpin
+	case tree.Blocked:
+		return draw.ClassPulse
+	default:
+		return ""
 	}
 }
 

@@ -86,12 +86,12 @@ func fail(err error) {
 // hero introduces the project: wordmark, one sentence, and the promises that
 // the rest of the README has to keep.
 func hero(th svg.Theme) string {
-	const height = 196.0
+	const height = 250.0
 	var b strings.Builder
 	open(&b, height, th, "devtree")
 
-	draw.Icon(&b, "tree", pad+4, 30, 30, th.Done)
-	draw.Text(&b, "devtree", pad+44, 56, 31, th.Text, "700", "")
+	draw.Icon(&b, "tree", pad+4, 28, 32, th.Done)
+	draw.Text(&b, "devtree", pad+46, 56, 33, th.Text, "700", "")
 
 	draw.Text(&b, "Tree-shaped development planning that lives inside your repository.",
 		pad+4, 88, 13.5, th.Text, "", "")
@@ -105,37 +105,92 @@ func hero(th svg.Theme) string {
 		{"shield-check", "MIT licensed"},
 		{"code-square", "Go 1.22+"},
 	} {
-		x += chip(&b, x, 138, c.icon, c.label, th) + 10
+		x += chip(&b, x, 136, c.icon, c.label, th) + 10
 	}
 
-	// A skeleton of the real output, drawn without text: it says "this tool
-	// makes cards" before the reader has scrolled to a single example.
-	motif(&b, 560, 34, th)
+	// A strip of real cards, drifting past forever: the reader sees the visual
+	// language of the tool before scrolling to a single example.
+	marquee(&b, pad, 182, width-pad*2, 46, th)
 
 	return closeDoc(&b)
 }
 
-// motif is the miniature tree in the hero: three cards and two connectors, at
-// a size where words would be unreadable, so it carries none.
-func motif(b *strings.Builder, x, y float64, th svg.Theme) {
-	skeleton := func(id string, x, y, w float64, status, color, glyphClass string) {
-		card(b, id, x, y, w, 34, th, color)
-		draw.IconClass(b, status, glyphClass, x+11, y+9, 16, color)
-		draw.RoundRect(b, x+33, y+11, w-48, 4.5, 2.25, th.Muted, "")
-		draw.RoundRect(b, x+33, y+20, (w-48)*0.55, 4, 2, th.Track, "")
+// ticker is one card on the moving strip.
+type ticker struct {
+	icon, title, meta, color string
+	spin                     bool
+}
+
+// marquee draws an endless band of cards inside a clipped window.
+//
+// The trick is boring on purpose: lay two identical copies of the strip end to
+// end and slide the pair by exactly half its own width. When the animation
+// wraps, copy two is standing precisely where copy one began, so there is no
+// seam to catch. Nothing here needs script, which is what lets it survive
+// GitHub's sandbox.
+func marquee(b *strings.Builder, x, y, w, h float64, th svg.Theme) {
+	items := []ticker{
+		{"circle-half-dotted-check", "Authentication", "feat/auth · #12 · @ann", th.InProgress, true},
+		{"check-circle", "Stripe", "!44", th.Done, false},
+		{"lock-circle", "Password reset", "waiting on SMTP", th.Blocked, false},
+		{"clock-circle", "Apple Pay", "#51", th.Todo, false},
+		{"circle-half-dotted-check", "OAuth providers", "feat/oauth", th.InProgress, true},
+		{"check-circle", "Test suite", "", th.Done, false},
+		{"clock-circle", "Homebrew tap", "", th.Todo, false},
 	}
 
-	parent, child := x, x+112
-	skeleton("motif-parent", parent, y+46, 96, "circle-half-dotted-check", th.InProgress, draw.ClassSpin)
-	skeleton("motif-done", child, y, 104, "check-circle", th.Done, "")
-	skeleton("motif-todo", child, y+92, 104, "clock-circle", th.Todo, "")
+	const gap = 14.0
+	widths := make([]float64, len(items))
+	strip := 0.0
+	for i, it := range items {
+		text := draw.TextWidth(it.title, 12)
+		if m := draw.TextWidth(it.meta, 10); m > text {
+			text = m
+		}
+		widths[i] = text + 52
+		strip += widths[i] + gap
+	}
 
-	// The connectors carry the same travelling dash as the real diagram, so
-	// the first thing a reader sees is already the visual language of the tool.
-	for _, target := range []float64{y + 17, y + 109} {
-		d := elbowPath(parent+96, y+63, child, target)
-		fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5"/>`, d, th.Edge)
-		draw.FlowPath(b, d, th.InProgress)
+	fmt.Fprintf(b, `<clipPath id="dt-band"><rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="10"/></clipPath>`,
+		x, y, w, h)
+	fmt.Fprintf(b, `<g clip-path="url(#dt-band)">`)
+	fmt.Fprintf(b, `<g class="%s">`, draw.ClassMarquee)
+
+	// Two copies, laid end to end. The second one is what the eye is looking
+	// at while the first swings back around.
+	for copyIndex := 0; copyIndex < 2; copyIndex++ {
+		cursor := x + float64(copyIndex)*strip
+		for i, it := range items {
+			tickerCard(b, fmt.Sprintf("tick-%d-%d", copyIndex, i), it, cursor, y+3, widths[i], h-6, th)
+			cursor += widths[i] + gap
+		}
+	}
+
+	b.WriteString(`</g></g>`)
+
+	// The band fades out at both ends instead of stopping dead against the
+	// panel edge, so cards enter and leave rather than appearing and vanishing.
+	fmt.Fprintf(b, `<defs><linearGradient id="dt-fade-l" x1="0" x2="1">`+
+		`<stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s" stop-opacity="0"/></linearGradient>`+
+		`<linearGradient id="dt-fade-r" x1="0" x2="1">`+
+		`<stop offset="0" stop-color="%s" stop-opacity="0"/><stop offset="1" stop-color="%s"/></linearGradient></defs>`,
+		th.Canvas, th.Canvas, th.Canvas, th.Canvas)
+	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="34" height="%.1f" fill="url(#dt-fade-l)"/>`, x, y, h)
+	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="34" height="%.1f" fill="url(#dt-fade-r)"/>`, x+w-34, y, h)
+}
+
+// tickerCard is a card small enough to read at a glance while it moves.
+func tickerCard(b *strings.Builder, id string, it ticker, x, y, w, h float64, th svg.Theme) {
+	card(b, id, x, y, w, h, th, it.color)
+
+	glyph := ""
+	if it.spin {
+		glyph = draw.ClassSpin
+	}
+	draw.IconClass(b, it.icon, glyph, x+13, y+(h-16)/2, 16, it.color)
+	draw.Text(b, draw.Clip(it.title, w-48, 12), x+36, y+17, 12, th.Text, "600", "")
+	if it.meta != "" {
+		draw.Text(b, draw.Clip(it.meta, w-48, 10), x+36, y+30, 10, th.Muted, "", "")
 	}
 }
 
