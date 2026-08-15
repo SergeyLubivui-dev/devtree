@@ -18,7 +18,7 @@ import (
 //
 // The default is what a plain `go build` reports, so it tracks the last
 // release rather than sitting at whatever the first one happened to be.
-var Version = "0.2.0"
+var Version = "0.3.0"
 
 // App holds everything a command needs from the outside world.
 type App struct {
@@ -160,6 +160,8 @@ OTHER COMMANDS
   devtree ls [-s STATUS]          Print the tree, optionally filtered
   devtree board [-s STATUS]       Print the work grouped by status
   devtree render [--file F] [--quiet]
+  devtree check [--strict]        --strict turns warnings into a failure
+  devtree install hook|action|all
 
 FINISHED WORK
   devtree archive                 Show which branches of the plan are finished
@@ -179,8 +181,6 @@ OUTPUT FILES
     docs/tree-dark.svg   the tree, dark palette
     docs/board.svg       the board
     docs/plan.board.svg  the board, named something else
-  devtree check [--strict]        --strict turns warnings into a failure
-  devtree install hook|action|all
 
 STATUSES
   `+statusHelp()+`

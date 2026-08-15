@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-15
+
+Finished work can leave the plan, git can close tasks on its own, the pictures move where movement
+means something, and none of it needs anything installed.
+
 ### Added
 
 - `devtree archive`, `devtree archive --all`, `devtree archive ID`, `devtree archive --list`, and
@@ -17,6 +22,22 @@ All notable changes to this project are documented here. The format follows
   writes them with `--apply`, because git knows which branches were merged but not which were merged
   *finished*. `internal/vcs` is the only package that runs another program, and it is reached only
   from this command.
+- A container image on GHCR, `ghcr.io/sergeylubivui-dev/devtree`, for `amd64` and `arm64`: `latest`
+  follows the release, `edge` follows `main`. The Dockerfile cross-compiles rather than emulating,
+  and is built on Alpine rather than scratch so that `devtree sync` has a git to read.
+- Two more things that move, both carrying information rather than decoration: a glyph breathes when
+  a task is blocked, and cards fade up in sequence on load. The documentation banner carries an
+  endless strip of cards — two copies of the strip slid by half their own width, so the loop has no
+  seam.
+- A documentation folder with eight pages: getting started, the file format, the board, finished
+  work, automation, SVG output, the container, and the architecture. Generated pictures moved to
+  `docs/assets/`.
+
+### Fixed
+
+- Animations no longer risk printing a blank card: the entrance uses fill mode `backwards` so an
+  element ends on its own style, and printing switches every animation off, for renderers that
+  freeze the first frame of a fade-in.
 
 ## [0.2.0] — 2026-08-15
 
@@ -98,6 +119,7 @@ First public release.
 - Validation covering duplicate IDs, dangling parents, cycles, unknown fields, and unknown statuses,
   with `check --strict` turning advisory warnings into a failure for CI.
 
-[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/SergeyLubivui-dev/devtree/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SergeyLubivui-dev/devtree/releases/tag/v0.1.0
