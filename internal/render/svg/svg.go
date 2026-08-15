@@ -146,7 +146,7 @@ func card(b *strings.Builder, p placement, index int, w, x, y float64, clip stri
 	status := p.node.Status
 	color := th.color(status)
 
-	draw.OpenRise(b, index)
+	draw.OpenNode(b, index, p.node.ID)
 	defer draw.CloseGroup(b)
 
 	draw.RoundRect(b, x, y, w, cardH, 9, th.Card, th.Border)

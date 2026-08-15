@@ -301,3 +301,25 @@ func TestLongTitlesAreClipped(t *testing.T) {
 		t.Error("the full over-long title was drawn past the card edge")
 	}
 }
+
+func TestEveryCardCarriesItsID(t *testing.T) {
+	// The editor hangs controls off these, so a card without an identity is a
+	// card nothing can be attached to.
+	plan := sample(t)
+	doc := Render(plan, Light)
+	for _, n := range plan.Nodes {
+		if !strings.Contains(doc, `data-node="`+n.ID+`"`) {
+			t.Errorf("the tree drew %q with no identity", n.ID)
+		}
+	}
+
+	board := Board(plan, Light)
+	for _, n := range plan.Nodes {
+		if len(n.Children()) > 0 {
+			continue // containers are not cards on a board
+		}
+		if !strings.Contains(board, `data-node="`+n.ID+`"`) {
+			t.Errorf("the board drew %q with no identity", n.ID)
+		}
+	}
+}

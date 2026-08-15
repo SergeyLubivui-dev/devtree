@@ -84,12 +84,25 @@ const Stylesheet = `<style>
 //
 // The delay rides on a style attribute rather than a class per index: the
 // alternative is a stylesheet that grows a rule for every card in the plan.
-func OpenRise(b *strings.Builder, index int) {
+func OpenRise(b *strings.Builder, index int) { OpenNode(b, index, "") }
+
+// OpenNode is OpenRise with the task's identity written onto the group.
+//
+// A drawing that knows which task each card is can be pointed at: the editor
+// hangs its controls off these, and anything scripting a written .svg can find
+// a card without matching on the label a human typed. It costs a handful of
+// bytes per card, and it is the same attribute whether the drawing is being
+// previewed or written to disk — the editor draws no special version.
+func OpenNode(b *strings.Builder, index int, id string) {
 	delay := float64(index) * riseStep
 	if delay > riseCap {
 		delay = riseCap
 	}
-	fmt.Fprintf(b, `<g class="%s" style="animation-delay:%.2fs">`, ClassRise, delay)
+	fmt.Fprintf(b, `<g class="%s" style="animation-delay:%.2fs"`, ClassRise, delay)
+	if id != "" {
+		fmt.Fprintf(b, ` data-node="%s"`, Escape(id))
+	}
+	b.WriteString(`>`)
 }
 
 // CloseGroup closes whatever OpenRise or a caller's own group opened.

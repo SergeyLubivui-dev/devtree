@@ -103,6 +103,7 @@ type column struct {
 // boardCard is a leaf task with the context a board needs: where it came from
 // and what it is attached to.
 type boardCard struct {
+	id     string
 	title  string
 	parent string
 	meta   []metaItem
@@ -119,7 +120,7 @@ func boardColumns(t *tree.Tree) []column {
 		if len(n.Children()) > 0 {
 			continue // a milestone is a container, not a card
 		}
-		card := boardCard{title: n.Title, meta: metaFor(n)}
+		card := boardCard{id: n.ID, title: n.Title, meta: metaFor(n)}
 		if card.title == "" {
 			card.title = n.ID
 		}
@@ -173,7 +174,7 @@ func boardColumn(b *strings.Builder, c column, index, arrival int, x, w float64,
 }
 
 func boardCardAt(b *strings.Builder, c boardCard, column, arrival int, x, y, w float64, color string, th Theme) {
-	draw.OpenRise(b, arrival)
+	draw.OpenNode(b, arrival, c.id)
 	defer draw.CloseGroup(b)
 
 	draw.RoundRect(b, x, y, w, boardCardH, 9, th.Card, th.Border)

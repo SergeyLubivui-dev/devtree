@@ -1,441 +1,820 @@
-/* devtree — the local editor.
- *
- * The motion in here is the Transitions.dev set, kept verbatim in behaviour
- * and given a job each: the tabs slide a pill, the status menu drops, the
- * theme button swaps its icon, saving draws a check, the preview waits behind
- * a skeleton, the project name shimmers while it loads, and the panes tween
- * when the divider moves. Every one of them stops under prefers-reduced-motion.
- */
-
-/* ── palette ─────────────────────────────────────────────────────────────── */
+/* ==========================================================================
+   devtree editor
+   --------------------------------------------------------------------------
+   Dark by default. Three regions butted together with hairlines and no outer
+   margin, so the window is the frame and nothing floats in a gutter. The
+   motion is the Transitions.dev set, each snippet kept to one job.
+   ========================================================================== */
 
 :root {
-  --text: #1f2328;
-  --muted: #59636e;
-  --canvas: #f6f8fa;
-  --card: #ffffff;
-  --border: #d1d9e0;
-  --track: #eaeef2;
+  /* Four backgrounds, near-black, a few points apart. Depth comes from the
+     hairlines between them rather than from shadows. */
+  --rail:    #0a0a0a;
+  --panel:   #0f0f0f;
+  --canvas:  #0c0c0c;
+  --raise:   #171717;
+  --raise-2: #202020;
 
-  --st-todo: #59636e;
-  --st-in-progress: #bf8700;
-  --st-blocked: #cf222e;
-  --st-done: #1a7f37;
-  --st-dropped: #8c959f;
+  --line:      #1f1f1f;
+  --line-soft: #171717;
 
-  --shimmer-base: #59636e;
-  --shimmer-highlight: #1f2328;
-  --tabs-bar-bg: #eaeef2;
-  --tabs-pill-bg: #ffffff;
-  --tabs-text-muted: #59636e;
-  --tabs-text-active: #1f2328;
+  --text:  #ededed;
+  --muted: #8b8b8b;
+  --faint: #5c5c5c;
+
+  /* The status vocabulary, matching the drawing's dark palette exactly. The
+     editor and the .svg have to agree on what "blocked" looks like. */
+  --todo:        #9198a1;
+  --in_progress: #d29922;
+  --blocked:     #f85149;
+  --done:        #3fb950;
+  --dropped:     #6e7681;
+  --accent:      #3fb950;
+  --on-accent:   #06140a;
+
+  --rail-w: 52px;
+  --side-w: 268px;
+
+  --r-sm: 7px;
+  --r:    10px;
+
+  /* One curve for everything that slides, so the interface moves as a single
+     object: fast to leave, unhurried to land. */
+  --ease: cubic-bezier(.32, .72, 0, 1);
+  --fast: 140ms;
+  --mid:  240ms;
+  --slow: 320ms;
 }
 
-:root[data-theme="dark"] {
-  --text: #e6edf3;
-  --muted: #9198a1;
-  --canvas: #0d1117;
-  --card: #151b23;
-  --border: #3d444d;
-  --track: #262c36;
+:root[data-theme="light"] {
+  --rail:    #f1f1ef;
+  --panel:   #f8f8f7;
+  --canvas:  #ffffff;
+  --raise:   #ffffff;
+  --raise-2: #eaeae7;
 
-  --st-todo: #9198a1;
-  --st-in-progress: #d29922;
-  --st-blocked: #f85149;
-  --st-done: #3fb950;
-  --st-dropped: #6e7681;
+  --line:      #e3e3e0;
+  --line-soft: #ededea;
 
-  --shimmer-base: #6e6e6e;
-  --shimmer-highlight: #ededed;
-  --tabs-bar-bg: #202020;
-  --tabs-pill-bg: #454545;
-  --tabs-text-muted: rgba(193, 193, 193, 0.8);
-  --tabs-text-active: #ffffff;
+  --text:  #1a1a19;
+  --muted: #67676a;
+  --faint: #93938d;
+
+  --todo:        #8c959f;
+  --in_progress: #bf8700;
+  --blocked:     #cf222e;
+  --done:        #1a7f37;
+  --dropped:     #8c959f;
+  --accent:      #1a7f37;
+  --on-accent:   #ffffff;
 }
 
-/* ── shell ───────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
 
-* { box-sizing: border-box }
+html, body { height: 100%; margin: 0; overflow: hidden; }
 
 body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: var(--canvas);
   color: var(--text);
-  font: 13.5px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.bar {
+/* --- the scrollbar -------------------------------------------------------- *
+   The system scrollbar is a light-mode object on most machines and lands on a
+   near-black page as a bright stripe. Drawn here instead: no track, and a
+   thumb inset from the edge so it reads as part of the panel.                */
+
+* { scrollbar-width: thin; scrollbar-color: var(--raise-2) transparent; }
+
+*::-webkit-scrollbar { width: 11px; height: 11px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--raise-2);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--faint); background-clip: content-box; }
+*::-webkit-scrollbar-corner { background: transparent; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: var(--r-sm); }
+
+/* ==========================================================================
+   frame
+   ========================================================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--rail-w) var(--side-w) 1fr;
+  height: 100vh;
+  transition: grid-template-columns var(--mid) var(--ease);
+}
+.app[data-collapsed] { grid-template-columns: var(--rail-w) 0 1fr; }
+
+/* --- rail ----------------------------------------------------------------- */
+
+.rail {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--card);
+  gap: 4px;
+  padding: 10px 0;
+  background: var(--rail);
+  border-right: 1px solid var(--line);
 }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px }
-.mark { width: 22px; height: 22px; color: var(--st-done) }
-.spacer { flex: 1 }
 
-.progress { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px }
-.bar-track { width: 140px; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden }
-.bar-fill { display: block; height: 100%; width: 0; background: var(--st-done); transition: width 400ms cubic-bezier(.22,1,.36,1) }
+.rail-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 10px;
+  color: var(--accent);
+}
+.rail-mark svg { width: 21px; height: 21px; }
 
-.panes { flex: 1; display: flex; min-height: 0 }
-.pane { min-width: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 16px }
-.pane.left { width: 380px; flex: none; border-right: 1px solid var(--border); background: var(--card) }
-.pane.right { flex: 1; padding: 0 }
-.pane-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px }
-.pane-head h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted) }
+.rail-gap { flex: 1; }
 
-.divider { width: 5px; cursor: col-resize; background: transparent; flex: none }
-.divider:hover, .divider:focus-visible { background: var(--st-in-progress); outline: none }
+.rail-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+  transition: background var(--fast) ease, color var(--fast) ease;
+}
+.rail-btn:hover { background: var(--raise); color: var(--muted); }
+.rail-btn[aria-pressed="true"] { background: var(--raise-2); color: var(--text); }
+.rail-btn svg { width: 18px; height: 18px; }
 
-/* ── the task list ───────────────────────────────────────────────────────── */
+/* --- panel ---------------------------------------------------------------- */
 
-/* A column, so every card stretches to the pane while its own margin-left
-   still carries the depth. */
-.tasks { display: flex; flex-direction: column; align-items: stretch }
+.side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+}
 
-.task {
+.side-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* No fixed width: an indented card has to shrink to stay inside the pane,
-     and the pane is draggable. */
-  width: auto;
-  padding: 7px 9px;
-  margin: 3px 0;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--border);
-  border-radius: 9px;
-  background: var(--card);
-  color: inherit;
+  flex: none;
+  height: 46px;
+  padding: 0 8px 0 14px;
+}
+.side-head h1 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.side-acts { display: flex; gap: 2px; margin-left: auto; }
+
+.ghost-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+  transition: background var(--fast) ease, color var(--fast) ease;
+}
+.ghost-btn:hover { background: var(--raise); color: var(--text); }
+.ghost-btn svg { width: 16px; height: 16px; }
+
+/* Chrome marks are stroked; the domain glyphs from /api/glyphs are filled.
+   Keeping the two apart stops the interface competing with the statuses it
+   is reporting. */
+svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  height: 34px;
+  padding: 0 14px;
+  color: var(--faint);
+}
+.search svg { flex: none; width: 15px; height: 15px; }
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.search input::placeholder { color: var(--faint); }
+.search input:focus { outline: none; }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* --- the segmented control ------------------------------------------------ *
+   The pill is one element that slides between the buttons. Two elements
+   cross-fading would read as a swap; one that travels reads as the same
+   object moving, and the eye follows it to the content that changed.        */
+
+.seg {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  flex: none;
+  margin: 4px 12px 10px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--rail);
+}
+.main-head .seg { margin: 0; }
+
+.seg button {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--fast) ease;
+}
+.seg button:hover,
+.seg button[aria-selected="true"] { color: var(--text); }
+
+.seg-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: var(--w, 0);
+  border-radius: var(--r-sm);
+  background: var(--raise-2);
+  transform: translateX(var(--x, 0));
+  transition: transform var(--mid) var(--ease), width var(--mid) var(--ease);
+  pointer-events: none;
+}
+.seg[data-ready="0"] .seg-pill { transition: none; }
+
+/* --- the list ------------------------------------------------------------- */
+
+.list {
+  flex: 1;
+  padding: 0 8px 14px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.list:focus { outline: none; }
+
+.list ul { margin: 0; padding: 0; list-style: none; }
+
+/* Children sit in their own list, indented, with the guide drawn per row so
+   the last one stops at its elbow instead of running past it. */
+.list ul ul { margin-left: 19px; }
+
+.list li { position: relative; }
+
+.list ul ul > li::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+.list ul ul > li:last-child::before { bottom: auto; height: 15px; }
+.list ul ul > li::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 15px;
+  width: 7px;
+  height: 1px;
+  background: var(--line);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background var(--fast) ease;
 }
-.task:hover { border-color: var(--st-in-progress) }
-.task[aria-selected="true"] { box-shadow: inset 0 0 0 1px var(--st-in-progress); border-color: var(--st-in-progress) }
-.task[data-status="todo"] { border-left-color: var(--st-todo) }
-.task[data-status="in_progress"] { border-left-color: var(--st-in-progress) }
-.task[data-status="blocked"] { border-left-color: var(--st-blocked) }
-.task[data-status="done"] { border-left-color: var(--st-done) }
-.task[data-status="dropped"] { border-left-color: var(--st-dropped) }
-.task[data-status="dropped"] .task-title { text-decoration: line-through; color: var(--muted) }
+.row:hover { background: var(--raise); }
+.row[aria-current="true"] { background: var(--raise-2); }
 
-.task .glyph { width: 16px; height: 16px; flex: none }
-.task-body { min-width: 0; display: flex; flex-direction: column }
-.task-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.task-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.task-ratio { margin-left: auto; color: var(--muted); font-size: 11px }
+.row .glyph { display: grid; place-items: center; flex: none; width: 15px; height: 15px; }
+.row .glyph svg { width: 15px; height: 15px; }
 
-.warnings {
-  margin-top: 14px; padding: 10px 12px; border-radius: 9px;
-  border: 1px solid var(--st-blocked); color: var(--muted); font-size: 12px;
+.row .label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.warnings b { color: var(--text); font-weight: 600 }
+.row[data-status="done"] .label,
+.row[data-status="dropped"] .label { color: var(--muted); }
+.row[data-status="dropped"] .label { text-decoration: line-through; }
 
-/* ── preview ─────────────────────────────────────────────────────────────── */
-
-.preview { height: 100% }
-.t-skel-content { overflow: auto; padding: 16px }
-.t-skel-content img, .t-skel-content svg { max-width: 100% }
-.t-skel-content iframe { width: 100%; height: 100%; border: 0; background: var(--canvas) }
-.t-skel-content pre {
-  margin: 0; padding: 14px; border-radius: 10px; background: var(--card);
-  border: 1px solid var(--border); overflow: auto;
-  font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+.count {
+  flex: none;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--raise-2);
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
-.t-skel-skeleton { padding: 24px; display: flex; flex-direction: column; gap: 14px }
-.skeleton-row { height: 44px; border-radius: 9px; background: var(--track) }
-.skeleton-row.wide { width: 70% }
-.skeleton-row.narrow { width: 40% }
+.row:hover .count { background: var(--raise); }
+.count[data-full="true"] { color: var(--done); }
 
-/* ── controls ────────────────────────────────────────────────────────────── */
-
-.button {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 12px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--card); color: var(--text);
-  font: inherit; font-size: 12.5px; cursor: pointer;
+.doc-row .label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
 }
-.button:hover { border-color: var(--st-in-progress) }
-.button.primary { border-color: var(--st-done); color: var(--st-done) }
-.button.danger { border-color: var(--st-blocked); color: var(--st-blocked) }
-.button.small { padding: 4px 9px; font-size: 12px }
-
-.icon-button {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; padding: 0;
-  border: 1px solid var(--border); border-radius: 8px;
-  background: var(--card); color: var(--muted); cursor: pointer;
+.doc-row .kind {
+  flex: none;
+  color: var(--faint);
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
-.icon-button:hover { color: var(--text); border-color: var(--st-in-progress) }
-.glyph { width: 18px; height: 18px }
-.glyph.small { width: 14px; height: 14px }
+.doc-row[data-exists="false"] .label { color: var(--faint); }
 
-/* ── the editor ──────────────────────────────────────────────────────────── */
+.empty { padding: 22px 14px; color: var(--faint); font-size: 12.5px; }
 
-.editor {
-  position: fixed; right: 16px; bottom: 16px; width: 340px; z-index: 5;
-  padding: 14px; border-radius: 12px;
-  border: 1px solid var(--border); background: var(--card);
-  box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 40px rgba(0,0,0,.18);
+.side-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  min-height: 34px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 11.5px;
 }
-.editor-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px }
-.editor-head h2 { margin: 0; font-size: 13px }
-.editor label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 11.5px }
-.editor input, .editor textarea, .editor .select {
-  display: block; width: 100%; margin-top: 3px;
-  padding: 6px 9px; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--canvas); color: var(--text);
-  font: inherit; font-size: 13px;
-}
-.editor textarea { resize: vertical }
-.editor .row { display: flex; gap: 8px }
-.editor .row label { flex: 1 }
-.editor-foot { display: flex; gap: 8px; margin-top: 4px }
-.select { display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left }
+.side-foot .warn { color: var(--in_progress); }
 
-.menu-anchor { position: relative }
+/* --- main ------------------------------------------------------------------ */
+
+.main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--canvas);
+}
+
+.main-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: 46px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background var(--fast) ease;
+}
+.crumb:hover { background: var(--raise); }
+.crumb .chev { width: 15px; height: 15px; color: var(--faint); }
+
+.rollup { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.grow { flex: 1; }
+
+.stage {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.stage:focus { outline: none; }
+
+.stage svg.plan { display: block; max-width: 100%; height: auto; }
+
+.stage pre {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--rail);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
+  overflow: auto;
+}
+
+.stage iframe {
+  width: 100%;
+  height: calc(100vh - 88px);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: #fff;
+}
+
+/* The + that follows the hovered card: one button, moved, rather than one
+   per node sitting in the drawing waiting to be clicked. */
+.node-add {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--raise);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity var(--fast) ease, transform var(--fast) var(--ease),
+              background var(--fast) ease, color var(--fast) ease;
+}
+.node-add[data-show] { opacity: 1; transform: none; }
+.node-add:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.node-add svg { width: 14px; height: 14px; }
+
+.stage [data-node] { cursor: pointer; }
+
+/* --- the skeleton ----------------------------------------------------------- *
+   The drawing is fetched, so there is a gap. The skeleton holds the space the
+   answer will need, and the answer arrives over it instead of the layout
+   jumping when it lands.                                                       */
+
+.skeleton { display: grid; gap: 10px; }
+.skeleton i {
+  display: block;
+  height: 46px;
+  border-radius: var(--r);
+  background: var(--raise);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.skeleton i:nth-child(1) { width: 55%; }
+.skeleton i:nth-child(2) { width: 78%; animation-delay: .08s; }
+.skeleton i:nth-child(3) { width: 66%; animation-delay: .16s; }
+.skeleton i:nth-child(4) { width: 84%; animation-delay: .24s; }
+
+@keyframes pulse { 0%, 100% { opacity: .45 } 50% { opacity: 1 } }
+
+.reveal { animation: reveal var(--mid) var(--ease) both; }
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(6px) }
+  to   { opacity: 1; transform: none }
+}
+
+/* --- shimmer ---------------------------------------------------------------- *
+   Only while there is no name to show; it stops the moment one arrives.        */
+
+.shimmer {
+  min-width: 90px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--raise) 25%, var(--raise-2) 50%, var(--raise) 75%);
+  background-size: 200% 100%;
+  color: transparent;
+  animation: shimmer 1.3s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0 } }
+
+/* ==========================================================================
+   the drawer
+   --------------------------------------------------------------------------
+   Everything that edits or asks happens here: the task editor, the new
+   document form, and the confirmations that would otherwise be a browser
+   dialog. It arrives from the right edge, which is where it lives — a panel
+   sliding in, not a box appearing in the middle of the screen.
+   ========================================================================== */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: rgba(0, 0, 0, .55);
+  opacity: 0;
+  transition: opacity var(--mid) ease;
+}
+.scrim[data-open] { opacity: 1; }
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  width: min(410px, 100vw);
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+  transform: translateX(100%);
+  transition: transform var(--slow) var(--ease);
+}
+.drawer[data-open] { transform: none; }
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: 46px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.drawer-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-body {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.drawer-foot {
+  display: flex;
+  gap: 8px;
+  flex: none;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+.drawer-foot:empty { display: none; }
+
+/* The body swaps between forms of different heights. Animating a grid row
+   from 0fr to 1fr is what lets a panel resize to content it has not measured. */
+.morph { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--mid) var(--ease); }
+.morph[data-shut] { grid-template-rows: 0fr; }
+.morph > div { min-height: 0; overflow: hidden; }
+
+/* --- fields ------------------------------------------------------------------ */
+
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+
+.field > label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.field input[type="text"],
+.field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--rail);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  transition: border-color var(--fast) ease, background var(--fast) ease;
+}
+.field textarea { min-height: 62px; line-height: 1.5; resize: vertical; }
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--faint);
+  background: var(--raise);
+}
+.field .hint { margin-top: 6px; color: var(--faint); font-size: 11.5px; }
+.field .hint code { color: var(--muted); }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.note { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+.note strong { color: var(--text); font-weight: 600; }
+.note code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--rail);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+}
+
+/* --- the status menu ---------------------------------------------------------- *
+   Opens from the control it belongs to: the origin is the top edge, so it
+   reads as the button unfolding rather than a panel appearing over it.         */
+
+.menu-wrap { position: relative; }
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--rail);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background var(--fast) ease;
+}
+.menu-btn:hover { background: var(--raise); }
+.menu-btn .glyph { display: grid; place-items: center; }
+.menu-btn .glyph svg { width: 15px; height: 15px; }
+.menu-btn .chev { width: 15px; height: 15px; margin-left: auto; color: var(--faint); }
+
 .menu {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 6;
-  padding: 4px; border-radius: 9px;
-  border: 1px solid var(--border); background: var(--card);
-  box-shadow: 0 8px 30px rgba(0,0,0,.16);
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 4;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--raise);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .45);
+  transform-origin: top center;
+  opacity: 0;
+  transform: scaleY(.86) translateY(-4px);
+  pointer-events: none;
+  transition: opacity var(--fast) ease, transform var(--fast) var(--ease);
 }
-.menu button .glyph { width: 15px; height: 15px }
+.menu[data-open] { opacity: 1; transform: none; pointer-events: auto; }
+
 .menu button {
-  display: flex; align-items: center; gap: 8px; width: 100%;
-  padding: 6px 8px; border: 0; border-radius: 6px;
-  background: transparent; color: var(--text); font: inherit; font-size: 12.5px;
-  cursor: pointer; text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
 }
-.menu button:hover { background: var(--track) }
+.menu button:hover { background: var(--raise-2); }
+.menu button svg { width: 15px; height: 15px; }
+
+/* --- buttons -------------------------------------------------------------------- */
+
+.btn {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--raise);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--fast) ease, border-color var(--fast) ease, color var(--fast) ease;
+}
+.btn:hover { background: var(--raise-2); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn-primary { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent); filter: brightness(1.08); }
+.btn-danger { color: var(--blocked); }
+.btn-danger:hover { border-color: var(--blocked); background: var(--blocked); color: #fff; }
+
+/* --- the check -------------------------------------------------------------------- *
+   Draws itself once, after a save: the answer to "did that take?", shown where
+   the action was, leaving on its own.                                              */
+
+.check {
+  position: absolute;
+  inset: 0;
+  width: 18px;
+  height: 18px;
+  margin: auto;
+  fill: none;
+  stroke: var(--done);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  opacity: 0;
+  pointer-events: none;
+}
+.rail-btn > span { transition: opacity var(--fast) ease; }
+.rail-btn[data-saved] > span { opacity: 0; }
+.rail-btn[data-saved] .check { opacity: 1; animation: draw 420ms var(--ease) forwards; }
+
+@keyframes draw { to { stroke-dashoffset: 0 } }
+
+/* --- the icon swap ------------------------------------------------------------------ *
+   One control, two states. The outgoing mark blurs away as the incoming one
+   sharpens, so the button never blinks empty.                                        */
+
+.swap { position: relative; display: grid; place-items: center; width: 18px; height: 18px; }
+.swap > span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity var(--mid) ease, transform var(--mid) var(--ease), filter var(--mid) ease;
+}
+.swap .swap-b { opacity: 0; transform: scale(.6) rotate(-35deg); filter: blur(3px); }
+:root[data-theme="light"] .swap .swap-a { opacity: 0; transform: scale(.6) rotate(35deg); filter: blur(3px); }
+:root[data-theme="light"] .swap .swap-b { opacity: 1; transform: none; filter: none; }
+
+/* --- the toast ----------------------------------------------------------------------- */
 
 .toast {
-  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
-  padding: 8px 14px; border-radius: 8px; z-index: 9;
-  background: #222222; color: #f0f0f0; font-size: 12.5px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.28);
-}
-.toast[data-kind="error"] { background: var(--st-blocked); color: #fff }
-
-/* ── Transitions.dev — Card resize ───────────────────────────────────────── */
-
-:root { --resize-dur: 300ms; --resize-ease: cubic-bezier(0.22, 1, 0.36, 1) }
-
-.t-resize {
-  transition: width var(--resize-dur) var(--resize-ease),
-              height var(--resize-dur) var(--resize-ease);
-  will-change: width, height;
-}
-/* While a pointer is dragging the divider the pane must track the cursor
-   exactly; tweening there would feel like lag rather than polish. */
-.t-resize.is-dragging { transition: none }
-
-/* ── Transitions.dev — Menu dropdown ─────────────────────────────────────── */
-
-:root {
-  --dropdown-open-dur: 250ms;
-  --dropdown-close-dur: 150ms;
-  --dropdown-pre-scale: 0.97;
-  --dropdown-closing-scale: 0.99;
-  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.t-dropdown {
-  transform-origin: top left;
-  transform: scale(var(--dropdown-pre-scale));
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 10;
+  padding: 9px 15px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--raise);
+  color: var(--text);
+  font-size: 12.5px;
   opacity: 0;
+  transform: translate(-50%, 12px);
+  transition: opacity var(--mid) ease, transform var(--mid) var(--ease);
   pointer-events: none;
-  transition: transform var(--dropdown-open-dur) var(--dropdown-ease),
-              opacity var(--dropdown-open-dur) var(--dropdown-ease);
-  will-change: transform, opacity;
 }
-.t-dropdown[data-origin="top-right"] { transform-origin: top right }
-.t-dropdown[data-origin="top-center"] { transform-origin: top center }
-.t-dropdown[data-origin="bottom-left"] { transform-origin: bottom left }
-.t-dropdown[data-origin="bottom-center"] { transform-origin: bottom center }
-.t-dropdown[data-origin="bottom-right"] { transform-origin: bottom right }
+.toast[data-show] { opacity: 1; transform: translate(-50%, 0); }
+.toast[data-tone="bad"] { border-color: var(--blocked); color: var(--blocked); }
 
-.t-dropdown.is-open { transform: scale(1); opacity: 1; pointer-events: auto }
-.t-dropdown.is-closing {
-  transform: scale(var(--dropdown-closing-scale));
-  opacity: 0;
-  pointer-events: none;
-  transition: transform var(--dropdown-close-dur) var(--dropdown-ease),
-              opacity var(--dropdown-close-dur) var(--dropdown-ease);
+/* --- narrow windows -------------------------------------------------------------------- */
+
+@media (max-width: 880px) {
+  .app { grid-template-columns: var(--rail-w) 1fr; }
+  .side { display: none; }
+  .main-head .seg button:nth-child(n+5) { display: none; }
 }
 
-/* ── Transitions.dev — Icon swap ─────────────────────────────────────────── */
-
-:root {
-  --icon-swap-dur: 250ms;
-  --icon-swap-blur: 2px;
-  --icon-swap-start-scale: 0.25;
-  --icon-swap-ease: ease-in-out;
-}
-
-.t-icon-swap { position: relative; display: inline-grid }
-.t-icon-swap .t-icon {
-  grid-area: 1 / 1;
-  transition: opacity var(--icon-swap-dur) var(--icon-swap-ease),
-              filter var(--icon-swap-dur) var(--icon-swap-ease),
-              transform var(--icon-swap-dur) var(--icon-swap-ease);
-  will-change: opacity, filter, transform;
-}
-.t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
-.t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {
-  opacity: 1; filter: blur(0); transform: scale(1);
-}
-.t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
-.t-icon-swap[data-state="b"] .t-icon[data-icon="a"] {
-  opacity: 0; filter: blur(var(--icon-swap-blur)); transform: scale(var(--icon-swap-start-scale));
-}
-
-/* ── Transitions.dev — Success check ─────────────────────────────────────── */
-
-:root {
-  --check-opacity-dur: 500ms;
-  --check-rotate-dur: 500ms;
-  --check-rotate-from: 80deg;
-  --check-bob-dur: 500ms;
-  --check-y-amount: 40px;
-  --check-blur-dur: 500ms;
-  --check-blur-from: 10px;
-  --check-path-dur: 500ms;
-  --check-path-delay: 80ms;
-  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
-  --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
-  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
-  --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.t-success-check {
-  display: inline-block;
-  transform-origin: center;
-  opacity: 0;
-  width: 16px; height: 16px; color: var(--st-done);
-  will-change: transform, opacity, filter;
-}
-.t-success-check svg { display: block; overflow: visible; width: 16px; height: 16px }
-/* 26 is the measured length of the check path in this icon; round caps hide
-   any sub-pixel overshoot. */
-.t-success-check svg path { stroke-dasharray: 26; stroke-dashoffset: 26 }
-
-.t-success-check[data-state="in"] {
-  animation:
-    t-check-fade var(--check-opacity-dur) var(--check-ease-opacity) forwards,
-    t-check-rotate var(--check-rotate-dur) var(--check-ease-rotate) forwards,
-    t-check-blur var(--check-blur-dur) var(--check-ease-out) forwards,
-    t-check-bob var(--check-bob-dur) var(--check-ease-bob) forwards;
-}
-.t-success-check[data-state="in"] svg path {
-  animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
-}
-
-@keyframes t-check-fade { from { opacity: 0 } to { opacity: 1 } }
-@keyframes t-check-rotate { from { transform: rotate(var(--check-rotate-from)) } to { transform: rotate(0deg) } }
-@keyframes t-check-blur { from { filter: blur(var(--check-blur-from)) } to { filter: blur(0) } }
-@keyframes t-check-bob { from { translate: 0 var(--check-y-amount) } to { translate: 0 0 } }
-@keyframes t-check-draw { to { stroke-dashoffset: 0 } }
-
-/* ── Transitions.dev — Skeleton loader and reveal ────────────────────────── */
-
-:root {
-  --pulse-dur: 1000ms;
-  --pulse-count: infinite;
-  --pulse-min: 0.5;
-  --reveal-dur: 400ms;
-  --reveal-blur: 2px;
-  --reveal-ease: ease-in-out;
-}
-
-.t-skel { position: relative }
-.t-skel-skeleton, .t-skel-content { position: absolute; inset: 0 }
-
-.t-skel-skeleton {
-  z-index: 1; opacity: 1; filter: blur(0);
-  transition: opacity var(--reveal-dur) var(--reveal-ease),
-              filter var(--reveal-dur) var(--reveal-ease);
-}
-.t-skel-content {
-  z-index: 2; opacity: 0; filter: blur(var(--reveal-blur));
-  transition: opacity var(--reveal-dur) var(--reveal-ease),
-              filter var(--reveal-dur) var(--reveal-ease);
-}
-.t-skel.is-revealed .t-skel-skeleton { opacity: 0; filter: blur(var(--reveal-blur)) }
-.t-skel.is-revealed .t-skel-content { opacity: 1; filter: blur(0) }
-.t-skel.is-resetting .t-skel-skeleton,
-.t-skel.is-resetting .t-skel-content { transition: none !important }
-
-.t-skel-skeleton.is-pulsing > * {
-  animation: t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
-}
-@keyframes t-skel-pulse { 0%, 100% { opacity: 1 } 50% { opacity: var(--pulse-min) } }
-
-/* ── Transitions.dev — Shimmer text ──────────────────────────────────────── */
-
-:root { --shimmer-dur: 2000ms; --shimmer-band: 400%; --shimmer-ease: linear }
-
-.t-shimmer { position: relative; display: inline-block; color: var(--shimmer-base) }
-.t-shimmer::before {
-  content: attr(data-text);
-  position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(90deg,
-    transparent 0%, transparent 40%,
-    var(--shimmer-highlight) 50%,
-    transparent 60%, transparent 100%);
-  background-size: var(--shimmer-band) 100%;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite;
-}
-@keyframes t-shimmer { 0% { background-position: 100% 0 } 100% { background-position: 0% 0 } }
-/* Once the plan has a name the shimmer has nothing left to say. */
-.t-shimmer.is-settled { color: inherit }
-.t-shimmer.is-settled::before { content: none }
-
-/* ── Transitions.dev — Tabs sliding ──────────────────────────────────────── */
-
-:root { --tabs-dur: 250ms; --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1) }
-
-.t-tabs {
-  position: relative; display: inline-flex; align-items: center;
-  gap: 3px; padding: 3px; border-radius: 48px; background: var(--tabs-bar-bg);
-}
-.t-tab {
-  position: relative; appearance: none; border: 0; background: transparent;
-  height: 28px; padding: 4px 12px; border-radius: 48px; z-index: 1;
-  color: var(--tabs-text-muted); font: inherit; font-size: 12.5px; cursor: pointer;
-  transition: color var(--tabs-dur) var(--tabs-ease);
-}
-.t-tab:not([aria-selected="true"]):hover,
-.t-tab[aria-selected="true"] { color: var(--tabs-text-active) }
-
-.t-tabs-pill {
-  position: absolute; top: 3px; left: 0; height: 28px; width: 0;
-  background: var(--tabs-pill-bg); border-radius: 48px;
-  transform: translateX(0);
-  transition: transform var(--tabs-dur) var(--tabs-ease),
-              width var(--tabs-dur) var(--tabs-ease);
-  will-change: transform, width;
-  z-index: 0; pointer-events: none;
-}
+/* --- reduced motion ---------------------------------------------------------------------- *
+   Every animation above is a transition on a property with a resting value, so
+   switching the motion off leaves the interface exactly where it belongs.               */
 
 @media (prefers-reduced-motion: reduce) {
-  .t-resize, .t-dropdown, .t-icon-swap .t-icon, .t-skel-skeleton, .t-skel-content,
-  .t-tabs-pill, .t-tab, .bar-fill { transition: none !important }
-  .t-success-check, .t-success-check svg path, .t-skel-skeleton.is-pulsing > *,
-  .t-shimmer::before { animation: none !important }
-  .t-success-check { opacity: 1 }
-  .t-success-check svg path { stroke-dashoffset: 0 !important }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }

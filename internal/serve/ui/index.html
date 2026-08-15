@@ -1,130 +1,118 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>devtree</title>
 <link rel="stylesheet" href="app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='19' font-size='19'>%F0%9F%8C%B2</text></svg>">
 </head>
 <body>
 
-<header class="bar">
-  <span class="brand">
-    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"></svg>
-    <span class="project t-shimmer" data-text="loading…">loading…</span>
-  </span>
+<!--
+  Three regions butted together, no gaps: a rail of sections, a panel that
+  lists whatever the rail is pointing at, and the drawing. Everything that
+  edits happens in the drawer, which comes in from the right over all three.
+-->
+<div class="app">
 
-  <span class="progress" title="tasks done">
-    <span class="bar-track"><span class="bar-fill"></span></span>
-    <span class="count">–</span>
-  </span>
+  <nav class="rail" aria-label="Sections">
+    <div class="rail-mark" data-glyph="tree" title="devtree"></div>
 
-  <span class="spacer"></span>
+    <button class="rail-btn" data-section="plan" aria-pressed="true" title="Plan">
+      <span data-glyph="nodes"></span>
+    </button>
+    <button class="rail-btn" data-section="docs" aria-pressed="false" title="Documents">
+      <span data-glyph="document-code"></span>
+    </button>
 
-  <!-- The tabs move a pill between them; see the note in app.js on why the
-       first paint is written without a transition. -->
-  <div class="t-tabs" role="tablist" id="views">
-    <span class="t-tabs-pill" aria-hidden="true"></span>
-    <button class="t-tab" role="tab" data-view="tree" aria-selected="true">Tree</button>
-    <button class="t-tab" role="tab" data-view="board" aria-selected="false">Board</button>
-    <button class="t-tab" role="tab" data-view="page" aria-selected="false">Page</button>
-    <button class="t-tab" role="tab" data-view="mermaid" aria-selected="false">Mermaid</button>
-    <button class="t-tab" role="tab" data-view="yaml" aria-selected="false">YAML</button>
-  </div>
+    <div class="rail-gap"></div>
 
-  <button class="icon-button" id="theme" title="Light or dark">
-    <span class="t-icon-swap" data-state="a">
-      <span class="t-icon" data-icon="a"><svg class="glyph" viewBox="0 0 24 24" data-glyph="flash"></svg></span>
-      <span class="t-icon" data-icon="b"><svg class="glyph" viewBox="0 0 24 24" data-glyph="monitor"></svg></span>
-    </span>
-  </button>
+    <button class="rail-btn" id="theme-btn" title="Light or dark">
+      <span class="swap">
+        <span class="swap-a" data-glyph="monitor"></span>
+        <span class="swap-b" data-glyph="eye"></span>
+      </span>
+    </button>
+    <button class="rail-btn" id="write-btn" title="Write the outputs">
+      <span data-glyph="flash"></span>
+      <svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>
+    </button>
+  </nav>
 
-  <button class="button primary" id="write">
-    Write outputs
-    <span class="t-success-check" data-state="out" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 12.5 L9.5 18 L20 6.5"></path>
-      </svg>
-    </span>
-  </button>
-</header>
-
-<main class="panes">
-  <!-- Left: the plan. Right: what it looks like. The divider between them is
-       draggable, and the panes tween to their new size rather than snapping. -->
-  <section class="pane left t-resize" id="left">
-    <div class="pane-head">
-      <h2>Plan</h2>
-      <button class="button small" id="add-root">Add task</button>
-    </div>
-
-    <div class="tasks" id="tasks" role="tree" aria-label="Tasks"></div>
-
-    <div class="warnings" id="warnings" hidden></div>
-  </section>
-
-  <div class="divider" id="divider" role="separator" aria-orientation="vertical" tabindex="0"></div>
-
-  <section class="pane right">
-    <!-- The preview is a skeleton until the first render arrives, and returns
-         to one whenever a change is being drawn. -->
-    <div class="t-skel preview" id="preview" data-state="loading">
-      <div class="t-skel-skeleton is-pulsing" id="skeleton">
-        <div class="skeleton-row wide"></div>
-        <div class="skeleton-row"></div>
-        <div class="skeleton-row narrow"></div>
-        <div class="skeleton-row"></div>
-      </div>
-      <div class="t-skel-content" id="preview-content"></div>
-    </div>
-  </section>
-</main>
-
-<!-- The editor for one task. It is a form, so the keyboard works: tab through
-     the fields, press Enter to save. -->
-<aside class="editor" id="editor" hidden>
-  <form id="editor-form">
-    <div class="editor-head">
-      <h2 id="editor-title">Task</h2>
-      <button type="button" class="icon-button" id="editor-close" title="Close">
-        <svg class="glyph" viewBox="0 0 24 24" data-glyph="close-circle"></svg>
-      </button>
-    </div>
-
-    <label>Title<input name="title" autocomplete="off" required></label>
-
-    <label>Status
-      <div class="menu-anchor">
-        <button type="button" class="select" id="status-button" aria-haspopup="menu" aria-expanded="false">
-          <span id="status-label">todo</span>
-          <svg class="glyph small" viewBox="0 0 24 24" data-glyph="code-square"></svg>
+  <aside class="side" aria-label="Panel">
+    <header class="side-head">
+      <h1 id="side-title" class="shimmer">Plan</h1>
+      <div class="side-acts">
+        <button class="ghost-btn" id="side-add" title="New">
+          <svg viewBox="0 0 24 24" class="ui"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="t-dropdown menu" data-origin="top-left" id="status-menu" role="menu"></div>
+        <button class="ghost-btn" id="side-collapse" title="Collapse the panel">
+          <svg viewBox="0 0 24 24" class="ui"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M10 4.5v15"/></svg>
+        </button>
       </div>
-    </label>
+    </header>
 
-    <div class="row">
-      <label>Branch<input name="branch" autocomplete="off" placeholder="feat/auth"></label>
-      <label>Owner<input name="owner" autocomplete="off" placeholder="ann"></label>
-    </div>
-    <div class="row">
-      <label>Issue<input name="issue" autocomplete="off" placeholder="12"></label>
-      <label>Pull request<input name="pr" autocomplete="off" placeholder="44"></label>
+    <div class="search">
+      <svg viewBox="0 0 24 24" class="ui"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+      <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false">
     </div>
 
-    <label>Tags<input name="tags" autocomplete="off" placeholder="backend, money"></label>
-    <label>Note<textarea name="note" rows="2" placeholder="why it is where it is"></textarea></label>
-
-    <div class="editor-foot">
-      <button type="submit" class="button primary">Save</button>
-      <button type="button" class="button" id="add-child">Add child</button>
-      <button type="button" class="button danger" id="delete">Delete</button>
+    <div class="seg" id="scope" role="tablist" aria-label="Scope">
+      <span class="seg-pill" aria-hidden="true"></span>
+      <button role="tab" data-scope="all" aria-selected="true">All</button>
+      <button role="tab" data-scope="open" aria-selected="false">Open</button>
     </div>
-  </form>
+
+    <div class="list" id="list" tabindex="-1"></div>
+
+    <footer class="side-foot" id="side-foot"></footer>
+  </aside>
+
+  <main class="main">
+    <header class="main-head">
+      <button class="crumb" id="crumb" aria-haspopup="dialog">
+        <span id="crumb-name" class="shimmer">&nbsp;</span>
+        <svg viewBox="0 0 24 24" class="ui chev"><path d="m7 10 5 5 5-5"/></svg>
+      </button>
+
+      <span class="rollup" id="rollup"></span>
+
+      <div class="grow"></div>
+
+      <div class="seg" id="views" role="tablist" aria-label="View">
+        <span class="seg-pill" aria-hidden="true"></span>
+        <button role="tab" data-view="tree" aria-selected="true">Tree</button>
+        <button role="tab" data-view="board" aria-selected="false">Board</button>
+        <button role="tab" data-view="page" aria-selected="false">Page</button>
+        <button role="tab" data-view="mermaid" aria-selected="false">Mermaid</button>
+        <button role="tab" data-view="yaml" aria-selected="false">YAML</button>
+      </div>
+    </header>
+
+    <div class="stage" id="stage" tabindex="-1"></div>
+
+    <!-- Follows the hovered card. One button, moved, rather than one per node. -->
+    <button class="node-add" id="node-add" hidden title="Add a task under this one">
+      <svg viewBox="0 0 24 24" class="ui"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+  <header class="drawer-head">
+    <h2 id="drawer-title"></h2>
+    <button class="ghost-btn" id="drawer-close" title="Close (Esc)">
+      <svg viewBox="0 0 24 24" class="ui"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </header>
+  <div class="drawer-body" id="drawer-body"></div>
+  <footer class="drawer-foot" id="drawer-foot"></footer>
 </aside>
 
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
 </body>

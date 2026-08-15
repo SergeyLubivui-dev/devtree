@@ -123,9 +123,14 @@ A longer walk through the same ground: [docs/getting-started.md](docs/getting-st
 devtree serve --open      # http://127.0.0.1:9312
 ```
 
-The plan on the left, drawn on the right, live. Click a task to edit it, and the drawing redraws as
-you save. Five views behind the tabs — tree, board, page, Mermaid, YAML — rendered on demand, with
-nothing written to disk until you press **Write outputs**.
+The plan on the left, drawn on the right, live. The drawing is the editing surface: every card
+carries the id of the task it draws, so clicking one opens it and hovering one offers a `+` that
+adds work underneath it. Five views behind the tabs — tree, board, page, Mermaid, YAML — rendered on
+demand, with nothing written to disk until you press **Write outputs**.
+
+A second section lists the **documents**: every destination in `outputs`, each showing what its name
+says it holds — tree or board, light or dark, page or Mermaid block. Naming a new one there is how
+you add an output; the name is what decides the drawing.
 
 It binds to the loopback interface, stores nothing of its own, and every change lands in the same
 `.devtree/tree.yaml` the command line writes: keep the editor in one window and a terminal in the
@@ -409,7 +414,7 @@ This page is the tour. [`docs/`](docs/) is the detail underneath it.
 | [Finished work](docs/finished-work.md) | Archiving, restoring, closing tasks from merged branches |
 | [Automation](docs/automation.md) | The pre-commit hook and the GitHub Action, line by line |
 | [SVG output](docs/svg-output.md) | File naming, palettes, the animation vocabulary, the CSP it survives |
-| [The editor](docs/editor.md) | The local two-pane editor, and the motion in it |
+| [The editor](docs/editor.md) | The local editor, the drawing you can edit, and the motion in it |
 | [The container](docs/container.md) | Running devtree without installing anything |
 | [Architecture](docs/architecture.md) | The layering, the rules that hold it, and how it is tested |
 

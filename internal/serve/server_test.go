@@ -72,7 +72,7 @@ func TestThePageIsServed(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d", rec.Code)
 	}
-	for _, want := range []string{"<!doctype html>", "app.css", "app.js", "t-tabs"} {
+	for _, want := range []string{"<!doctype html>", "app.css", "app.js", `data-theme="dark"`} {
 		if !strings.Contains(rec.Body.String(), want) {
 			t.Errorf("the page is missing %q", want)
 		}
@@ -309,4 +309,118 @@ func readDir(root string) ([]string, error) {
 		names = append(names, e.Name())
 	}
 	return names, nil
+}
+
+func TestDocumentsAreDescribedByName(t *testing.T) {
+	// The name is the only place the drawing is recorded, so the editor has to
+	// read it back exactly the way the writer reads it.
+	server, handler := project(t)
+
+	saved, err := store.Load(server.Root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved.Outputs = []string{"TREE.md", "docs/tree.svg", "docs/board-dark.svg", "docs/plan.html"}
+	if err := store.Save(server.Root, saved); err != nil {
+		t.Fatal(err)
+	}
+
+	plan := decodePlan(t, request(t, handler, http.MethodGet, "/api/plan", ""))
+	want := []struct{ path, kind, theme string }{
+		{"TREE.md", "markdown", ""},
+		{"docs/tree.svg", "tree", "light"},
+		{"docs/board-dark.svg", "board", "dark"},
+		{"docs/plan.html", "page", ""},
+	}
+	if len(plan.Docs) != len(want) {
+		t.Fatalf("%d documents", len(plan.Docs))
+	}
+	for i, w := range want {
+		got := plan.Docs[i]
+		if got.Path != w.path || got.Kind != w.kind || got.Theme != w.theme {
+			t.Errorf("%s came back as %+v", w.path, got)
+		}
+	}
+}
+
+func TestAddingAndDroppingADocument(t *testing.T) {
+	server, handler := project(t)
+
+	plan := decodePlan(t, request(t, handler, http.MethodPost, "/api/document", `{"path":"docs/board.svg"}`))
+	if len(plan.Outputs) != 2 || plan.Outputs[1] != "docs/board.svg" {
+		t.Fatalf("outputs are %v", plan.Outputs)
+	}
+
+	// Naming a destination must not write it: that is what the render button
+	// is for, and an editor that writes on every keystroke is a diff machine.
+	if _, err := os.Stat(server.Root + "/docs/board.svg"); err == nil {
+		t.Error("adding a document wrote it")
+	}
+
+	if rec := request(t, handler, http.MethodPost, "/api/document", `{"path":"docs/board.svg"}`); rec.Code != http.StatusConflict {
+		t.Errorf("a duplicate returned %d", rec.Code)
+	}
+
+	plan = decodePlan(t, request(t, handler, http.MethodDelete, "/api/document/docs/board.svg", ""))
+	if len(plan.Outputs) != 1 {
+		t.Errorf("outputs are %v after dropping one", plan.Outputs)
+	}
+	if rec := request(t, handler, http.MethodDelete, "/api/document/nope.svg", ""); rec.Code != http.StatusNotFound {
+		t.Errorf("dropping something that is not an output returned %d", rec.Code)
+	}
+}
+
+func TestDocumentsStayInsideTheRepository(t *testing.T) {
+	server, handler := project(t)
+
+	for _, bad := range []string{
+		`{"path":"/etc/passwd"}`,
+		`{"path":"../escape.svg"}`,
+		`{"path":"C:/Windows/system.svg"}`,
+		`{"path":"   "}`,
+		`{"path":"docs/plan"}`, // no extension: nothing decides the drawing
+	} {
+		if rec := request(t, handler, http.MethodPost, "/api/document", bad); rec.Code < 400 {
+			t.Errorf("%s was accepted", bad)
+		}
+	}
+
+	saved, err := store.Load(server.Root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(saved.Outputs) != 1 {
+		t.Errorf("a rejected document changed the plan: %v", saved.Outputs)
+	}
+}
+
+func TestThePageAsksInItsOwnPanel(t *testing.T) {
+	// A browser dialog blocks the page, cannot be styled, and lands wherever the
+	// browser decides. Everything the editor asks, it asks in the drawer — so a
+	// call to one of these is a regression, not a shortcut.
+	_, handler := project(t)
+	script := request(t, handler, http.MethodGet, "/app.js", "").Body.String()
+
+	for _, banned := range []string{"confirm(", "alert(", "prompt(", "window.confirm"} {
+		if strings.Contains(script, banned) {
+			t.Errorf("the page calls %s instead of asking in the drawer", banned)
+		}
+	}
+	for _, want := range []string{"openDrawer", "closeDrawer", "function ask("} {
+		if !strings.Contains(script, want) {
+			t.Errorf("the page is missing %s", want)
+		}
+	}
+}
+
+func TestTheEmbeddedPageIsNotCached(t *testing.T) {
+	// Embedded files all carry the same zero timestamp, so a browser left to its
+	// own devices will serve this morning's page against tonight's API.
+	_, handler := project(t)
+	for _, asset := range []string{"/", "/app.js", "/app.css"} {
+		got := request(t, handler, http.MethodGet, asset, "").Header().Get("Cache-Control")
+		if !strings.Contains(got, "no-cache") {
+			t.Errorf("%s is served with Cache-Control: %q", asset, got)
+		}
+	}
 }

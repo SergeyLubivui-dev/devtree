@@ -60,12 +60,18 @@ func (s *Server) Handler() http.Handler {
 	if err != nil {
 		panic(err) // the embedded directory is compiled in; it cannot be missing
 	}
-	mux.Handle("/", http.FileServer(http.FS(pages)))
+	// The page is compiled into the binary, and embedded files all carry the
+	// same zero timestamp — so a browser that caches them will happily serve a
+	// page from the devtree you replaced this morning against the API of the
+	// one running now. Revalidating costs nothing over loopback.
+	mux.Handle("/", noStore(http.FileServer(http.FS(pages))))
 
 	mux.HandleFunc("/api/glyphs", s.handleGlyphs)
 	mux.HandleFunc("/api/plan", s.handlePlan)
 	mux.HandleFunc("/api/task", s.handleTask)
 	mux.HandleFunc("/api/task/", s.handleTaskByID)
+	mux.HandleFunc("/api/document", s.handleDocument)
+	mux.HandleFunc("/api/document/", s.handleDocumentByPath)
 	mux.HandleFunc("/api/render", s.handleWriteOutputs)
 	mux.HandleFunc("/api/view/", s.handleView)
 	mux.HandleFunc("/api/events", s.handleEvents)
@@ -134,6 +140,7 @@ type jsonPlan struct {
 	Project  string      `json:"project"`
 	Repo     string      `json:"repo"`
 	Outputs  []string    `json:"outputs"`
+	Docs     []jsonDoc   `json:"docs"`
 	Statuses []jsonStat  `json:"statuses"`
 	Nodes    []jsonNode  `json:"nodes"`
 	Totals   [2]int      `json:"totals"`
@@ -178,6 +185,7 @@ func (s *Server) describe(t *tree.Tree) jsonPlan {
 		Project: t.Project,
 		Repo:    t.Repo,
 		Outputs: t.Outputs,
+		Docs:    s.documents(t),
 	}
 	for _, status := range tree.Statuses {
 		out.Statuses = append(out.Statuses, jsonStat{
@@ -565,4 +573,12 @@ func deref(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+// noStore keeps a browser from holding on to the embedded page.
+func noStore(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache, must-revalidate")
+		next.ServeHTTP(w, r)
+	})
 }

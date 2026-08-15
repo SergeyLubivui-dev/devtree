@@ -14,14 +14,31 @@ All notable changes to this project are documented here. The format follows
   nothing of its own, and every change goes through the same domain rules and lands in the same
   plan file the command line writes, so the editor and a terminal can be used in the same minute.
   The page listens for the file changing, so an edit made in either shows up in the other.
+- The editor is three regions now: a rail of sections, a panel listing the plan or the outputs, and
+  the drawing. The panel draws nesting with guides rather than indentation, filters with a search
+  box that keeps the parents of whatever matched, and hides finished work behind All/Open.
+- Documents are a section of their own. Every destination in `outputs` is listed with what its name
+  says it holds — tree or board, light or dark, page or Mermaid block — because that is the rule the
+  writer follows, read back out of the name. New destinations can be named from there; naming one
+  does not write it, which is still what the render button is for.
+- Every card in a drawing carries the id of the task it draws, so the diagram is the editing
+  surface: click a card to open it, hover one for a `+` that adds work underneath it. The attribute
+  is on the written `.svg` too — the editor gets no special version.
+- The editor asks in its own panel instead of calling up a browser dialog. Deleting a task with work
+  under it now says how much is under it and what happens to it, which is the sentence a native
+  confirm box cannot phrase. A test keeps the page from quietly going back.
 - `devtree serve --host` for running the editor from the container, where loopback belongs to the
   container and a published port would otherwise reach nothing. Binding anywhere but `127.0.0.1`
   prints a warning, because the editor has no authentication.
 - The editor's motion is the Transitions.dev set, each snippet doing a job: a pill slides between
-  tabs, the status menu drops from its control, the theme icon swaps with a blur, a check draws
-  itself after a save, a skeleton holds the layout while a drawing is fetched, the title shimmers
-  until the plan has a name, and the panes tween when the divider is stepped with the keyboard.
+  tabs, a panel arrives from the edge it lives on, the status menu drops from its control, the theme
+  icon swaps with a blur, a check draws itself once the outputs are written, a skeleton holds the
+  layout while a drawing is fetched, and the title shimmers until the plan has a name.
   All of it stops under `prefers-reduced-motion`, and `?live=0` turns off the change stream.
+- The editor is dark by default, follows the reader's system setting when they have expressed one,
+  and remembers the choice after that. Its scrollbars are drawn rather than inherited: the system
+  scrollbar is a light-mode object on most machines and landed on a near-black page as a bright
+  stripe.
 
 ### Fixed
 
