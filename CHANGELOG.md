@@ -16,9 +16,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- "What it looks like" in the README leads with devtree's own drawing of the sample plan — generated
-  by the real renderer from the same plan the Mermaid block describes — rather than with the plainest
-  of the three renderings.
+- "What it looks like" in the README is devtree's own drawing and the terminal view. The Mermaid
+  block is still written, still native on GitHub and GitLab, and still one link away in `TREE.md` —
+  it is simply no longer what a visitor meets first. This repository now renders into `TREE.md`
+  rather than injecting into its own README.
 
 ## [0.5.0] — 2026-08-16
 

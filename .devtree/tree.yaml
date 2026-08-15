@@ -3,7 +3,7 @@
 version: 1
 project: "devtree"
 repo: "https://github.com/SergeyLubivui-dev/devtree"
-outputs: "README.md, docs/assets/tree.svg, docs/assets/tree-dark.svg, docs/assets/board.svg, docs/assets/board-dark.svg, docs/plan.html"
+outputs: "TREE.md, docs/assets/tree.svg, docs/assets/tree-dark.svg, docs/assets/board.svg, docs/assets/board-dark.svg, docs/plan.html"
 nodes:
   - id: "v0-1"
     title: "v0.1 - first release"
