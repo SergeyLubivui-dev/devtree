@@ -2,7 +2,9 @@ package vcs
 
 import (
 	"errors"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -80,5 +82,71 @@ func TestOutsideARepository(t *testing.T) {
 	_, err := MergedBranches(t.TempDir())
 	if !errors.Is(err, ErrNotARepository) {
 		t.Fatalf("got %v, want ErrNotARepository so the CLI can explain itself", err)
+	}
+}
+
+func TestHistoryReadsPastVersions(t *testing.T) {
+	dir := repo(t)
+	run := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %s: %v\n%s", strings.Join(args, " "), err, out)
+		}
+	}
+
+	write := func(body string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Join(dir, ".devtree"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, ".devtree", "tree.yaml"), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	write("first\n")
+	run("add", ".")
+	run("commit", "-q", "-m", "one")
+
+	write("second\n")
+	run("add", ".")
+	run("commit", "-q", "-m", "two")
+
+	revisions, err := History(dir, ".devtree/tree.yaml", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(revisions) != 2 {
+		t.Fatalf("got %d revisions, want 2", len(revisions))
+	}
+
+	// Oldest first: a history reads forwards.
+	if got := strings.TrimSpace(string(revisions[0].Content)); got != "first" {
+		t.Errorf("the first revision is %q", got)
+	}
+	if got := strings.TrimSpace(string(revisions[1].Content)); got != "second" {
+		t.Errorf("the second revision is %q", got)
+	}
+	if revisions[0].When.After(revisions[1].When) {
+		t.Error("revisions came back newest first")
+	}
+	if revisions[0].Hash == "" {
+		t.Error("a revision should carry the commit it came from")
+	}
+
+	if limited, err := History(dir, ".devtree/tree.yaml", 1); err != nil || len(limited) != 1 {
+		t.Fatalf("--limit was ignored: %d revisions, %v", len(limited), err)
+	}
+}
+
+func TestHistoryOfAFileGitNeverSaw(t *testing.T) {
+	revisions, err := History(repo(t), ".devtree/tree.yaml", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(revisions) != 0 {
+		t.Fatalf("got %d revisions for a file that was never committed", len(revisions))
 	}
 }

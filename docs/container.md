@@ -48,6 +48,9 @@ devtree add "Refunds" -p billing
     git diff --exit-code
 ```
 
+On GitLab, `devtree install gitlab` writes exactly that job for you — see
+[automation](automation.md).
+
 ## Why Alpine and not scratch
 
 A `scratch` image would be about three megabytes instead of twelve, and every devtree command would

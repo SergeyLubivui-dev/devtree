@@ -86,6 +86,20 @@ is the question people actually ask. Owners and tags ignore case, and `-o @ann` 
 costs nothing: progress rollups, filters, and drawings all work on a plan, and a branch of a plan is
 a plan.
 
+## Where you have been
+
+The board is today. `devtree history` is the same numbers over time, read out of the repository's own
+commits:
+
+```bash
+devtree history --limit 40
+```
+
+Nothing is tracked to make this work: the plan file has been committed all along, so `git log` on it
+is already the history. devtree reads each past version, counts it, and prints the line. A revision
+it cannot parse — one written by an older version carrying a field this one dropped — is skipped with
+a note rather than taking the rest of the history down with it.
+
 ## What it is not
 
 There are no WIP limits, no swimlanes, no drag and drop, and no state that lives anywhere but the

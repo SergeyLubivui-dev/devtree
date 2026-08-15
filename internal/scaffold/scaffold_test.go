@@ -150,3 +150,44 @@ func TestInstallActionWritesTheWorkflow(t *testing.T) {
 		t.Fatalf("second call: skipped=%v err=%v", res.Skipped, err)
 	}
 }
+
+func TestInstallGitLabLeavesTheProjectsOwnPipelineAlone(t *testing.T) {
+	root := t.TempDir()
+
+	// A project's .gitlab-ci.yml belongs to the project. Scaffolding writes a
+	// separate file and says how to include it.
+	own := "stages: [test]\n"
+	if err := os.WriteFile(filepath.Join(root, ".gitlab-ci.yml"), []byte(own), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := InstallGitLab(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Path != ".gitlab/devtree.yml" {
+		t.Errorf("wrote %q", res.Path)
+	}
+	if !strings.Contains(res.Note, "include") {
+		t.Errorf("the user should be told to include it, got %q", res.Note)
+	}
+
+	after, err := os.ReadFile(filepath.Join(root, ".gitlab-ci.yml"))
+	if err != nil || string(after) != own {
+		t.Error("the project's own pipeline was touched")
+	}
+
+	body, err := os.ReadFile(filepath.Join(root, ".gitlab", "devtree.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"devtree check --strict", "devtree render", "ghcr.io/sergeylubivui-dev/devtree"} {
+		if !strings.Contains(string(body), want) {
+			t.Errorf("the job is missing %q", want)
+		}
+	}
+
+	if res, err := InstallGitLab(root); err != nil || !res.Skipped {
+		t.Fatalf("second call: skipped=%v err=%v", res.Skipped, err)
+	}
+}

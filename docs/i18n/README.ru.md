@@ -47,6 +47,7 @@
 ## Установка
 
 ```bash
+brew install SergeyLubivui-dev/tap/devtree     # macOS и Linux
 go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
@@ -241,9 +242,10 @@ devtree sync --apply   # отметить их выполненными
 | `archive [ID...] [--all] [--list]` | Переносит законченные ветки плана в архив |
 | `restore ID [ID...]` | Возвращает задачи из архива |
 | `sync [--apply]` | Закрывает задачи, чьи ветки git уже влил |
+| `history [--limit N]` | Читает прошлые версии плана из git и показывает, как менялся прогресс |
 | `render [--file F] [--quiet]` | Перегенерирует все выходные файлы |
 | `check [--strict]` | Валидирует план — для CI и хуков |
-| `install hook\|action\|all` | Ставит pre-commit хук и GitHub Action |
+| `install hook\|action\|gitlab\|all` | Ставит pre-commit хук, GitHub Action или job для GitLab |
 | `outputs` | Печатает список выходных файлов |
 
 У `ls` и `board` четыре одинаковых фильтра, и они комбинируются: `-s СТАТУС`, `-o ВЛАДЕЛЕЦ`,

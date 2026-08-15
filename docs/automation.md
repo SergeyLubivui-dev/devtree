@@ -57,6 +57,40 @@ review; leaving the default branch stale means the front page of the repository 
 The workflow uses `cache: false` on `setup-go`, because the repository it runs in may not be a Go
 project at all, and the cache step would otherwise warn on every run.
 
+## The GitLab job
+
+`devtree install gitlab` writes `.gitlab/devtree.yml`:
+
+```yaml
+devtree:
+  image:
+    name: ghcr.io/sergeylubivui-dev/devtree:latest
+    entrypoint: [""]
+  stage: test
+  script:
+    - devtree check --strict
+    - devtree render
+    - git diff --quiet || exit 1
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+
+Include it from your own pipeline:
+
+```yaml
+include:
+  - local: .gitlab/devtree.yml
+```
+
+Two things worth pointing at. It runs [the container](container.md) instead of installing anything,
+so the job does not care whether the project is a Go project. And it is a separate file rather than
+an edit to `.gitlab-ci.yml`: that one belongs to the project, and rewriting somebody's pipeline is
+not a thing a scaffolding command should do.
+
+`install all` deliberately leaves it out. A repository is almost never on both hosts, and writing a
+pipeline for a service the project does not use is clutter.
+
 ## The merge rule
 
 `devtree init` adds one line to `.gitattributes`:

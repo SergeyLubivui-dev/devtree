@@ -570,13 +570,17 @@ func (a *App) cmdInstall(args []string) error {
 		return install(scaffold.InstallHook)
 	case "action":
 		return install(scaffold.InstallAction)
+	case "gitlab":
+		return install(scaffold.InstallGitLab)
 	case "all":
+		// Not GitLab: a repository is almost never on both, and writing a
+		// pipeline for a service the project does not use is clutter.
 		if err := install(scaffold.InstallHook); err != nil {
 			return err
 		}
 		return install(scaffold.InstallAction)
 	default:
-		return fmt.Errorf("unknown target %q: expected hook, action, or all", what)
+		return fmt.Errorf("unknown target %q: expected hook, action, gitlab, or all", what)
 	}
 }
 

@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `devtree history` reads past versions of the plan out of git and shows how far along it was each
+  time. Nothing is tracked to make this work: the plan has been committed all along, so its own past
+  is already recorded. A revision that cannot be parsed — one written by an older devtree carrying a
+  field this one dropped — is skipped with a note instead of taking the history down with it.
+- `devtree install gitlab` writes `.gitlab/devtree.yml`, a job that runs the published container and
+  fails a merge request whose diagram is stale. It is a separate file rather than an edit to
+  `.gitlab-ci.yml`, which belongs to the project. `install all` leaves it out: a repository is almost
+  never on both hosts.
+- A Homebrew tap: `brew install SergeyLubivui-dev/tap/devtree`. The formula installs the released
+  binary rather than building from source, and a scheduled workflow in the tap rewrites the version,
+  the URLs, and the checksums whenever devtree publishes a release.
+
 ## [0.4.0] — 2026-08-16
 
 Shorter distance between the plan and the work: jump to what a task points at, narrow a view to one

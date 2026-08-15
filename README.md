@@ -94,6 +94,7 @@ And devtree's own drawing — [further down](#devtrees-own-plan), rendering this
 ## Install
 
 ```bash
+brew install SergeyLubivui-dev/tap/devtree     # macOS and Linux
 go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
@@ -271,9 +272,10 @@ More: [docs/finished-work.md](docs/finished-work.md).
 | `archive [ID...] [--all] [--list]` | Moves finished branches of the plan into the archive |
 | `restore ID [ID...]` | Brings archived work back |
 | `sync [--apply]` | Closes tasks whose branch git has already merged |
+| `history [--limit N]` | Reads past versions of the plan out of git and shows how far along it was |
 | `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
-| `install hook\|action\|all` | Installs the pre-commit hook and the GitHub Action |
+| `install hook\|action\|gitlab\|all` | Installs the pre-commit hook, the GitHub Action, or the GitLab job |
 | `outputs` | Prints the files the diagram is written to |
 
 Flags may come before or after the title, so both of these do the same thing:
@@ -369,7 +371,29 @@ devtree install action    # fail a pull request whose diagram is out of date
 
 The hook keeps your own commits honest; the Action keeps everyone else's honest without requiring
 them to install anything. A teammate without devtree is never blocked — the hook notices the binary
-is missing and steps aside. Line by line: [docs/automation.md](docs/automation.md).
+is missing and steps aside. On GitLab, `devtree install gitlab` writes a job that runs the published
+container, so the pipeline needs no toolchain at all. Line by line:
+[docs/automation.md](docs/automation.md).
+
+### Where you have been
+
+The plan has been in the repository all along, so its own past is already recorded. Nothing had to be
+tracked to read it back:
+
+```bash
+devtree history
+```
+
+```text
+Payment Gateway — 3 revision(s) of the plan
+
+2026-08-14  ░░░░░░░░░░░░░░░░░░░░  0/2
+2026-08-15  ██████░░░░░░░░░░░░░░  1/3  +1 done  +1 planned
+2026-08-16  ████████░░░░░░░░░░░░  2/5  +1 done  +2 planned
+
+2 of 5 done, up 2 since 2026-08-14
+☐ 2 not started   ◐ 1 in progress   ✔ 2 done
+```
 
 ---
 
@@ -420,7 +444,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-███████████████░░░░░ **19 / 24** tasks done
+██████████████████░░ **22 / 24** tasks done
 
 ```mermaid
 flowchart TD
@@ -442,7 +466,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>10/11</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>11/11</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["✔ Filter ls by owner and tag"]:::done
     n_v0_2 --> n_focus
@@ -450,7 +474,7 @@ flowchart TD
     n_v0_2 --> n_open
     n_open["✔ devtree open ID - jump to the issue or PR"]:::done
     n_v0_2 --> n_history
-    n_history["☐ Progress history from git log"]:::todo
+    n_history["✔ Progress history from git log"]:::done
     n_v0_2 --> n_svg_output
     n_svg_output["✔ Native SVG output with embedded icons"]:::done
     n_v0_2 --> n_html_export
@@ -465,13 +489,13 @@ flowchart TD
     n_sync["✔ Close tasks from merged branches"]:::done
     n_v0_2 --> n_docs_layout
     n_docs_layout["✔ Documentation folder and a tidy root"]:::done
-    n_distribution["◐ Distribution<br/><i>2/4</i>"]:::in_progress
+    n_distribution["◐ Distribution<br/><i>4/4</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done
     n_distribution --> n_homebrew
-    n_homebrew["☐ Homebrew tap"]:::todo
+    n_homebrew["✔ Homebrew tap"]:::done
     n_distribution --> n_gitlab
-    n_gitlab["☐ GitLab CI template"]:::todo
+    n_gitlab["✔ GitLab CI template"]:::done
     n_distribution --> n_container
     n_container["✔ Container image on GHCR"]:::done
 ```

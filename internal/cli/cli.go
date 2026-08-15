@@ -77,6 +77,8 @@ func (a *App) Execute(args []string) int {
 		err = a.cmdRestore(rest)
 	case "sync":
 		err = a.cmdSync(rest)
+	case "history":
+		err = a.cmdHistory(rest)
 	case "render":
 		err = a.cmdRender(rest)
 	case "check":
@@ -124,9 +126,10 @@ COMMANDS
   archive   Move finished work out of the active plan
   restore   Bring archived work back
   sync      Close tasks whose branch has already been merged
+  history   Show how the plan changed, from the repository's own history
   render    Regenerate the diagram
   check     Validate the plan, for CI and hooks
-  install   Install the pre-commit hook and the GitHub Action
+  install   Install the pre-commit hook, the GitHub Action, or the GitLab job
   outputs   Print the files the diagram is written to
   version   Print the version
   help      Print this message
@@ -165,7 +168,7 @@ OTHER COMMANDS
   devtree open ID [--print]       Open its pull request, issue, or branch
   devtree render [--file F] [--root ID] [--quiet]
   devtree check [--strict]        --strict turns warnings into a failure
-  devtree install hook|action|all
+  devtree install hook|action|gitlab|all
 
 FILTERS
   ls and board take the same four, and they combine:
@@ -187,6 +190,9 @@ FINISHED WORK
 
   devtree sync                    List tasks whose branch is already merged
   devtree sync --apply            ...and mark them done
+
+  devtree history [--limit N]     Read past versions of the plan out of git
+                                  and show how far along it was each time
 
 OUTPUT FILES
   The name decides the drawing. TREE.md and README.md get the Mermaid block;

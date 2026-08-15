@@ -48,6 +48,7 @@ gibt.
 ## Installation
 
 ```bash
+brew install SergeyLubivui-dev/tap/devtree     # macOS und Linux
 go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
@@ -244,9 +245,10 @@ arbeitet allein auf der Datei.
 | `archive [ID...] [--all] [--list]` | Verschiebt fertige Zweige des Plans ins Archiv |
 | `restore ID [ID...]` | Holt archivierte Arbeit zurück |
 | `sync [--apply]` | Schließt Aufgaben, deren Branch git bereits gemergt hat |
+| `history [--limit N]` | Liest frühere Fassungen des Plans aus git und zeigt den Verlauf |
 | `render [--file F] [--quiet]` | Erzeugt alle Ausgabedateien neu |
 | `check [--strict]` | Prüft den Plan — für CI und Hooks |
-| `install hook\|action\|all` | Installiert Pre-Commit-Hook und GitHub Action |
+| `install hook\|action\|gitlab\|all` | Installiert Pre-Commit-Hook, GitHub Action oder GitLab-Job |
 | `outputs` | Gibt die Ausgabedateien aus |
 
 `ls` und `board` nehmen dieselben vier Filter, und sie lassen sich kombinieren: `-s STATUS`,

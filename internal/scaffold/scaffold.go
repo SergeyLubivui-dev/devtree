@@ -101,6 +101,40 @@ jobs:
           git push
 `
 
+// GitLabPipeline is the same guarantee as the GitHub Action, for GitLab.
+//
+// It runs the published container rather than installing anything, which makes
+// the job independent of whether the project is a Go project at all — and
+// makes the pipeline definition four lines long.
+//
+// Like the Action, it checks on a merge request and fixes on the default
+// branch: amending someone's merge request from a bot hides the change from
+// review, and a stale diagram on the default branch misleads every visitor.
+const GitLabPipeline = `# devtree: keep the diagram honest.
+# Include this file from .gitlab-ci.yml:
+#
+#   include:
+#     - local: .gitlab/devtree.yml
+
+devtree:
+  image:
+    name: ghcr.io/sergeylubivui-dev/devtree:latest
+    entrypoint: [""]
+  stage: test
+  script:
+    - devtree check --strict
+    - devtree render
+    - |
+      if ! git diff --quiet; then
+        echo "The diagram is out of date. Run 'devtree render' and commit the result."
+        git diff --stat
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+`
+
 // GitAttributes tells git to keep both sides of a conflicting plan.
 //
 // It pairs with the flat node list: two branches that each appended a task
@@ -165,6 +199,33 @@ func InstallAction(root string) (Result, error) {
 	if err := os.WriteFile(path, []byte(ActionWorkflow), 0o644); err != nil {
 		return Result{}, err
 	}
+	return res, nil
+}
+
+// InstallGitLab writes .gitlab/devtree.yml.
+//
+// A separate file rather than .gitlab-ci.yml itself: that one usually already
+// exists and belongs to the project, and quietly rewriting someone's pipeline
+// is not a thing a scaffolding command should do. The caller is told how to
+// include it.
+func InstallGitLab(root string) (Result, error) {
+	dir := filepath.Join(root, ".gitlab")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return Result{}, err
+	}
+
+	path := filepath.Join(dir, "devtree.yml")
+	res := Result{Path: relative(root, path)}
+
+	if existing, err := os.ReadFile(path); err == nil && string(existing) == GitLabPipeline {
+		res.Skipped = true
+		res.Note = "already installed"
+		return res, nil
+	}
+	if err := os.WriteFile(path, []byte(GitLabPipeline), 0o644); err != nil {
+		return Result{}, err
+	}
+	res.Note = "include it from .gitlab-ci.yml"
 	return res, nil
 }
 

@@ -44,6 +44,7 @@
 ## 安装
 
 ```bash
+brew install SergeyLubivui-dev/tap/devtree     # macOS 与 Linux
 go install github.com/SergeyLubivui-dev/devtree@latest
 ```
 
@@ -227,9 +228,10 @@ devtree sync --apply   # 把它们标记为完成
 | `archive [ID...] [--all] [--list]` | 把已完结的计划分支移入归档 |
 | `restore ID [ID...]` | 把归档里的工作取回来 |
 | `sync [--apply]` | 关闭那些分支已被 git 合并的任务 |
+| `history [--limit N]` | 从 git 读取计划的历史版本，展示进度变化 |
 | `render [--file F] [--quiet]` | 重新生成所有输出文件 |
 | `check [--strict]` | 校验计划——供 CI 和钩子使用 |
-| `install hook\|action\|all` | 安装提交前钩子和 GitHub Action |
+| `install hook\|action\|gitlab\|all` | 安装提交前钩子、GitHub Action 或 GitLab 任务 |
 | `outputs` | 打印输出文件列表 |
 
 `ls` 和 `board` 共用四个筛选条件，并且可以叠加：`-s 状态`、`-o 负责人`、`--tag a,b`（命中任意一个）、
