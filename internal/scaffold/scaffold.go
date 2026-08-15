@@ -60,11 +60,14 @@ jobs:
   tree:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: 'stable'
+          # Your repository may not be a Go project at all, so there is
+          # nothing for the module cache to key on.
+          cache: false
 
       - name: Install devtree
         run: |
