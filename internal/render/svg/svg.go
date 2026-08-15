@@ -46,6 +46,8 @@ func Render(t *tree.Tree, th Theme) string {
 	fmt.Fprintf(&b, `<svg xmlns="http://www.w3.org/2000/svg" width="%.0f" height="%.0f" `+
 		`viewBox="0 0 %.0f %.0f" font-family="%s" role="img" aria-label="%s">`,
 		width, height, width, height, draw.FontStack, draw.Escape(ariaLabel(t)))
+	b.WriteString(draw.Stylesheet)
+	defs(&b, columns)
 
 	// The panel is what keeps the diagram legible outside GitHub too: a bare
 	// transparent background would leave the dark rendering as pale text on a
@@ -61,7 +63,7 @@ func Render(t *tree.Tree, th Theme) string {
 		// Edges first so the cards sit on top of the line ends.
 		edges(&b, places, columns, th)
 		for _, p := range places {
-			card(&b, p, columns[p.depth], columnX(columns, p.depth), rowY(p.row), th)
+			card(&b, p, columns[p.depth], columnX(columns, p.depth), rowY(p.row), clipID(p.depth), th)
 		}
 	}
 
@@ -69,6 +71,24 @@ func Render(t *tree.Tree, th Theme) string {
 	b.WriteString("</svg>\n")
 	return b.String()
 }
+
+// defs declares one clip path per column, so an accent stripe can run the full
+// height of a card and still follow its rounded corners. Clipping is the only
+// way to get that: a rectangle would poke out of the corners, and a rounded
+// rectangle narrower than its own radius collapses into a lens.
+func defs(b *strings.Builder, columns []float64) {
+	if len(columns) == 0 {
+		return
+	}
+	b.WriteString(`<defs>`)
+	for i, w := range columns {
+		fmt.Fprintf(b, `<clipPath id="%s"><rect x="0" y="0" width="%.1f" height="%.1f" rx="9"/></clipPath>`,
+			clipID(i), w, cardH)
+	}
+	b.WriteString(`</defs>`)
+}
+
+func clipID(depth int) string { return fmt.Sprintf("dt-card-%d", depth) }
 
 func columnX(columns []float64, depth int) float64 {
 	x := pad
@@ -110,30 +130,36 @@ func header(b *strings.Builder, t *tree.Tree, th Theme, width float64) {
 	const barW = 208.0
 	y := pad + 34
 
-	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="6" rx="3" fill="%s"/>`,
-		pad, y, barW, th.Track)
+	draw.RoundRect(b, pad, y, barW, 6, 3, th.Track, "")
 	if total > 0 && done > 0 {
-		fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="6" rx="3" fill="%s"/>`,
-			pad, y, barW*float64(done)/float64(total), th.Done)
+		// The fill grows in once on load. It is the one place a reader's eye
+		// should be pulled first, and it settles immediately after.
+		draw.RoundRectClass(b, draw.ClassGrow, pad, y, barW*float64(done)/float64(total), 6, 3, th.Done, "")
 	}
 	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="11" fill="%s">%d / %d tasks done</text>`,
 		pad+barW+10, y+6, th.Muted, done, total)
 }
 
 // card draws one node.
-func card(b *strings.Builder, p placement, w, x, y float64, th Theme) {
+func card(b *strings.Builder, p placement, w, x, y float64, clip string, th Theme) {
 	status := p.node.Status
 	color := th.color(status)
 
-	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="9" fill="%s" stroke="%s"/>`,
-		x, y, w, cardH, th.Card, th.Border)
+	draw.RoundRect(b, x, y, w, cardH, 9, th.Card, th.Border)
 
-	// A 3px accent rather than a colored fill: the status stays readable
-	// without five loud rectangles competing with the text.
-	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="3" height="%.1f" rx="1.5" fill="%s"/>`,
-		x+1, y+11, cardH-22, color)
+	// A full-height accent rather than a colored fill: the status is legible
+	// from across the diagram without five loud rectangles competing with the
+	// text. Clipping to the card shape is what lets it run corner to corner.
+	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f)" clip-path="url(#%s)">`, x, y, clip)
+	draw.RoundRect(b, 0, 0, accentW, cardH, 0, color, "")
+	b.WriteString(`</g>`)
 
-	draw.Icon(b, statusIcon[status], x+13, y+(cardH-iconSize)/2, iconSize, color)
+	// Work genuinely in flight turns; everything else holds still.
+	glyphClass := ""
+	if status == tree.InProgress {
+		glyphClass = draw.ClassSpin
+	}
+	draw.IconClass(b, statusIcon[status], glyphClass, x+13, y+(cardH-iconSize)/2, iconSize, color)
 
 	right := rightPad
 	if p.ratio != "" {
@@ -161,11 +187,9 @@ func card(b *strings.Builder, p placement, w, x, y float64, th Theme) {
 			x+w-12, y+21, th.Muted, p.ratio)
 		const barW = 34.0
 		bx, by := x+w-12-barW, y+27.0
-		fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="4" rx="2" fill="%s"/>`,
-			bx, by, barW, th.Track)
+		draw.RoundRect(b, bx, by, barW, 4, 2, th.Track, "")
 		if p.done > 0 {
-			fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="4" rx="2" fill="%s"/>`,
-				bx, by, barW*float64(p.done)/float64(p.total), th.Done)
+			draw.RoundRectClass(b, draw.ClassGrow, bx, by, barW*float64(p.done)/float64(p.total), 4, 2, th.Done, "")
 		}
 	}
 }
@@ -217,33 +241,44 @@ func edges(b *strings.Builder, places []placement, columns []float64, th Theme) 
 			}
 			cx := columnX(columns, c.depth)
 			cy := rowY(c.row) + cardH/2
-			elbow := cx - colGap/2
 
-			if diff := cy - py; diff > -1 && diff < 1 {
-				fmt.Fprintf(b, `<path d="M%.1f %.1f H%.1f" fill="none" stroke="%s" stroke-width="1.5"/>`,
-					px, py, cx, th.Edge)
-				continue
-			}
+			d := elbowPath(px, py, cx, cy)
+			fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5"/>`, d, th.Edge)
 
-			r := 8.0
-			if half := absF(cy-py) / 2; r > half {
-				r = half
+			// A dash travels down the edges that lead into work in flight, and
+			// only those. Motion here is information, not decoration: it marks
+			// the live path through the plan at a glance.
+			if child.Status == tree.InProgress {
+				draw.FlowPath(b, d, th.InProgress)
 			}
-			dir := 1.0
-			if cy < py {
-				dir = -1
-			}
-			fmt.Fprintf(b,
-				`<path d="M%.1f %.1f H%.1f Q%.1f %.1f %.1f %.1f V%.1f Q%.1f %.1f %.1f %.1f H%.1f" `+
-					`fill="none" stroke="%s" stroke-width="1.5"/>`,
-				px, py,
-				elbow-r,
-				elbow, py, elbow, py+r*dir,
-				cy-r*dir,
-				elbow, cy, elbow+r, cy,
-				cx, th.Edge)
 		}
 	}
+}
+
+// elbowPath is the connector geometry: out of the parent, across, down or up,
+// into the child, with the corners rounded. Returning the path data rather
+// than drawing it lets the flow animation reuse the exact same line.
+func elbowPath(px, py, cx, cy float64) string {
+	if diff := cy - py; diff > -1 && diff < 1 {
+		return fmt.Sprintf("M%.1f %.1f H%.1f", px, py, cx)
+	}
+
+	elbow := cx - colGap/2
+	r := 8.0
+	if half := absF(cy-py) / 2; r > half {
+		r = half
+	}
+	dir := 1.0
+	if cy < py {
+		dir = -1
+	}
+	return fmt.Sprintf("M%.1f %.1f H%.1f Q%.1f %.1f %.1f %.1f V%.1f Q%.1f %.1f %.1f %.1f H%.1f",
+		px, py,
+		elbow-r,
+		elbow, py, elbow, py+r*dir,
+		cy-r*dir,
+		elbow, cy, elbow+r, cy,
+		cx)
 }
 
 // legend spells out the five statuses, generated from the status list so a new

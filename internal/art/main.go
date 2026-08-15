@@ -118,21 +118,25 @@ func hero(th svg.Theme) string {
 // motif is the miniature tree in the hero: three cards and two connectors, at
 // a size where words would be unreadable, so it carries none.
 func motif(b *strings.Builder, x, y float64, th svg.Theme) {
-	skeleton := func(x, y, w float64, status, color string) {
-		draw.RoundRect(b, x, y, w, 34, 7, th.Card, th.Border)
-		draw.RoundRect(b, x+1, y+8, 3, 18, 1.5, color, "")
-		draw.Icon(b, status, x+11, y+9, 16, color)
+	skeleton := func(id string, x, y, w float64, status, color, glyphClass string) {
+		card(b, id, x, y, w, 34, th, color)
+		draw.IconClass(b, status, glyphClass, x+11, y+9, 16, color)
 		draw.RoundRect(b, x+33, y+11, w-48, 4.5, 2.25, th.Muted, "")
 		draw.RoundRect(b, x+33, y+20, (w-48)*0.55, 4, 2, th.Track, "")
 	}
 
 	parent, child := x, x+112
-	skeleton(parent, y+46, 96, "circle-half-dotted-check", th.InProgress)
-	skeleton(child, y, 104, "check-circle", th.Done)
-	skeleton(child, y+92, 104, "clock-circle", th.Todo)
+	skeleton("motif-parent", parent, y+46, 96, "circle-half-dotted-check", th.InProgress, draw.ClassSpin)
+	skeleton("motif-done", child, y, 104, "check-circle", th.Done, "")
+	skeleton("motif-todo", child, y+92, 104, "clock-circle", th.Todo, "")
 
-	elbow(b, parent+96, y+63, child, y+17, th.Edge)
-	elbow(b, parent+96, y+63, child, y+109, th.Edge)
+	// The connectors carry the same travelling dash as the real diagram, so
+	// the first thing a reader sees is already the visual language of the tool.
+	for _, target := range []float64{y + 17, y + 109} {
+		d := elbowPath(parent+96, y+63, child, target)
+		fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5"/>`, d, th.Edge)
+		draw.FlowPath(b, d, th.InProgress)
+	}
 }
 
 // why turns the three-line pitch into three cards, because that is what the
@@ -155,18 +159,19 @@ func why(th svg.Theme) string {
 		gap = 20.0
 		w   = (width - pad*2 - gap*2) / 3
 		y   = 28.0
-		h   = 134.0
+		h   = 130.0
 	)
 	for i, c := range cards {
 		x := pad + float64(i)*(w+gap)
-		draw.RoundRect(&b, x, y, w, h, 10, th.Card, th.Border)
-		draw.RoundRect(&b, x+1, y+12, 3, h-24, 1.5, c.color, "")
+		card(&b, fmt.Sprintf("why-%d", i), x, y, w, h, th, c.color)
 
+		// Glyph and heading share a line: the eye reads them as one label
+		// instead of two stacked things it has to relate.
 		draw.Icon(&b, c.icon, x+18, y+18, 20, c.color)
-		draw.Text(&b, c.title, x+18, y+62, 13.5, th.Text, "600", "")
+		draw.Text(&b, draw.Clip(c.title, w-66, 13.5), x+46, y+34, 13.5, th.Text, "600", "")
 
-		for j, line := range draw.Wrap(c.body, w-36, 11.5) {
-			draw.Text(&b, line, x+18, y+86+float64(j)*16, 11.5, th.Muted, "", "")
+		for j, line := range draw.Wrap(c.body, w-38, 11.5) {
+			draw.Text(&b, line, x+18, y+68+float64(j)*16, 11.5, th.Muted, "", "")
 		}
 	}
 
@@ -181,28 +186,32 @@ func pipeline(th svg.Theme) string {
 	open(&b, height, th, "How devtree works")
 
 	stages := []struct{ icon, title, body, color string }{
-		{"document-code", ".devtree/tree.yaml", "edit by hand or by command", th.Todo},
+		{"document-code", "tree.yaml", "the plan, in .devtree/", th.Todo},
 		{"code-square", "devtree render", "validate, lay out, draw", th.InProgress},
-		{"layers", "TREE.md · tree.svg", "rewritten between markers", th.Done},
-		{"monitor", "GitHub draws it", "no extension, nothing hosted", th.Done},
+		{"layers", "your outputs", "Markdown or SVG, in place", th.Done},
+		{"monitor", "GitHub", "draws them natively", th.Done},
 	}
 
 	const (
-		arrow = 34.0
+		arrow = 42.0
 		w     = (width - pad*2 - arrow*3) / 4
 		y     = 30.0
-		h     = 92.0
+		h     = 88.0
 	)
 	for i, s := range stages {
 		x := pad + float64(i)*(w+arrow)
-		draw.RoundRect(&b, x, y, w, h, 10, th.Card, th.Border)
+		card(&b, fmt.Sprintf("stage-%d", i), x, y, w, h, th, s.color)
+
 		draw.Icon(&b, s.icon, x+16, y+16, 18, s.color)
-		draw.Text(&b, draw.Clip(s.title, w-32, 12.5), x+16, y+54, 12.5, th.Text, "600", "")
-		for j, line := range draw.Wrap(s.body, w-32, 10.5) {
-			draw.Text(&b, line, x+16, y+72+float64(j)*13, 10.5, th.Muted, "", "")
+		draw.Text(&b, draw.Clip(s.title, w-58, 12.5), x+40, y+30, 12.5, th.Text, "600", "")
+		for j, line := range draw.Wrap(s.body, w-34, 10.5) {
+			draw.Text(&b, line, x+17, y+58+float64(j)*13, 10.5, th.Muted, "", "")
 		}
+
+		// The dash running between stages is the point of the picture: this is
+		// a loop that keeps moving, not four things that happen to sit in a row.
 		if i < len(stages)-1 {
-			rightArrow(&b, x+w+8, y+h/2, arrow-16, th.Edge)
+			flowArrow(&b, x+w+10, y+h/2, arrow-20, th)
 		}
 	}
 
@@ -304,7 +313,24 @@ func open(b *strings.Builder, height float64, th svg.Theme, label string) {
 	fmt.Fprintf(b, `<svg xmlns="http://www.w3.org/2000/svg" width="%.0f" height="%.0f" `+
 		`viewBox="0 0 %.0f %.0f" font-family="%s" role="img" aria-label="%s">`,
 		width, height, width, height, draw.FontStack, draw.Escape(label))
+	b.WriteString(draw.Stylesheet)
 	draw.RoundRect(b, 0.5, 0.5, width-1, height-1, 12, th.Canvas, th.Border)
+}
+
+// card draws the shape every picture is made of: a rounded box with a status
+// stripe running the full height of its left edge.
+//
+// The stripe is clipped to the card rather than inset, because a stripe that
+// stops short of the corners reads as a decoration, and one that runs the
+// whole edge reads as a property of the card.
+func card(b *strings.Builder, id string, x, y, w, h float64, th svg.Theme, accent string) {
+	const radius = 10.0
+	draw.RoundRect(b, x, y, w, h, radius, th.Card, th.Border)
+	fmt.Fprintf(b, `<clipPath id="%s"><rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%.1f"/></clipPath>`,
+		id, x, y, w, h, radius)
+	fmt.Fprintf(b, `<g clip-path="url(#%s)">`, id)
+	draw.RoundRect(b, x, y, 4, h, 0, accent, "")
+	b.WriteString(`</g>`)
 }
 
 func closeDoc(b *strings.Builder) string {
@@ -323,16 +349,18 @@ func chip(b *strings.Builder, x, y float64, icon, label string, th svg.Theme) fl
 	return w
 }
 
-// rightArrow points from one stage to the next.
-func rightArrow(b *strings.Builder, x, y, length float64, color string) {
-	fmt.Fprintf(b, `<path d="M%.1f %.1f H%.1f" stroke="%s" stroke-width="1.5" fill="none"/>`,
-		x, y, x+length-5, color)
-	fmt.Fprintf(b, `<path d="M%.1f %.1f l-6 -4 v8 z" fill="%s"/>`, x+length, y, color)
+// flowArrow points from one stage to the next, with a dash travelling along it.
+func flowArrow(b *strings.Builder, x, y, length float64, th svg.Theme) {
+	line := fmt.Sprintf("M%.1f %.1f H%.1f", x, y, x+length-5)
+	fmt.Fprintf(b, `<path d="%s" stroke="%s" stroke-width="1.5" fill="none"/>`, line, th.Edge)
+	draw.FlowPath(b, line, th.InProgress)
+	fmt.Fprintf(b, `<path d="M%.1f %.1f l-6 -4 v8 z" fill="%s"/>`, x+length, y, th.Edge)
 }
 
-// elbow connects two points with a right angle and rounded corners, the same
-// shape the plan diagram uses for parent and child.
-func elbow(b *strings.Builder, x1, y1, x2, y2 float64, color string) {
+// elbowPath is the connector geometry — a right angle with rounded corners,
+// the same shape the plan diagram uses between a parent and a child. It
+// returns path data so the line and its travelling dash can share one route.
+func elbowPath(x1, y1, x2, y2 float64) string {
 	mid := x2 - 14
 	r := 8.0
 	if half := absF(y2-y1) / 2; r > half {
@@ -342,9 +370,8 @@ func elbow(b *strings.Builder, x1, y1, x2, y2 float64, color string) {
 	if y2 < y1 {
 		dir = -1
 	}
-	fmt.Fprintf(b, `<path d="M%.1f %.1f H%.1f Q%.1f %.1f %.1f %.1f V%.1f Q%.1f %.1f %.1f %.1f H%.1f" `+
-		`fill="none" stroke="%s" stroke-width="1.5"/>`,
-		x1, y1, mid-r, mid, y1, mid, y1+r*dir, y2-r*dir, mid, y2, mid+r, y2, x2, color)
+	return fmt.Sprintf("M%.1f %.1f H%.1f Q%.1f %.1f %.1f %.1f V%.1f Q%.1f %.1f %.1f %.1f H%.1f",
+		x1, y1, mid-r, mid, y1, mid, y1+r*dir, y2-r*dir, mid, y2, mid+r, y2, x2)
 }
 
 func absF(v float64) float64 {

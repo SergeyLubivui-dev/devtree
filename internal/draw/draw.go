@@ -113,12 +113,27 @@ func Escape(s string) string {
 // Icon stamps a glyph at a size, colored through currentColor so the vendored
 // path data never has to be rewritten. An unknown name draws nothing.
 func Icon(b *strings.Builder, name string, x, y, size float64, color string) {
+	IconClass(b, name, "", x, y, size, color)
+}
+
+// IconClass is Icon with an animation class on the glyph.
+//
+// The class goes on an inner group, never on the one carrying the placement
+// transform: a CSS transform replaces the transform attribute outright, so a
+// spin applied to the same element would fling the glyph to the origin.
+func IconClass(b *strings.Builder, name, class string, x, y, size float64, color string) {
 	body, ok := icons.Get(name)
 	if !ok {
 		return
 	}
-	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f) scale(%.4f)" style="color:%s">%s</g>`,
-		x, y, size/icons.GridSize, color, body)
+	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f) scale(%.4f)" style="color:%s">`,
+		x, y, size/icons.GridSize, color)
+	if class != "" {
+		fmt.Fprintf(b, `<g class="%s">%s</g>`, class, body)
+	} else {
+		b.WriteString(body)
+	}
+	b.WriteString(`</g>`)
 }
 
 // Text writes a label. Weight and anchor are passed through as given so the
@@ -138,10 +153,18 @@ func Text(b *strings.Builder, s string, x, y, size float64, color, weight, ancho
 // empty stroke leaves the shape borderless rather than drawing a black edge,
 // which is what SVG would do by default.
 func RoundRect(b *strings.Builder, x, y, w, h, r float64, fill, stroke string) {
+	RoundRectClass(b, "", x, y, w, h, r, fill, stroke)
+}
+
+// RoundRectClass is RoundRect with an animation class.
+func RoundRectClass(b *strings.Builder, class string, x, y, w, h, r float64, fill, stroke string) {
 	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%.1f" fill="%s"`,
 		x, y, w, h, r, fill)
 	if stroke != "" {
 		fmt.Fprintf(b, ` stroke="%s"`, stroke)
+	}
+	if class != "" {
+		fmt.Fprintf(b, ` class="%s"`, class)
 	}
 	b.WriteString(`/>`)
 }

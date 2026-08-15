@@ -2,6 +2,7 @@ package svg
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -151,6 +152,69 @@ func TestEveryStatusHasAGlyph(t *testing.T) {
 		if _, ok := icons.Get(name); !ok {
 			t.Fatalf("status %q maps to unknown icon %q", s, name)
 		}
+	}
+}
+
+func TestAnimationIsDeclaredOnceAndCanBeTurnedOff(t *testing.T) {
+	doc := Render(sample(t), Light)
+
+	if n := strings.Count(doc, "<style>"); n != 1 {
+		t.Errorf("expected exactly one stylesheet, found %d", n)
+	}
+	if !strings.Contains(doc, "prefers-reduced-motion") {
+		t.Error("motion must be switchable off by the reader's own setting")
+	}
+	if strings.Contains(doc, "<script") {
+		t.Error("a script would be blocked by GitHub's CSP and must never be emitted")
+	}
+}
+
+func TestMotionMarksTheLivePathOnly(t *testing.T) {
+	// One branch is moving and one is not. The dash belongs on the moving one
+	// and nowhere else, or the animation stops meaning anything.
+	tr := tree.New("x")
+	add := func(n *tree.Node) {
+		t.Helper()
+		if err := tr.Add(n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	add(&tree.Node{ID: "root", Title: "Root", Status: tree.InProgress})
+	add(&tree.Node{ID: "live", Title: "Live", Status: tree.InProgress, Parent: "root"})
+	add(&tree.Node{ID: "idle", Title: "Idle", Status: tree.Todo, Parent: "root"})
+	add(&tree.Node{ID: "stuck", Title: "Stuck", Status: tree.Blocked, Parent: "root"})
+
+	doc := Render(tr, Light)
+
+	if n := strings.Count(doc, `class="`+"dt-flow"+`"`); n != 1 {
+		t.Errorf("%d edges are flowing, want exactly the one leading into in-progress work", n)
+	}
+	// Two in-progress nodes, so two turning glyphs and no more.
+	if n := strings.Count(doc, `class="`+"dt-spin"+`"`); n != 2 {
+		t.Errorf("%d glyphs are turning, want 2", n)
+	}
+}
+
+func TestProgressBarsGrowIn(t *testing.T) {
+	doc := Render(sample(t), Light)
+	if !strings.Contains(doc, `class="dt-grow"`) {
+		t.Error("the filled part of a progress bar should grow in on load")
+	}
+	if strings.Count(doc, `class="dt-grow"`) < 2 {
+		t.Error("both the header bar and the per-node bars should grow")
+	}
+}
+
+func TestAccentRunsTheFullHeightOfACard(t *testing.T) {
+	doc := Render(sample(t), Light)
+
+	// The stripe is clipped to the card outline, which is the only way it can
+	// reach the rounded corners without poking out of them.
+	if !strings.Contains(doc, "<clipPath") || !strings.Contains(doc, "clip-path=\"url(#dt-card-0)\"") {
+		t.Errorf("expected the accent to be clipped to the card shape:\n%s", doc)
+	}
+	if !strings.Contains(doc, fmt.Sprintf(`width="%.1f" height="%.1f"`, accentW, cardH)) {
+		t.Error("the accent should be as tall as the card itself")
 	}
 }
 

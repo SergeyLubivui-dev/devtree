@@ -27,6 +27,7 @@ const (
 	metaIcon  = 11.0
 	titleSize = 12.5
 	metaSize  = 10.5
+	accentW   = 4.0 // the status stripe down the left edge of a card
 )
 
 // metaItem is one piece of context under a title: a branch, an issue, an owner.

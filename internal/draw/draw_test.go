@@ -102,6 +102,48 @@ func TestIconOnlyDrawsWhatItKnows(t *testing.T) {
 	}
 }
 
+func TestIconClassKeepsThePlacementTransform(t *testing.T) {
+	var b strings.Builder
+	IconClass(&b, "check-circle", ClassSpin, 10, 20, 18, "#1a7f37")
+
+	out := b.String()
+	if !strings.Contains(out, `transform="translate(10.0,20.0) scale(0.7500)"`) {
+		t.Errorf("the placement transform was lost:\n%s", out)
+	}
+	// The class must sit on an inner group. A CSS transform replaces the
+	// transform attribute outright, so sharing one element would fling the
+	// glyph to the origin the moment it starts turning.
+	if !strings.Contains(out, `><g class="`+ClassSpin+`"><path`) {
+		t.Errorf("the animation class should wrap the glyph, not the placement:\n%s", out)
+	}
+}
+
+func TestStylesheetIsSafeAndSwitchable(t *testing.T) {
+	for _, want := range []string{ClassFlow, ClassGrow, ClassSpin, "prefers-reduced-motion"} {
+		if !strings.Contains(Stylesheet, want) {
+			t.Errorf("the stylesheet is missing %q", want)
+		}
+	}
+	// GitHub serves repository SVGs under default-src 'none' with sandbox: a
+	// script would silently never run, so none may be emitted.
+	if strings.Contains(Stylesheet, "<script") || strings.Contains(Stylesheet, "url(") {
+		t.Error("the stylesheet must not pull in script or external resources")
+	}
+}
+
+func TestFlowPathLeavesTheLineUnderneathIntact(t *testing.T) {
+	var b strings.Builder
+	FlowPath(&b, "M0 0 H50", "#bf8700")
+
+	out := b.String()
+	if !strings.Contains(out, `d="M0 0 H50"`) {
+		t.Error("the dash should follow the same route as the line it decorates")
+	}
+	if !strings.Contains(out, `class="`+ClassFlow+`"`) || !strings.Contains(out, "stroke-dasharray") {
+		t.Errorf("expected an animated dash pattern:\n%s", out)
+	}
+}
+
 func TestTextAndRoundRectStayOptional(t *testing.T) {
 	var b strings.Builder
 	Text(&b, "plain", 1, 2, 12, "#000", "", "")

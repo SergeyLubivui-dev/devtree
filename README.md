@@ -261,10 +261,26 @@ Point a `<picture>` at the pair and GitHub switches it with the reader's theme:
 </picture>
 ```
 
-What the drawing adds over the Mermaid block: status glyphs on a 24×24 grid, a progress bar and a
-completion ratio on every parent, branch, issue, pull request, owner and tags on a second line under
-each title, a status key along the bottom, and rounded elbow connectors that stay readable when a
-milestone grows a dozen children.
+What the drawing adds over the Mermaid block: status glyphs on a 24×24 grid, a stripe of the status
+color running the full height of each card, a progress bar and a completion ratio on every parent,
+branch, issue, pull request, owner and tags on a second line under each title, a status key along
+the bottom, and rounded elbow connectors that stay readable when a milestone grows a dozen children.
+
+### Motion that means something
+
+Three things move, and each one is information rather than decoration:
+
+| | |
+|---|---|
+| A dash travels down an edge | that edge leads into work that is in progress — it marks the live path through the plan |
+| A glyph turns | that task is in flight right now |
+| A bar grows in, once | how much of a milestone is finished |
+
+Everything else holds still. The motion is CSS inside the file: GitHub serves repository SVGs under
+`default-src 'none'; style-src 'unsafe-inline'; sandbox`, which permits a stylesheet and forbids
+script, so declarative animation is the only kind that survives — and the only kind worth having in
+a diagram. Readers who ask their system for less motion get a still picture, because every animated
+element is drawn over something that already reads correctly without it.
 
 The output is self-contained by design — no external fonts, no images, no script, no CSS custom
 properties. GitHub serves repository SVGs under `default-src 'none'; sandbox`, and everything in the
@@ -330,7 +346,7 @@ And the same plan as a Mermaid block, injected straight into this README:
 
 ## 🌳 devtree
 
-██████████░░░░░░░░░░ **9 / 18** tasks done
+██████████░░░░░░░░░░ **10 / 19** tasks done
 
 ```mermaid
 flowchart TD
@@ -352,7 +368,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["☐ v0.2 - sharper day-to-day use<br/><i>1/6</i>"]:::todo
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>2/7</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["☐ Filter ls by owner and tag"]:::todo
     n_v0_2 --> n_focus
@@ -365,7 +381,9 @@ flowchart TD
     n_svg_output["✔ Native SVG output with embedded icons"]:::done
     n_v0_2 --> n_html_export
     n_html_export["☐ Interactive HTML export"]:::todo
-    n_distribution["☐ Distribution<br/><i>1/3</i>"]:::todo
+    n_v0_2 --> n_animation
+    n_animation["✔ Animation in the SVG output"]:::done
+    n_distribution["◐ Distribution<br/><i>1/3</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done
     n_distribution --> n_homebrew
