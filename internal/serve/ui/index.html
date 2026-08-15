@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>devtree</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <span class="brand">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"></svg>
+    <span class="project t-shimmer" data-text="loading…">loading…</span>
+  </span>
+
+  <span class="progress" title="tasks done">
+    <span class="bar-track"><span class="bar-fill"></span></span>
+    <span class="count">–</span>
+  </span>
+
+  <span class="spacer"></span>
+
+  <!-- The tabs move a pill between them; see the note in app.js on why the
+       first paint is written without a transition. -->
+  <div class="t-tabs" role="tablist" id="views">
+    <span class="t-tabs-pill" aria-hidden="true"></span>
+    <button class="t-tab" role="tab" data-view="tree" aria-selected="true">Tree</button>
+    <button class="t-tab" role="tab" data-view="board" aria-selected="false">Board</button>
+    <button class="t-tab" role="tab" data-view="page" aria-selected="false">Page</button>
+    <button class="t-tab" role="tab" data-view="mermaid" aria-selected="false">Mermaid</button>
+    <button class="t-tab" role="tab" data-view="yaml" aria-selected="false">YAML</button>
+  </div>
+
+  <button class="icon-button" id="theme" title="Light or dark">
+    <span class="t-icon-swap" data-state="a">
+      <span class="t-icon" data-icon="a"><svg class="glyph" viewBox="0 0 24 24" data-glyph="flash"></svg></span>
+      <span class="t-icon" data-icon="b"><svg class="glyph" viewBox="0 0 24 24" data-glyph="monitor"></svg></span>
+    </span>
+  </button>
+
+  <button class="button primary" id="write">
+    Write outputs
+    <span class="t-success-check" data-state="out" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12.5 L9.5 18 L20 6.5"></path>
+      </svg>
+    </span>
+  </button>
+</header>
+
+<main class="panes">
+  <!-- Left: the plan. Right: what it looks like. The divider between them is
+       draggable, and the panes tween to their new size rather than snapping. -->
+  <section class="pane left t-resize" id="left">
+    <div class="pane-head">
+      <h2>Plan</h2>
+      <button class="button small" id="add-root">Add task</button>
+    </div>
+
+    <div class="tasks" id="tasks" role="tree" aria-label="Tasks"></div>
+
+    <div class="warnings" id="warnings" hidden></div>
+  </section>
+
+  <div class="divider" id="divider" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+  <section class="pane right">
+    <!-- The preview is a skeleton until the first render arrives, and returns
+         to one whenever a change is being drawn. -->
+    <div class="t-skel preview" id="preview" data-state="loading">
+      <div class="t-skel-skeleton is-pulsing" id="skeleton">
+        <div class="skeleton-row wide"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row narrow"></div>
+        <div class="skeleton-row"></div>
+      </div>
+      <div class="t-skel-content" id="preview-content"></div>
+    </div>
+  </section>
+</main>
+
+<!-- The editor for one task. It is a form, so the keyboard works: tab through
+     the fields, press Enter to save. -->
+<aside class="editor" id="editor" hidden>
+  <form id="editor-form">
+    <div class="editor-head">
+      <h2 id="editor-title">Task</h2>
+      <button type="button" class="icon-button" id="editor-close" title="Close">
+        <svg class="glyph" viewBox="0 0 24 24" data-glyph="close-circle"></svg>
+      </button>
+    </div>
+
+    <label>Title<input name="title" autocomplete="off" required></label>
+
+    <label>Status
+      <div class="menu-anchor">
+        <button type="button" class="select" id="status-button" aria-haspopup="menu" aria-expanded="false">
+          <span id="status-label">todo</span>
+          <svg class="glyph small" viewBox="0 0 24 24" data-glyph="code-square"></svg>
+        </button>
+        <div class="t-dropdown menu" data-origin="top-left" id="status-menu" role="menu"></div>
+      </div>
+    </label>
+
+    <div class="row">
+      <label>Branch<input name="branch" autocomplete="off" placeholder="feat/auth"></label>
+      <label>Owner<input name="owner" autocomplete="off" placeholder="ann"></label>
+    </div>
+    <div class="row">
+      <label>Issue<input name="issue" autocomplete="off" placeholder="12"></label>
+      <label>Pull request<input name="pr" autocomplete="off" placeholder="44"></label>
+    </div>
+
+    <label>Tags<input name="tags" autocomplete="off" placeholder="backend, money"></label>
+    <label>Note<textarea name="note" rows="2" placeholder="why it is where it is"></textarea></label>
+
+    <div class="editor-foot">
+      <button type="submit" class="button primary">Save</button>
+      <button type="button" class="button" id="add-child">Add child</button>
+      <button type="button" class="button danger" id="delete">Delete</button>
+    </div>
+  </form>
+</aside>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

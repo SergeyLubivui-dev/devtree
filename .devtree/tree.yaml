@@ -100,3 +100,8 @@ nodes:
     title: "Documentation folder and a tidy root"
     status: "done"
     parent: "v0-2"
+  - id: "editor"
+    title: "Local editor on 127.0.0.1"
+    status: "done"
+    parent: "v0-2"
+    note: "two panes, live preview, Transitions.dev motion"

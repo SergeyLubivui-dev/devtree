@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `devtree serve` — a local editor at `http://127.0.0.1:9312`. The plan on the left, drawn on the
+  right, live: five views behind the tabs (tree, board, page, Mermaid, YAML), rendered on demand,
+  with nothing written to disk until you ask. It binds to the loopback interface only, stores
+  nothing of its own, and every change goes through the same domain rules and lands in the same
+  plan file the command line writes, so the editor and a terminal can be used in the same minute.
+  The page listens for the file changing, so an edit made in either shows up in the other.
+- The editor's motion is the Transitions.dev set, each snippet doing a job: a pill slides between
+  tabs, the status menu drops from its control, the theme icon swaps with a blur, a check draws
+  itself after a save, a skeleton holds the layout while a drawing is fetched, the title shimmers
+  until the plan has a name, and the panes tween when the divider is stepped with the keyboard.
+  All of it stops under `prefers-reduced-motion`, and `?live=0` turns off the change stream.
+
 ### Fixed
 
 - The Mermaid block no longer fights the reader's theme. It pinned a light fill and a dark label

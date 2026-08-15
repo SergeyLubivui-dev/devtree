@@ -243,6 +243,7 @@ devtree sync --apply   # отметить их выполненными
 | `restore ID [ID...]` | Возвращает задачи из архива |
 | `sync [--apply]` | Закрывает задачи, чьи ветки git уже влил |
 | `history [--limit N]` | Читает прошлые версии плана из git и показывает, как менялся прогресс |
+| `serve [--port N] [--open]` | Открывает локальный редактор на 127.0.0.1 |
 | `render [--file F] [--quiet]` | Перегенерирует все выходные файлы |
 | `check [--strict]` | Валидирует план — для CI и хуков |
 | `install hook\|action\|gitlab\|all` | Ставит pre-commit хук, GitHub Action или job для GitLab |

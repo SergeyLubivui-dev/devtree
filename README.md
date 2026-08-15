@@ -117,6 +117,22 @@ A longer walk through the same ground: [docs/getting-started.md](docs/getting-st
 
 ---
 
+## The editor
+
+```bash
+devtree serve --open      # http://127.0.0.1:9312
+```
+
+The plan on the left, drawn on the right, live. Click a task to edit it, and the drawing redraws as
+you save. Five views behind the tabs — tree, board, page, Mermaid, YAML — rendered on demand, with
+nothing written to disk until you press **Write outputs**.
+
+It binds to the loopback interface, stores nothing of its own, and every change lands in the same
+`.devtree/tree.yaml` the command line writes: keep the editor in one window and a terminal in the
+other, and neither loses an edit. More: [docs/editor.md](docs/editor.md).
+
+---
+
 ## Everyday recipes
 
 Short, real things people do with a plan. Copy one and change the words.
@@ -256,6 +272,7 @@ More: [docs/finished-work.md](docs/finished-work.md).
 | `restore ID [ID...]` | Brings archived work back |
 | `sync [--apply]` | Closes tasks whose branch git has already merged |
 | `history [--limit N]` | Reads past versions of the plan out of git and shows how far along it was |
+| `serve [--port N] [--open]` | Opens the local editor on 127.0.0.1 |
 | `render [--file F] [--quiet]` | Regenerates every output |
 | `check [--strict]` | Validates the plan — for CI and hooks |
 | `install hook\|action\|gitlab\|all` | Installs the pre-commit hook, the GitHub Action, or the GitLab job |
@@ -392,6 +409,7 @@ This page is the tour. [`docs/`](docs/) is the detail underneath it.
 | [Finished work](docs/finished-work.md) | Archiving, restoring, closing tasks from merged branches |
 | [Automation](docs/automation.md) | The pre-commit hook and the GitHub Action, line by line |
 | [SVG output](docs/svg-output.md) | File naming, palettes, the animation vocabulary, the CSP it survives |
+| [The editor](docs/editor.md) | The local two-pane editor, and the motion in it |
 | [The container](docs/container.md) | Running devtree without installing anything |
 | [Architecture](docs/architecture.md) | The layering, the rules that hold it, and how it is tested |
 

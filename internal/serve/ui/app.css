@@ -1,0 +1,441 @@
+/* devtree — the local editor.
+ *
+ * The motion in here is the Transitions.dev set, kept verbatim in behaviour
+ * and given a job each: the tabs slide a pill, the status menu drops, the
+ * theme button swaps its icon, saving draws a check, the preview waits behind
+ * a skeleton, the project name shimmers while it loads, and the panes tween
+ * when the divider moves. Every one of them stops under prefers-reduced-motion.
+ */
+
+/* ── palette ─────────────────────────────────────────────────────────────── */
+
+:root {
+  --text: #1f2328;
+  --muted: #59636e;
+  --canvas: #f6f8fa;
+  --card: #ffffff;
+  --border: #d1d9e0;
+  --track: #eaeef2;
+
+  --st-todo: #59636e;
+  --st-in-progress: #bf8700;
+  --st-blocked: #cf222e;
+  --st-done: #1a7f37;
+  --st-dropped: #8c959f;
+
+  --shimmer-base: #59636e;
+  --shimmer-highlight: #1f2328;
+  --tabs-bar-bg: #eaeef2;
+  --tabs-pill-bg: #ffffff;
+  --tabs-text-muted: #59636e;
+  --tabs-text-active: #1f2328;
+}
+
+:root[data-theme="dark"] {
+  --text: #e6edf3;
+  --muted: #9198a1;
+  --canvas: #0d1117;
+  --card: #151b23;
+  --border: #3d444d;
+  --track: #262c36;
+
+  --st-todo: #9198a1;
+  --st-in-progress: #d29922;
+  --st-blocked: #f85149;
+  --st-done: #3fb950;
+  --st-dropped: #6e7681;
+
+  --shimmer-base: #6e6e6e;
+  --shimmer-highlight: #ededed;
+  --tabs-bar-bg: #202020;
+  --tabs-pill-bg: #454545;
+  --tabs-text-muted: rgba(193, 193, 193, 0.8);
+  --tabs-text-active: #ffffff;
+}
+
+/* ── shell ───────────────────────────────────────────────────────────────── */
+
+* { box-sizing: border-box }
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  color: var(--text);
+  font: 13.5px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px }
+.mark { width: 22px; height: 22px; color: var(--st-done) }
+.spacer { flex: 1 }
+
+.progress { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px }
+.bar-track { width: 140px; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden }
+.bar-fill { display: block; height: 100%; width: 0; background: var(--st-done); transition: width 400ms cubic-bezier(.22,1,.36,1) }
+
+.panes { flex: 1; display: flex; min-height: 0 }
+.pane { min-width: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 16px }
+.pane.left { width: 380px; flex: none; border-right: 1px solid var(--border); background: var(--card) }
+.pane.right { flex: 1; padding: 0 }
+.pane-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px }
+.pane-head h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted) }
+
+.divider { width: 5px; cursor: col-resize; background: transparent; flex: none }
+.divider:hover, .divider:focus-visible { background: var(--st-in-progress); outline: none }
+
+/* ── the task list ───────────────────────────────────────────────────────── */
+
+/* A column, so every card stretches to the pane while its own margin-left
+   still carries the depth. */
+.tasks { display: flex; flex-direction: column; align-items: stretch }
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* No fixed width: an indented card has to shrink to stay inside the pane,
+     and the pane is draggable. */
+  width: auto;
+  padding: 7px 9px;
+  margin: 3px 0;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.task:hover { border-color: var(--st-in-progress) }
+.task[aria-selected="true"] { box-shadow: inset 0 0 0 1px var(--st-in-progress); border-color: var(--st-in-progress) }
+.task[data-status="todo"] { border-left-color: var(--st-todo) }
+.task[data-status="in_progress"] { border-left-color: var(--st-in-progress) }
+.task[data-status="blocked"] { border-left-color: var(--st-blocked) }
+.task[data-status="done"] { border-left-color: var(--st-done) }
+.task[data-status="dropped"] { border-left-color: var(--st-dropped) }
+.task[data-status="dropped"] .task-title { text-decoration: line-through; color: var(--muted) }
+
+.task .glyph { width: 16px; height: 16px; flex: none }
+.task-body { min-width: 0; display: flex; flex-direction: column }
+.task-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.task-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.task-ratio { margin-left: auto; color: var(--muted); font-size: 11px }
+
+.warnings {
+  margin-top: 14px; padding: 10px 12px; border-radius: 9px;
+  border: 1px solid var(--st-blocked); color: var(--muted); font-size: 12px;
+}
+.warnings b { color: var(--text); font-weight: 600 }
+
+/* ── preview ─────────────────────────────────────────────────────────────── */
+
+.preview { height: 100% }
+.t-skel-content { overflow: auto; padding: 16px }
+.t-skel-content img, .t-skel-content svg { max-width: 100% }
+.t-skel-content iframe { width: 100%; height: 100%; border: 0; background: var(--canvas) }
+.t-skel-content pre {
+  margin: 0; padding: 14px; border-radius: 10px; background: var(--card);
+  border: 1px solid var(--border); overflow: auto;
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.t-skel-skeleton { padding: 24px; display: flex; flex-direction: column; gap: 14px }
+.skeleton-row { height: 44px; border-radius: 9px; background: var(--track) }
+.skeleton-row.wide { width: 70% }
+.skeleton-row.narrow { width: 40% }
+
+/* ── controls ────────────────────────────────────────────────────────────── */
+
+.button {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--card); color: var(--text);
+  font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.button:hover { border-color: var(--st-in-progress) }
+.button.primary { border-color: var(--st-done); color: var(--st-done) }
+.button.danger { border-color: var(--st-blocked); color: var(--st-blocked) }
+.button.small { padding: 4px 9px; font-size: 12px }
+
+.icon-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--card); color: var(--muted); cursor: pointer;
+}
+.icon-button:hover { color: var(--text); border-color: var(--st-in-progress) }
+.glyph { width: 18px; height: 18px }
+.glyph.small { width: 14px; height: 14px }
+
+/* ── the editor ──────────────────────────────────────────────────────────── */
+
+.editor {
+  position: fixed; right: 16px; bottom: 16px; width: 340px; z-index: 5;
+  padding: 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--card);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 40px rgba(0,0,0,.18);
+}
+.editor-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px }
+.editor-head h2 { margin: 0; font-size: 13px }
+.editor label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 11.5px }
+.editor input, .editor textarea, .editor .select {
+  display: block; width: 100%; margin-top: 3px;
+  padding: 6px 9px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--canvas); color: var(--text);
+  font: inherit; font-size: 13px;
+}
+.editor textarea { resize: vertical }
+.editor .row { display: flex; gap: 8px }
+.editor .row label { flex: 1 }
+.editor-foot { display: flex; gap: 8px; margin-top: 4px }
+.select { display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left }
+
+.menu-anchor { position: relative }
+.menu {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 6;
+  padding: 4px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--card);
+  box-shadow: 0 8px 30px rgba(0,0,0,.16);
+}
+.menu button .glyph { width: 15px; height: 15px }
+.menu button {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 8px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--text); font: inherit; font-size: 12.5px;
+  cursor: pointer; text-align: left;
+}
+.menu button:hover { background: var(--track) }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  padding: 8px 14px; border-radius: 8px; z-index: 9;
+  background: #222222; color: #f0f0f0; font-size: 12.5px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.28);
+}
+.toast[data-kind="error"] { background: var(--st-blocked); color: #fff }
+
+/* ── Transitions.dev — Card resize ───────────────────────────────────────── */
+
+:root { --resize-dur: 300ms; --resize-ease: cubic-bezier(0.22, 1, 0.36, 1) }
+
+.t-resize {
+  transition: width var(--resize-dur) var(--resize-ease),
+              height var(--resize-dur) var(--resize-ease);
+  will-change: width, height;
+}
+/* While a pointer is dragging the divider the pane must track the cursor
+   exactly; tweening there would feel like lag rather than polish. */
+.t-resize.is-dragging { transition: none }
+
+/* ── Transitions.dev — Menu dropdown ─────────────────────────────────────── */
+
+:root {
+  --dropdown-open-dur: 250ms;
+  --dropdown-close-dur: 150ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-closing-scale: 0.99;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-dropdown {
+  transform-origin: top left;
+  transform: scale(var(--dropdown-pre-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--dropdown-open-dur) var(--dropdown-ease),
+              opacity var(--dropdown-open-dur) var(--dropdown-ease);
+  will-change: transform, opacity;
+}
+.t-dropdown[data-origin="top-right"] { transform-origin: top right }
+.t-dropdown[data-origin="top-center"] { transform-origin: top center }
+.t-dropdown[data-origin="bottom-left"] { transform-origin: bottom left }
+.t-dropdown[data-origin="bottom-center"] { transform-origin: bottom center }
+.t-dropdown[data-origin="bottom-right"] { transform-origin: bottom right }
+
+.t-dropdown.is-open { transform: scale(1); opacity: 1; pointer-events: auto }
+.t-dropdown.is-closing {
+  transform: scale(var(--dropdown-closing-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--dropdown-close-dur) var(--dropdown-ease),
+              opacity var(--dropdown-close-dur) var(--dropdown-ease);
+}
+
+/* ── Transitions.dev — Icon swap ─────────────────────────────────────────── */
+
+:root {
+  --icon-swap-dur: 250ms;
+  --icon-swap-blur: 2px;
+  --icon-swap-start-scale: 0.25;
+  --icon-swap-ease: ease-in-out;
+}
+
+.t-icon-swap { position: relative; display: inline-grid }
+.t-icon-swap .t-icon {
+  grid-area: 1 / 1;
+  transition: opacity var(--icon-swap-dur) var(--icon-swap-ease),
+              filter var(--icon-swap-dur) var(--icon-swap-ease),
+              transform var(--icon-swap-dur) var(--icon-swap-ease);
+  will-change: opacity, filter, transform;
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {
+  opacity: 1; filter: blur(0); transform: scale(1);
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="a"] {
+  opacity: 0; filter: blur(var(--icon-swap-blur)); transform: scale(var(--icon-swap-start-scale));
+}
+
+/* ── Transitions.dev — Success check ─────────────────────────────────────── */
+
+:root {
+  --check-opacity-dur: 500ms;
+  --check-rotate-dur: 500ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 500ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 500ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-success-check {
+  display: inline-block;
+  transform-origin: center;
+  opacity: 0;
+  width: 16px; height: 16px; color: var(--st-done);
+  will-change: transform, opacity, filter;
+}
+.t-success-check svg { display: block; overflow: visible; width: 16px; height: 16px }
+/* 26 is the measured length of the check path in this icon; round caps hide
+   any sub-pixel overshoot. */
+.t-success-check svg path { stroke-dasharray: 26; stroke-dashoffset: 26 }
+
+.t-success-check[data-state="in"] {
+  animation:
+    t-check-fade var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+    t-check-rotate var(--check-rotate-dur) var(--check-ease-rotate) forwards,
+    t-check-blur var(--check-blur-dur) var(--check-ease-out) forwards,
+    t-check-bob var(--check-bob-dur) var(--check-ease-bob) forwards;
+}
+.t-success-check[data-state="in"] svg path {
+  animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+}
+
+@keyframes t-check-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes t-check-rotate { from { transform: rotate(var(--check-rotate-from)) } to { transform: rotate(0deg) } }
+@keyframes t-check-blur { from { filter: blur(var(--check-blur-from)) } to { filter: blur(0) } }
+@keyframes t-check-bob { from { translate: 0 var(--check-y-amount) } to { translate: 0 0 } }
+@keyframes t-check-draw { to { stroke-dashoffset: 0 } }
+
+/* ── Transitions.dev — Skeleton loader and reveal ────────────────────────── */
+
+:root {
+  --pulse-dur: 1000ms;
+  --pulse-count: infinite;
+  --pulse-min: 0.5;
+  --reveal-dur: 400ms;
+  --reveal-blur: 2px;
+  --reveal-ease: ease-in-out;
+}
+
+.t-skel { position: relative }
+.t-skel-skeleton, .t-skel-content { position: absolute; inset: 0 }
+
+.t-skel-skeleton {
+  z-index: 1; opacity: 1; filter: blur(0);
+  transition: opacity var(--reveal-dur) var(--reveal-ease),
+              filter var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel-content {
+  z-index: 2; opacity: 0; filter: blur(var(--reveal-blur));
+  transition: opacity var(--reveal-dur) var(--reveal-ease),
+              filter var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel.is-revealed .t-skel-skeleton { opacity: 0; filter: blur(var(--reveal-blur)) }
+.t-skel.is-revealed .t-skel-content { opacity: 1; filter: blur(0) }
+.t-skel.is-resetting .t-skel-skeleton,
+.t-skel.is-resetting .t-skel-content { transition: none !important }
+
+.t-skel-skeleton.is-pulsing > * {
+  animation: t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+}
+@keyframes t-skel-pulse { 0%, 100% { opacity: 1 } 50% { opacity: var(--pulse-min) } }
+
+/* ── Transitions.dev — Shimmer text ──────────────────────────────────────── */
+
+:root { --shimmer-dur: 2000ms; --shimmer-band: 400%; --shimmer-ease: linear }
+
+.t-shimmer { position: relative; display: inline-block; color: var(--shimmer-base) }
+.t-shimmer::before {
+  content: attr(data-text);
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--shimmer-highlight) 50%,
+    transparent 60%, transparent 100%);
+  background-size: var(--shimmer-band) 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite;
+}
+@keyframes t-shimmer { 0% { background-position: 100% 0 } 100% { background-position: 0% 0 } }
+/* Once the plan has a name the shimmer has nothing left to say. */
+.t-shimmer.is-settled { color: inherit }
+.t-shimmer.is-settled::before { content: none }
+
+/* ── Transitions.dev — Tabs sliding ──────────────────────────────────────── */
+
+:root { --tabs-dur: 250ms; --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1) }
+
+.t-tabs {
+  position: relative; display: inline-flex; align-items: center;
+  gap: 3px; padding: 3px; border-radius: 48px; background: var(--tabs-bar-bg);
+}
+.t-tab {
+  position: relative; appearance: none; border: 0; background: transparent;
+  height: 28px; padding: 4px 12px; border-radius: 48px; z-index: 1;
+  color: var(--tabs-text-muted); font: inherit; font-size: 12.5px; cursor: pointer;
+  transition: color var(--tabs-dur) var(--tabs-ease);
+}
+.t-tab:not([aria-selected="true"]):hover,
+.t-tab[aria-selected="true"] { color: var(--tabs-text-active) }
+
+.t-tabs-pill {
+  position: absolute; top: 3px; left: 0; height: 28px; width: 0;
+  background: var(--tabs-pill-bg); border-radius: 48px;
+  transform: translateX(0);
+  transition: transform var(--tabs-dur) var(--tabs-ease),
+              width var(--tabs-dur) var(--tabs-ease);
+  will-change: transform, width;
+  z-index: 0; pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-resize, .t-dropdown, .t-icon-swap .t-icon, .t-skel-skeleton, .t-skel-content,
+  .t-tabs-pill, .t-tab, .bar-fill { transition: none !important }
+  .t-success-check, .t-success-check svg path, .t-skel-skeleton.is-pulsing > *,
+  .t-shimmer::before { animation: none !important }
+  .t-success-check { opacity: 1 }
+  .t-success-check svg path { stroke-dashoffset: 0 !important }
+}

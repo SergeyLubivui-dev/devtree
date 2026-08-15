@@ -3,7 +3,7 @@
 
 ## 🌳 devtree
 
-██████████████████░░ **22 / 24** tasks done
+██████████████████░░ **23 / 25** tasks done
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n_automation["✔ Pre-commit hook and GitHub Action"]:::done
     n_v0_1 --> n_tests
     n_tests["✔ Test suite"]:::done
-    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>11/11</i>"]:::in_progress
+    n_v0_2["◐ v0.2 - sharper day-to-day use<br/><i>12/12</i>"]:::in_progress
     n_v0_2 --> n_filters
     n_filters["✔ Filter ls by owner and tag"]:::done
     n_v0_2 --> n_focus
@@ -48,6 +48,8 @@ flowchart TD
     n_sync["✔ Close tasks from merged branches"]:::done
     n_v0_2 --> n_docs_layout
     n_docs_layout["✔ Documentation folder and a tidy root"]:::done
+    n_v0_2 --> n_editor
+    n_editor["✔ Local editor on 127.0.0.1"]:::done
     n_distribution["◐ Distribution<br/><i>4/4</i>"]:::in_progress
     n_distribution --> n_binaries
     n_binaries["✔ Prebuilt binaries on every tag"]:::done

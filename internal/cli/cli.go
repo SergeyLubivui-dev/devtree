@@ -79,6 +79,8 @@ func (a *App) Execute(args []string) int {
 		err = a.cmdSync(rest)
 	case "history":
 		err = a.cmdHistory(rest)
+	case "serve", "edit":
+		err = a.cmdServe(rest)
 	case "render":
 		err = a.cmdRender(rest)
 	case "check":
@@ -127,6 +129,7 @@ COMMANDS
   restore   Bring archived work back
   sync      Close tasks whose branch has already been merged
   history   Show how the plan changed, from the repository's own history
+  serve     Open the local editor: the plan on the left, drawn on the right
   render    Regenerate the diagram
   check     Validate the plan, for CI and hooks
   install   Install the pre-commit hook, the GitHub Action, or the GitLab job
@@ -193,6 +196,12 @@ FINISHED WORK
 
   devtree history [--limit N]     Read past versions of the plan out of git
                                   and show how far along it was each time
+
+THE EDITOR
+  devtree serve [--port 9312] [--open]
+        A two-pane page on 127.0.0.1: edit the plan on the left, watch it
+        drawn on the right. Nothing is stored anywhere but the plan file, so
+        the editor and the terminal can be used in the same minute.
 
 OUTPUT FILES
   The name decides the drawing. TREE.md and README.md get the Mermaid block;

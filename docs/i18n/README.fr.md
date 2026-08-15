@@ -249,6 +249,7 @@ seul fichier.
 | `restore ID [ID...]` | Ramène du travail archivé |
 | `sync [--apply]` | Clôt les tâches dont la branche est déjà fusionnée par git |
 | `history [--limit N]` | Lit les versions passées du plan dans git et montre la progression |
+| `serve [--port N] [--open]` | Ouvre l'éditeur local sur 127.0.0.1 |
 | `render [--file F] [--quiet]` | Régénère toutes les sorties |
 | `check [--strict]` | Valide le plan — pour la CI et les hooks |
 | `install hook\|action\|gitlab\|all` | Installe le hook de pre-commit, la GitHub Action ou le job GitLab |
