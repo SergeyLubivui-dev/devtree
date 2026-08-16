@@ -221,3 +221,23 @@ func TestAGlyphCanNominateThePartThatMoves(t *testing.T) {
 		t.Errorf("stripping the marker left the group malformed: %s", still.String())
 	}
 }
+
+func TestTheNewMotionIsGuardedLikeTheRest(t *testing.T) {
+	// A drawing that is printed, or read by somebody who has asked for less
+	// motion, must show the finished state — not the first frame of it. For
+	// the two that carry their own dash and offset that means saying so
+	// explicitly rather than only switching the animation off.
+	guard := Stylesheet[strings.Index(Stylesheet, "prefers-reduced-motion"):]
+
+	for _, class := range []string{ClassDraw, ClassRoll} {
+		if !strings.Contains(guard, class) {
+			t.Errorf("%s keeps moving under reduced motion", class)
+		}
+	}
+	if !strings.Contains(guard, "stroke-dashoffset: 0") {
+		t.Error("a drawn-on path would stay half-drawn with the motion off")
+	}
+	if !strings.Contains(guard, "--dt-roll-y") {
+		t.Error("a counter would stay on its first value with the motion off")
+	}
+}

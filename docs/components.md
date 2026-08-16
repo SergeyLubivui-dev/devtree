@@ -97,8 +97,34 @@ there is one `Chip` rather than a `Chip` and a `ChipWithIcon`.
 
 Any component that can move takes a class rather than deciding for itself, because whether a thing
 should be moving is a fact about the diagram, not about the shape: the bar grows on load, the
-blocked pill breathes, the connector on the live path carries a travelling dash. All of it is the
-same guarded stylesheet as the rest of devtree — nothing moves under `prefers-reduced-motion`, and
-nothing moves on paper.
+blocked pill breathes, the connector on the live path carries a travelling dash.
+
+| Class | What it does |
+|---|---|
+| `ClassGrow` | fills a bar from its left edge, once |
+| `ClassDraw` | writes a stroked path on — a sparkline, a connector, the arc of a ring |
+| `ClassRoll` | steps a number up to its value, one written value at a time |
+| `ClassFlow` | sends a dash travelling along a stroke, repeating |
+| `ClassSpin` | turns the ring of a progress glyph, leaving the check inside it still |
+| `ClassPulse` | breathes, slowly, for work that is blocked |
+| `ClassRise` | fades a card up into place, staggered, once |
+
+Two of those are worth a note.
+
+`ClassDraw` works on any path of any length because the element declares `pathLength="1"`: the
+renderer then measures the path as a single unit whatever its real length, so one rule serves a
+sparkline, an elbow connector and a 42% arc. How much ends up drawn is the element's own
+`--dt-draw`, which is also where the dash starts from — one number doing both jobs, so the two
+cannot disagree.
+
+`ClassRoll` steps rather than interpolates. The values are laid out as a column and the column is
+stepped past a window, so every frame shows a number somebody actually wrote: a counter easing
+through 7.4 on its way to 12 is telling the reader something untrue about a total. It settles on the
+last value, so the still frame — printed, or read with motion off — is the real figure.
+
+All of it is the same guarded stylesheet as the rest of devtree: nothing moves under
+`prefers-reduced-motion`, and nothing moves on paper. The two that carry their own dash and offset
+say so explicitly in the guard, because switching an animation off must leave the finished state
+rather than the first frame of it.
 
 See [the SVG output](svg-output.md) for what each animation means.

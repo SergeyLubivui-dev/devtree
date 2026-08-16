@@ -10,8 +10,8 @@ binary keeps its zero dependencies, and every error names the line it is on.
 # Development tree. Edit by hand or through the `devtree` command.
 # After editing, run `devtree render` to refresh the diagram.
 version: 1
-project: "Payment Gateway"
-repo: "https://github.com/acme/pay"
+project: "Storefront"
+repo: "https://github.com/acme/storefront"
 outputs: "TREE.md, docs/tree.svg"
 nodes:
   - id: "mvp"

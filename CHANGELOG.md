@@ -8,6 +8,17 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Two more ways for a drawing to move, both declarative. `ClassDraw` writes a stroked path on —
+  a sparkline, an elbow connector, the arc of a progress ring — and works on any path of any length
+  because the element declares `pathLength="1"`, so the renderer measures it as one unit and a single
+  rule covers all three. `ClassRoll` steps a number up to its value one written value at a time
+  rather than interpolating: a counter easing through 7.4 on its way to 12 is telling the reader
+  something untrue about a total. Both settle on the finished state when motion is off, rather than
+  freezing on the first frame of it.
+- The component gallery moves, because movement is its subject: the rings and the sparkline draw
+  themselves on, the meters fill, the count arrives. The plan diagrams stay as restrained as they
+  were — there, motion is spent on the live path, work in flight, work blocked, and progress gained.
+
 - The README shows the editor and the component vocabulary. Both pictures are drawn by devtree from
   the same components its diagrams are, rather than captured: a screenshot is wrong the week after
   somebody changes a colour, and nobody notices until a reader does. The editor illustration is also
@@ -93,6 +104,15 @@ All notable changes to this project are documented here. The format follows
   the glyph, and nothing else is set, so the block looks native on either page.
 
 ### Changed
+
+- The worked example is a web project rather than a payment gateway: one MVP split into a backend —
+  authentication, the API's shape, a Docker image — and a frontend, where the framework choice is
+  written down as a task with the reason in its note, next to the catalog, the checkout and nginx.
+  It is the shape most teams recognise, and it puts the decisions that hold each half up in the plan
+  instead of in somebody's head. The README, the board view, the getting-started walk and the file
+  format reference all use it, and the terminal blocks are printed by the generator rather than
+  transcribed, so they cannot drift from the plan they claim to show.
+- Every picture in the README takes the width of the column it is given rather than stopping at 800.
 
 - The pill is a rounded tag washed in the colour it means, rather than a fully rounded stadium.
   Stadium ends read as a button — something you could press — and a pill is a label reporting a

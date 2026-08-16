@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/SergeyLubivui-dev/devtree/internal/draw"
+	"github.com/SergeyLubivui-dev/devtree/internal/render"
 	"github.com/SergeyLubivui-dev/devtree/internal/render/svg"
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
@@ -39,6 +40,24 @@ type asset struct {
 }
 
 func main() {
+	// The README shows the sample plan as a terminal view as well as a drawing,
+	// and a block of text pasted by hand drifts from the plan it claims to be.
+	// This prints exactly what `devtree ls` would, so keeping the two in step is
+	// a copy rather than a transcription.
+	if len(os.Args) > 1 {
+		plan := samplePlan()
+		switch os.Args[1] {
+		case "ascii":
+			done, total := plan.Totals()
+			fmt.Printf("%s\n\n%s\n%s  %d/%d\n",
+				plan.Project, render.ASCII(plan, render.Filter{}), render.ProgressBar(done, total), done, total)
+			return
+		case "board":
+			fmt.Printf("%s\n\n%s", plan.Project, render.Board(plan, render.Filter{}))
+			return
+		}
+	}
+
 	assets := []asset{
 		{"hero", hero},
 		{"example", example},
@@ -130,22 +149,37 @@ func example(th svg.Theme) string {
 
 // samplePlan is the Payment Gateway plan the documentation uses throughout.
 func samplePlan() *tree.Tree {
-	t := tree.New("Payment Gateway")
-	t.Repo = "https://github.com/acme/pay"
+	t := tree.New("Storefront")
+	t.Repo = "https://github.com/acme/storefront"
 
+	// A shape most teams recognise: one milestone split into the two halves
+	// that get built by different people, with the decisions that hold each
+	// half up written down as tasks rather than left in somebody's head.
 	for _, n := range []*tree.Node{
 		{ID: "mvp", Title: "MVP", Status: tree.InProgress},
-		{ID: "authentication", Title: "Authentication", Status: tree.InProgress, Parent: "mvp",
-			Branch: "feat/auth", Issue: "12", Owner: "ann"},
-		{ID: "oauth-providers", Title: "OAuth providers", Status: tree.InProgress,
-			Parent: "authentication", Branch: "feat/oauth", PR: "31"},
+
+		{ID: "backend", Title: "Backend", Status: tree.InProgress, Parent: "mvp"},
+		{ID: "auth", Title: "Authentication", Status: tree.InProgress, Parent: "backend",
+			Branch: "feat/auth", Issue: "12", Owner: "ann", Tags: []string{"security"}},
+		{ID: "sessions", Title: "Sessions and refresh tokens", Status: tree.Done,
+			Parent: "auth", PR: "31"},
 		{ID: "password-reset", Title: "Password reset", Status: tree.Blocked,
-			Parent: "authentication", Note: "waiting on SMTP"},
-		{ID: "payments", Title: "Payments", Status: tree.InProgress, Parent: "mvp"},
-		{ID: "stripe", Title: "Stripe", Status: tree.Done, Parent: "payments", PR: "44"},
-		{ID: "apple-pay", Title: "Apple Pay", Parent: "payments", Issue: "51"},
-		{ID: "public-api-v2", Title: "Public API v2"},
-		{ID: "openapi-schema", Title: "OpenAPI schema", Parent: "public-api-v2"},
+			Parent: "auth", Note: "waiting on the SMTP account"},
+		{ID: "api", Title: "API architecture", Status: tree.InProgress, Parent: "backend",
+			Owner: "ann"},
+		{ID: "resources", Title: "Resources and pagination", Status: tree.Done, Parent: "api"},
+		{ID: "versioning", Title: "Versioning and error shape", Parent: "api", Issue: "24"},
+		{ID: "docker", Title: "Docker image", Status: tree.Done, Parent: "backend",
+			PR: "40", Owner: "bob", Tags: []string{"infra"}},
+
+		{ID: "frontend", Title: "Frontend", Status: tree.InProgress, Parent: "mvp"},
+		{ID: "stack", Title: "Framework: React or Vue", Status: tree.Done, Parent: "frontend",
+			Note: "React — the team already knows it"},
+		{ID: "catalog", Title: "Catalog pages", Status: tree.InProgress, Parent: "frontend",
+			Branch: "feat/catalog", Owner: "ann"},
+		{ID: "checkout", Title: "Checkout", Parent: "frontend", Issue: "51"},
+		{ID: "nginx", Title: "nginx and static hosting", Parent: "frontend",
+			Owner: "bob", Tags: []string{"infra"}},
 	} {
 		if err := t.Add(n); err != nil {
 			fail(err)
@@ -154,7 +188,6 @@ func samplePlan() *tree.Tree {
 	return t
 }
 
-// ticker is one card on the moving strip.
 type ticker struct {
 	icon, title, meta, color string
 	spin                     bool

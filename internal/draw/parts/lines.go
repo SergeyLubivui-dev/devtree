@@ -48,7 +48,19 @@ func Connector(b *strings.Builder, from, to draw.Point, p Palette, colour, motio
 	if colour == "" {
 		colour = p.Border
 	}
-	d := elbow(from, to)
+	stroke(b, elbow(from, to), colour, motion)
+}
+
+// stroke writes a connector's path and gives it whatever motion it was asked
+// for. The two kinds are different in kind, not degree: drawing on happens once
+// and is about arrival, while a travelling dash repeats and is about a path
+// being live. So one goes on the path itself and the other rides above it.
+func stroke(b *strings.Builder, d, colour, motion string) {
+	if motion == draw.ClassDraw {
+		fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5" pathLength="1" class="%s"/>`,
+			d, colour, motion)
+		return
+	}
 	fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5"/>`, d, colour)
 	if motion != "" {
 		draw.FlowPath(b, d, colour)
@@ -96,11 +108,7 @@ func Arrow(b *strings.Builder, from, to draw.Point, p Palette, colour, motion st
 	}
 	const head = 5.0
 
-	d := elbow(from, draw.Point{X: to.X - head, Y: to.Y})
-	fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5"/>`, d, colour)
-	if motion != "" {
-		draw.FlowPath(b, d, colour)
-	}
+	stroke(b, elbow(from, draw.Point{X: to.X - head, Y: to.Y}), colour, motion)
 	fmt.Fprintf(b, `<path d="M%.1f %.1fL%.1f %.1fL%.1f %.1fZ" fill="%s"/>`,
 		to.X, to.Y, to.X-head-1, to.Y-head*0.7, to.X-head-1, to.Y+head*0.7, colour)
 }

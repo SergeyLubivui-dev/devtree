@@ -46,11 +46,10 @@ func Bar(b *strings.Builder, r draw.Rect, p Palette, done, total int, colour, mo
 // Drawn with a dash offset rather than an arc path: an arc has to special-case
 // the half-way point, and a value that renders wrong at exactly 50% is the kind
 // of bug that ships.
-func Ring(b *strings.Builder, cx, cy, radius, thickness float64, p Palette, done, total int, colour string) {
+func Ring(b *strings.Builder, cx, cy, radius, thickness float64, p Palette, done, total int, colour, motion string) {
 	if colour == "" {
 		colour = p.Accent
 	}
-	circumference := 2 * math.Pi * radius
 
 	fmt.Fprintf(b, `<circle cx="%.1f" cy="%.1f" r="%.1f" fill="none" stroke="%s" stroke-width="%.1f"/>`,
 		cx, cy, radius, p.Track, thickness)
@@ -58,10 +57,19 @@ func Ring(b *strings.Builder, cx, cy, radius, thickness float64, p Palette, done
 	if total <= 0 || done <= 0 {
 		return
 	}
-	filled := circumference * float64(done) / float64(total)
+
+	// pathLength="1" tells the renderer to measure this circle as one unit, so
+	// the filled share is the fraction itself rather than a number that has to
+	// be recomputed from the radius. The gap is 2 — anything longer than the
+	// path — so the dash cannot repeat and wrap around into itself.
+	frac := float64(done) / float64(total)
 	fmt.Fprintf(b, `<circle cx="%.1f" cy="%.1f" r="%.1f" fill="none" stroke="%s" stroke-width="%.1f" `+
-		`stroke-linecap="round" stroke-dasharray="%.2f %.2f" transform="rotate(-90 %.1f %.1f)"/>`,
-		cx, cy, radius, colour, thickness, filled, circumference-filled, cx, cy)
+		`stroke-linecap="round" pathLength="1" stroke-dasharray="%.4f 2" transform="rotate(-90 %.1f %.1f)"`,
+		cx, cy, radius, colour, thickness, frac, cx, cy)
+	if motion != "" {
+		fmt.Fprintf(b, ` class="%s" style="--dt-draw:%.4f"`, motion, frac)
+	}
+	b.WriteString(`/>`)
 }
 
 // ---------------------------------------------------------------------------
@@ -74,7 +82,7 @@ func Ring(b *strings.Builder, cx, cy, radius, thickness float64, p Palette, done
 // No axes, no labels, no grid. Everything a full chart would add is a thing the
 // reader has to decode, and the only question a sparkline answers is "which
 // way". A flat series draws down the middle instead of dividing by zero.
-func Sparkline(b *strings.Builder, r draw.Rect, p Palette, values []float64, colour string) {
+func Sparkline(b *strings.Builder, r draw.Rect, p Palette, values []float64, colour, motion string) {
 	if colour == "" {
 		colour = p.Accent
 	}
@@ -102,8 +110,12 @@ func Sparkline(b *strings.Builder, r draw.Rect, p Palette, values []float64, col
 		fmt.Fprintf(&d, "L%.1f %.1f", x, y)
 	}
 
-	fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+	fmt.Fprintf(b, `<path d="%s" fill="none" stroke="%s" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1"`,
 		d.String(), colour)
+	if motion != "" {
+		fmt.Fprintf(b, ` class="%s"`, motion)
+	}
+	b.WriteString(`/>`)
 }
 
 // ---------------------------------------------------------------------------

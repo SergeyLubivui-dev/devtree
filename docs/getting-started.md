@@ -6,7 +6,7 @@ Fifteen minutes, from an empty repository to a diagram that keeps itself current
 
 ```bash
 cd your-project
-devtree init --project "Payment Gateway" --repo https://github.com/acme/pay
+devtree init --project "Storefront" --repo https://github.com/acme/storefront
 ```
 
 Three things appear:
@@ -24,9 +24,11 @@ survive a fork.
 ## 2. Describe the work you already know about
 
 ```bash
-devtree add "Authentication" -p mvp -b feat/auth -i 12 -o ann -s wip
-devtree add "OAuth providers" -p authentication -b feat/oauth
-devtree add "Password reset"  -p authentication -s blocked -n "waiting on SMTP"
+devtree add "Backend"        -p mvp -s wip
+devtree add "Authentication" -p backend -b feat/auth -i 12 -o ann -s wip
+devtree add "Docker image"   -p backend -o bob
+devtree add "Frontend"       -p mvp -s wip
+devtree add "Checkout"       -p frontend -i 51
 ```
 
 Each flag is optional, and each one buys something:
@@ -40,7 +42,7 @@ Each flag is optional, and each one buys something:
 | `-n` | Why it is where it is. Required in spirit for blocked work — `check` says so. |
 | `--tags` | Free-form labels, for your own filtering. |
 
-The identifier comes from the title: "OAuth providers" becomes `oauth-providers`. Non-Latin titles
+The identifier comes from the title: "Docker image" becomes `docker-image`. Non-Latin titles
 are transliterated so the ID stays typeable on any keyboard. Use `--id` to choose one yourself.
 
 ## 3. Look at it

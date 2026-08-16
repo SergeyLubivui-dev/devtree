@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/assets/hero.svg" width="800">
+  <img alt="devtree — tree-shaped development planning that lives inside your repository" src="docs/assets/hero.svg" width="100%">
 </picture>
 
 **English** · [Русский](docs/i18n/README.ru.md) · [中文](docs/i18n/README.zh-CN.md) · [Deutsch](docs/i18n/README.de.md) · [Français](docs/i18n/README.fr.md)
@@ -23,7 +23,7 @@ No browser extension, no image to regenerate by hand, nothing to host.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/why-dark.svg">
-  <img alt="Three reasons: it gets reviewed, it gets merged, it stays honest" src="docs/assets/why.svg" width="800">
+  <img alt="Three reasons: it gets reviewed, it gets merged, it stays honest" src="docs/assets/why.svg" width="100%">
 </picture>
 
 A roadmap in a tracker drifts away from the branch it describes. A roadmap in a wiki is read once
@@ -35,7 +35,7 @@ and never again. A roadmap in the repository is a file people already have habit
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="The loop: edit tree.yaml, run devtree render, files are rewritten, GitHub draws them" src="docs/assets/pipeline.svg" width="800">
+  <img alt="The loop: edit tree.yaml, run devtree render, files are rewritten, GitHub draws them" src="docs/assets/pipeline.svg" width="100%">
 </picture>
 
 ---
@@ -44,7 +44,7 @@ and never again. A roadmap in the repository is a file people already have habit
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/example-dark.svg">
-  <img alt="A sample plan drawn by devtree" src="docs/assets/example.svg">
+  <img alt="A sample plan drawn by devtree" src="docs/assets/example.svg" width="100%">
 </picture>
 
 Cards, progress rolled up per milestone, and the branch, issue and owner behind each task. Light and
@@ -53,19 +53,24 @@ dark, following the theme you are reading in.
 The same plan in your terminal:
 
 ```text
-Payment Gateway
+Storefront
 
-◐ MVP  (mvp)  [1/6]
-├─ ◐ Authentication  (authentication)  feat/auth  #12  @ann  [0/2]
-│  ├─ ◐ OAuth providers  (oauth-providers)  feat/oauth
-│  └─ ⛔ Password reset  (password-reset)
-└─ ◐ Payments  (payments)  [1/2]
-   ├─ ✔ Stripe  (stripe)
-   └─ ☐ Apple Pay  (apple-pay)  #51
-☐ Public API v2  (public-api-v2)  [0/1]
-└─ ☐ OpenAPI schema  (openapi-schema)
+◐ MVP  (mvp)  [4/13]
+├─ ◐ Backend  (backend)  [3/7]
+│  ├─ ◐ Authentication  (auth)  feat/auth  #12  @ann  [1/2]
+│  │  ├─ ✔ Sessions and refresh tokens  (sessions)
+│  │  └─ ⛔ Password reset  (password-reset)
+│  ├─ ◐ API architecture  (api)  @ann  [1/2]
+│  │  ├─ ✔ Resources and pagination  (resources)
+│  │  └─ ☐ Versioning and error shape  (versioning)  #24
+│  └─ ✔ Docker image  (docker)  @bob
+└─ ◐ Frontend  (frontend)  [1/4]
+   ├─ ✔ Framework: React or Vue  (stack)
+   ├─ ◐ Catalog pages  (catalog)  feat/catalog  @ann
+   ├─ ☐ Checkout  (checkout)  #51
+   └─ ☐ nginx and static hosting  (nginx)  @bob
 
-██░░░░░░░░░░░░░░░░░░  1/9
+█████░░░░░░░░░░░░░░░  4/14
 ```
 
 devtree also writes a [Mermaid](https://mermaid.js.org/) block, which GitHub and GitLab draw
@@ -81,7 +86,7 @@ vocabulary of twenty components.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/components-dark.svg">
-  <img alt="Twenty drawing components, each shown once" src="docs/assets/components.svg" width="800">
+  <img alt="Twenty drawing components, each shown once" src="docs/assets/components.svg" width="100%">
 </picture>
 
 | | | | |
@@ -96,6 +101,19 @@ A component knows nothing about development plans. There is no status here and n
 takes a colour and a label, and the renderer above decides that "blocked" is red. That is what lets
 the illustrations in the documentation and the diagrams in your repository come out of one library
 rather than two.
+
+**The gallery moves because movement is its subject** — the rings and the sparkline draw themselves
+on, the meters fill, the count arrives. Your plan diagrams stay restrained on purpose: there, motion
+is spent on the four things worth noticing — the live path, work in flight, work blocked, progress
+gained — and everything else holds still. Nothing moves at all under `prefers-reduced-motion`, or on
+paper.
+
+**Can you click it?** Not here, and not because of a shortcut we took: GitHub serves a repository's
+SVG as an image under `default-src 'none'; sandbox`, so it gets no script, no navigation and not
+even a hover. The same is true of its Mermaid, which ignores `click`. Where clicking does work is
+the HTML export — name an output `.html` and every task becomes a link to its pull request, issue or
+branch, with filters that need no JavaScript — and in the editor, where the drawing *is* the
+editing surface.
 
 ---
 
@@ -154,18 +172,20 @@ container disappear into the background: [docs/container.md](docs/container.md).
 ```bash
 cd your-project
 
-devtree init --project "Payment Gateway" --repo https://github.com/acme/pay --hook --action
+devtree init --project "Storefront" --repo https://github.com/acme/storefront --hook --action
 
-devtree add "Authentication"  -p mvp -b feat/auth -i 12 -o ann -s wip
-devtree add "OAuth providers" -p authentication -b feat/oauth
-devtree add "Password reset"  -p authentication -s blocked -n "waiting on SMTP"
+devtree add "Backend"        -p mvp -s wip
+devtree add "Authentication" -p backend -b feat/auth -i 12 -o ann -s wip
+devtree add "Docker image"   -p backend -o bob
+devtree add "Frontend"       -p mvp -s wip
+devtree add "Checkout"       -p frontend -i 51
 
 devtree ls                                   # the tree, in your terminal
-devtree done oauth-providers
-git add . && git commit -m "feat: oauth"     # the hook refreshes the diagram for you
+devtree done docker-image
+git add . && git commit -m "feat: docker"    # the hook refreshes the diagram for you
 ```
 
-IDs are derived from titles — "OAuth providers" becomes `oauth-providers`, and non-Latin titles are
+IDs are derived from titles — "Docker image" becomes `docker-image`, and non-Latin titles are
 transliterated so the ID stays typeable. Pass `--id` when you want to choose one yourself.
 
 A longer walk through the same ground: [docs/getting-started.md](docs/getting-started.md).
@@ -180,7 +200,7 @@ devtree serve --open      # http://127.0.0.1:9312
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/editor-dark.png">
-  <img alt="The editor: a rail of sections, the plan as a list, and the same plan drawn beside it" src="docs/assets/editor.png" width="800">
+  <img alt="The editor: a rail of sections, the plan as a list, and the same plan drawn beside it" src="docs/assets/editor.png" width="100%">
 </picture>
 
 A real capture of the page, in both themes: the editor is dark by default and follows your system
@@ -272,21 +292,26 @@ devtree board
 ```
 
 ```text
-Payment Gateway
+Storefront
 
-☐ not started · 1
-  Apple Pay        Payments  #51
+☐ not started · 3
+  Versioning and error shape   API architecture  #24
+  Checkout                     Frontend  #51
+  nginx and static hosting     Frontend  @bob
 
 ◐ in progress · 1
-  OAuth providers  Authentication  !31
+  Catalog pages                Frontend  feat/catalog  @ann
 
 ⛔ blocked · 1
-  Password reset   Authentication  — waiting on SMTP
+  Password reset               Authentication  — waiting on the SMTP account
 
-✔ done · 1
-  Stripe           Payments  !44
+✔ done · 4
+  Sessions and refresh tokens  Authentication  !31
+  Resources and pagination     API architecture
+  Docker image                 Backend  !40  @bob
+  Framework: React or Vue      Frontend  — React — the team already knows it
 
-██░░░░░░░░░░░░░░░░░░  1/7
+█████░░░░░░░░░░░░░░░  4/14
 ```
 
 Only leaves appear — a milestone is a container, not a card — and each task carries its milestone as
@@ -294,7 +319,7 @@ a breadcrumb. Name an output `board.svg` and the same thing is drawn as columns:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.svg">
-  <img alt="devtree's own board: columns of work by status" src="docs/assets/board.svg">
+  <img alt="devtree's own board: columns of work by status" src="docs/assets/board.svg" width="100%">
 </picture>
 
 More: [docs/board.md](docs/board.md).
@@ -381,7 +406,7 @@ devtree open authentication --print  # print the URL instead of opening it
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/statuses-dark.svg">
-  <img alt="todo, in_progress, blocked, done, dropped — with the shorthand each one accepts" src="docs/assets/statuses.svg" width="800">
+  <img alt="todo, in_progress, blocked, done, dropped — with the shorthand each one accepts" src="docs/assets/statuses.svg" width="100%">
 </picture>
 
 The canonical spelling is what lands in the file, whichever shorthand you type.
@@ -453,7 +478,7 @@ devtree history
 ```
 
 ```text
-Payment Gateway — 3 revision(s) of the plan
+Storefront — 3 revision(s) of the plan
 
 2026-08-14  ░░░░░░░░░░░░░░░░░░░░  0/2
 2026-08-15  ██████░░░░░░░░░░░░░░  1/3  +1 done  +1 planned

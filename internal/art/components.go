@@ -106,13 +106,18 @@ func gallery(p parts.Palette) map[string]func(b *strings.Builder, r draw.Rect) {
 				"lock-circle", "blocked", 2, red, draw.ClassPulse)
 		},
 		"Stat": func(b *strings.Builder, r draw.Rect) {
-			parts.Stat(b, draw.Rect{X: r.X, Y: r.MidY() - 24, W: 128, H: 48}, p, "23 / 25", "tasks done", "")
+			// One counts itself in, one is simply there — the two ways the same
+			// component is used, side by side.
+			parts.StatCounting(b, draw.Rect{X: r.X, Y: r.MidY() - 24, W: 128, H: 48}, p,
+				[]string{"0 / 25", "9 / 25", "17 / 25", "23 / 25"}, "tasks done", "")
 			parts.Stat(b, draw.Rect{X: r.X + 140, Y: r.MidY() - 24, W: 96, H: 48}, p, "92%", "complete", green)
 		},
 
 		"Chip": func(b *strings.Builder, r draw.Rect) {
 			y := r.MidY() - 8
 			at := r.X
+			defer draw.CloseGroup(b)
+			draw.OpenRise(b, 2)
 			at += parts.Chip(b, at, y, p, "share", "feat/auth", "") + 8
 			at += parts.Chip(b, at, y, p, "user", "ann", "") + 8
 			parts.Chip(b, at, y, p, "hashtag", "backend", "")
@@ -168,13 +173,13 @@ func gallery(p parts.Palette) map[string]func(b *strings.Builder, r draw.Rect) {
 				colour      string
 			}{{6, 6, green}, {3, 7, amber}, {0, 5, greyed}} {
 				cx := r.X + 22 + float64(i)*70
-				parts.Ring(b, cx, r.MidY(), 17, 4, p, v.done, v.total, v.colour)
+				parts.Ring(b, cx, r.MidY(), 17, 4, p, v.done, v.total, v.colour, draw.ClassDraw)
 				draw.Text(b, fmt.Sprintf("%d%%", draw.Percent(v.done, v.total)), cx, r.MidY()+3.5, 9.5, p.Muted, "600", "middle")
 			}
 		},
 		"Sparkline": func(b *strings.Builder, r draw.Rect) {
 			parts.Sparkline(b, draw.Rect{X: r.X, Y: r.MidY() - 18, W: r.W - 70, H: 34}, p,
-				[]float64{2, 4, 4, 7, 9, 11, 14, 18, 21, 23}, green)
+				[]float64{2, 4, 4, 7, 9, 11, 14, 18, 21, 23}, green, draw.ClassDraw)
 			draw.Text(b, "10 weeks", r.Right(), r.MidY()+4, 10, p.Faint, "", "end")
 		},
 		"Timeline": func(b *strings.Builder, r draw.Rect) {
@@ -190,11 +195,14 @@ func gallery(p parts.Palette) map[string]func(b *strings.Builder, r draw.Rect) {
 			parts.Divider(b, draw.Rect{X: r.X, Y: r.MidY() + 6, W: r.W, H: 12}, p, "archived")
 		},
 		"Connector": func(b *strings.Builder, r draw.Rect) {
-			parts.Connector(b, draw.Point{X: r.X, Y: r.MidY() - 18}, draw.Point{X: r.Right() - 6, Y: r.MidY() - 18}, p, "", "")
+			// Drawing on happens once and is about arrival; a travelling dash
+			// repeats and is about a path being live. Both, so the difference
+			// is visible rather than described.
+			parts.Connector(b, draw.Point{X: r.X, Y: r.MidY() - 18}, draw.Point{X: r.Right() - 6, Y: r.MidY() - 18}, p, "", draw.ClassDraw)
 			parts.Connector(b, draw.Point{X: r.X, Y: r.MidY() + 4}, draw.Point{X: r.Right() - 6, Y: r.MidY() + 22}, p, green, draw.ClassFlow)
 		},
 		"Arrow": func(b *strings.Builder, r draw.Rect) {
-			parts.Arrow(b, draw.Point{X: r.X, Y: r.MidY() - 14}, draw.Point{X: r.Right() - 6, Y: r.MidY() - 14}, p, "", "")
+			parts.Arrow(b, draw.Point{X: r.X, Y: r.MidY() - 14}, draw.Point{X: r.Right() - 6, Y: r.MidY() - 14}, p, "", draw.ClassDraw)
 			parts.Arrow(b, draw.Point{X: r.X, Y: r.MidY() + 6}, draw.Point{X: r.Right() - 6, Y: r.MidY() + 22}, p, amber, draw.ClassFlow)
 		},
 		"Brace": func(b *strings.Builder, r draw.Rect) {

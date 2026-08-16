@@ -9,21 +9,26 @@ devtree board -s blocked    # one column only
 ```
 
 ```text
-Payment Gateway
+Storefront
 
-☐ not started · 1
-  Apple Pay        Payments  #51
+☐ not started · 3
+  Versioning and error shape   API architecture  #24
+  Checkout                     Frontend  #51
+  nginx and static hosting     Frontend  @bob
 
 ◐ in progress · 1
-  OAuth providers  Authentication  !31
+  Catalog pages                Frontend  feat/catalog  @ann
 
 ⛔ blocked · 1
-  Password reset   Authentication  — waiting on SMTP
+  Password reset               Authentication  — waiting on the SMTP account
 
-✔ done · 1
-  Stripe           Payments  !44
+✔ done · 4
+  Sessions and refresh tokens  Authentication  !31
+  Resources and pagination     API architecture
+  Docker image                 Backend  !40  @bob
+  Framework: React or Vue      Frontend  — React — the team already knows it
 
-██░░░░░░░░░░░░░░░░░░  1/7
+█████░░░░░░░░░░░░░░░  4/14
 ```
 
 ## Only leaves appear

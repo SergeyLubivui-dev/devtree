@@ -66,9 +66,9 @@ func every() map[string]string {
 	draw1("Bar", func(b *strings.Builder) {
 		Bar(b, draw.Rect{X: 10, Y: 10, W: 200, H: 6}, test, 3, 4, "", draw.ClassGrow)
 	})
-	draw1("Ring", func(b *strings.Builder) { Ring(b, 40, 40, 18, 4, test, 3, 4, "") })
+	draw1("Ring", func(b *strings.Builder) { Ring(b, 40, 40, 18, 4, test, 3, 4, "", draw.ClassDraw) })
 	draw1("Sparkline", func(b *strings.Builder) {
-		Sparkline(b, box, test, []float64{1, 4, 2, 7, 6, 9}, "")
+		Sparkline(b, box, test, []float64{1, 4, 2, 7, 6, 9}, "", draw.ClassDraw)
 	})
 	draw1("Timeline", func(b *strings.Builder) {
 		Timeline(b, box, test, []Tick{{At: 0, Label: "v0.1"}, {At: 0.5, Label: "v0.2", Mark: "package"}, {At: 1, Label: "v1.0"}})
@@ -188,7 +188,7 @@ func TestMetersHandleTheEdges(t *testing.T) {
 	for _, c := range []struct{ done, total int }{{0, 0}, {0, 10}, {10, 10}, {5, 0}} {
 		var b strings.Builder
 		Bar(&b, draw.Rect{W: 100, H: 6}, test, c.done, c.total, "", "")
-		Ring(&b, 20, 20, 10, 3, test, c.done, c.total, "")
+		Ring(&b, 20, 20, 10, 3, test, c.done, c.total, "", "")
 		if !strings.Contains(b.String(), test.Track) {
 			t.Errorf("%d/%d drew no track", c.done, c.total)
 		}
@@ -196,14 +196,14 @@ func TestMetersHandleTheEdges(t *testing.T) {
 
 	// A sparkline needs two points to have a direction; one is not a trend.
 	var thin strings.Builder
-	Sparkline(&thin, draw.Rect{W: 100, H: 20}, test, []float64{4}, "")
+	Sparkline(&thin, draw.Rect{W: 100, H: 20}, test, []float64{4}, "", "")
 	if strings.TrimSpace(thin.String()) != "" {
 		t.Error("a single value drew a line")
 	}
 
 	// A flat series must not divide by its own zero range.
 	var flat strings.Builder
-	Sparkline(&flat, draw.Rect{W: 100, H: 20}, test, []float64{3, 3, 3}, "")
+	Sparkline(&flat, draw.Rect{W: 100, H: 20}, test, []float64{3, 3, 3}, "", "")
 	if !strings.Contains(flat.String(), "<path") {
 		t.Error("a flat series drew nothing")
 	}
@@ -217,5 +217,80 @@ func TestTicksOutsideTheTimelineAreClamped(t *testing.T) {
 	Timeline(&b, draw.Rect{X: 0, Y: 0, W: 100, H: 20}, test, []Tick{{At: -3}, {At: 9}})
 	if strings.Contains(b.String(), "-") && strings.Contains(b.String(), "cx=\"-") {
 		t.Error("a tick before the start was drawn off the canvas")
+	}
+}
+
+func TestADrawnPathDeclaresItsOwnLength(t *testing.T) {
+	// dt-draw works by dashing a path that has been told to measure itself as
+	// one unit. Without pathLength the dash is in user units and the animation
+	// is wrong by however long the path happens to be.
+	var ring, spark strings.Builder
+	Ring(&ring, 30, 30, 12, 3, test, 3, 4, "", draw.ClassDraw)
+	Sparkline(&spark, draw.Rect{W: 100, H: 20}, test, []float64{1, 5, 3, 8}, "", draw.ClassDraw)
+
+	for name, out := range map[string]string{"ring": ring.String(), "sparkline": spark.String()} {
+		if !strings.Contains(out, `pathLength="1"`) {
+			t.Errorf("%s is drawn on without declaring its length", name)
+		}
+		if !strings.Contains(out, draw.ClassDraw) {
+			t.Errorf("%s carries no motion", name)
+		}
+	}
+
+	// The ring tells the animation how far to go, and it is the same fraction
+	// it is dashed to — one number doing both jobs cannot disagree with itself.
+	if !strings.Contains(ring.String(), `stroke-dasharray="0.7500 2"`) ||
+		!strings.Contains(ring.String(), `--dt-draw:0.7500`) {
+		t.Errorf("the ring's share and its animation disagree: %s", ring.String())
+	}
+}
+
+func TestAConnectorDrawsOnOrFlowsButNotBoth(t *testing.T) {
+	// Drawing on happens once and means arrival; a travelling dash repeats and
+	// means the path is live. Doing both at once says neither.
+	var drawn, flowing strings.Builder
+	Connector(&drawn, draw.Point{X: 0, Y: 0}, draw.Point{X: 40, Y: 20}, test, "", draw.ClassDraw)
+	Connector(&flowing, draw.Point{X: 0, Y: 0}, draw.Point{X: 40, Y: 20}, test, "", draw.ClassFlow)
+
+	if n := strings.Count(drawn.String(), "<path"); n != 1 {
+		t.Errorf("a drawn-on connector wrote %d paths", n)
+	}
+	if !strings.Contains(drawn.String(), `pathLength="1"`) {
+		t.Error("a drawn-on connector did not declare its length")
+	}
+	if n := strings.Count(flowing.String(), "<path"); n != 2 {
+		t.Errorf("a flowing connector should overlay its dash, wrote %d paths", n)
+	}
+}
+
+func TestACountingStatSettlesOnTheRealFigure(t *testing.T) {
+	steps := []string{"0 / 25", "9 / 25", "23 / 25"}
+
+	var b strings.Builder
+	StatCounting(&b, draw.Rect{X: 0, Y: 0, W: 130, H: 48}, test, steps, "tasks done", "")
+	out := b.String()
+
+	for _, step := range steps {
+		if !strings.Contains(out, step) {
+			t.Errorf("the column is missing %q", step)
+		}
+	}
+	// Stepped, never interpolated: as many steps as there are gaps between
+	// values, so no frame can show a number nobody wrote.
+	if !strings.Contains(out, `--dt-roll-n:2`) {
+		t.Errorf("the roll does not step once per value: %s", out)
+	}
+	if !strings.Contains(out, "clipPath") {
+		t.Error("the column is not clipped to one line, so every value shows at once")
+	}
+
+	// One value is not a count.
+	var single strings.Builder
+	StatCounting(&single, draw.Rect{W: 130, H: 48}, test, []string{"23 / 25"}, "", "")
+	if strings.Contains(single.String(), draw.ClassRoll) {
+		t.Error("a single value was animated as if it had arrived from somewhere")
+	}
+	if strings.TrimSpace(single.String()) == "" {
+		t.Error("a single value drew nothing")
 	}
 }

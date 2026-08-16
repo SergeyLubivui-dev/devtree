@@ -217,3 +217,59 @@ func minOf(a, b float64) float64 {
 	}
 	return b
 }
+
+// StatCounting is Stat with the number arriving rather than having always been
+// there.
+//
+// The steps are drawn as a column of values and the column is stepped past a
+// window, so nothing interpolates: every frame shows a number that was actually
+// in the list. A counter that eases through 7.4 on its way to 12 is telling the
+// reader something untrue about a total, and totals are the one thing a plan
+// diagram exists to report.
+//
+// The last step is what it settles on, so the still frame — printed, or read
+// with motion switched off — is the real figure.
+func StatCounting(b *strings.Builder, r draw.Rect, p Palette, steps []string, caption, colour string) {
+	if len(steps) == 0 {
+		return
+	}
+	if len(steps) == 1 {
+		Stat(b, r, p, steps[0], caption, colour)
+		return
+	}
+	if colour == "" {
+		colour = p.Text
+	}
+	draw.RoundRect(b, r.X, r.Y, r.W, r.H, RadiusCard, p.Card, p.Border)
+
+	box := r.InsetXY(14, 9)
+	value, caption_ := box, draw.Rect{}
+	if caption != "" {
+		value, caption_ = box.SplitTop(box.H - 13)
+	}
+
+	// Sized for the widest step, or the column would jump about as it rolls.
+	widest := steps[0]
+	for _, step := range steps {
+		if draw.TextWidth(step, 26) > draw.TextWidth(widest, 26) {
+			widest = step
+		}
+	}
+	size := draw.FitSize(widest, value.W, minOf(26, value.H), 12)
+	line := size * 1.25
+
+	id := fmt.Sprintf("dt-roll-%.0f-%.0f", r.X, r.Y)
+	fmt.Fprintf(b, `<defs><clipPath id="%s"><rect x="%.1f" y="%.1f" width="%.1f" height="%.1f"/></clipPath></defs>`,
+		id, value.X, value.MidY()-line/2, value.W, line)
+
+	fmt.Fprintf(b, `<g clip-path="url(#%s)"><g class="%s" style="--dt-roll-y:%.1fpx;--dt-roll-n:%d">`,
+		id, draw.ClassRoll, -line*float64(len(steps)-1), len(steps)-1)
+	for i, step := range steps {
+		draw.Text(b, step, value.X, baseline(value.MidY()+float64(i)*line, size), size, colour, "600", "")
+	}
+	b.WriteString(`</g></g>`)
+
+	if caption != "" {
+		draw.Text(b, draw.Clip(caption, caption_.W, 10), caption_.X, caption_.Bottom()-1, 10, p.Faint, "", "")
+	}
+}

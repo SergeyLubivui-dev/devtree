@@ -32,6 +32,24 @@ const (
 	// identical copies laid end to end and travels exactly half its own width,
 	// so the loop has no seam to notice.
 	ClassMarquee = "dt-marquee"
+
+	// ClassDraw draws a stroked path on, once, as if it were being written.
+	//
+	// It works on any path of any length because the element declares
+	// pathLength="1": the browser then measures the path as one unit whatever
+	// its real length, so a single rule serves a sparkline, a connector and the
+	// arc of a progress ring. How much of the path ends up drawn is the
+	// element's own --dt-draw, which is also where the dash starts from — one
+	// number doing both jobs, so the two can never disagree.
+	ClassDraw = "dt-draw"
+
+	// ClassRoll runs a stack of values past a window, one per step, and stops
+	// on the last: a number arriving rather than having always been there.
+	//
+	// The values are laid out as a column and the column is stepped, so nothing
+	// interpolates and no intermediate frame ever shows a number that was not
+	// in the list. A count that animates through 7.4 is a lie about a total.
+	ClassRoll = "dt-roll"
 )
 
 // riseStep is how much later each card arrives than the one before it, and
@@ -66,14 +84,20 @@ const Stylesheet = `<style>
 @keyframes dt-rise { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 @keyframes dt-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
 @keyframes dt-marquee { from { transform: translateX(-50%) } to { transform: none } }
+@keyframes dt-draw { from { stroke-dashoffset: var(--dt-draw, 1) } to { stroke-dashoffset: 0 } }
+@keyframes dt-roll { to { transform: translateY(var(--dt-roll-y, 0)) } }
 .dt-flow { animation: dt-flow 1.1s linear infinite }
 .dt-grow { animation: dt-grow .9s cubic-bezier(.2,.8,.2,1) both; transform-box: fill-box; transform-origin: left center }
 .dt-spin { animation: dt-spin 8s linear infinite; transform-box: fill-box; transform-origin: center }
 .dt-rise { animation: dt-rise .55s cubic-bezier(.2,.8,.2,1) backwards }
 .dt-pulse { animation: dt-pulse 2.4s ease-in-out infinite }
 .dt-marquee { animation: dt-marquee 26s linear infinite; transform-box: fill-box }
+.dt-draw { stroke-dasharray: var(--dt-draw, 1) 2; animation: dt-draw 1.2s cubic-bezier(.2,.8,.2,1) both }
+.dt-roll { animation: dt-roll var(--dt-roll-t, 1.9s) steps(var(--dt-roll-n, 1)) forwards }
 @media (prefers-reduced-motion: reduce), print {
   .dt-flow, .dt-grow, .dt-spin, .dt-rise, .dt-pulse, .dt-marquee { animation: none }
+  .dt-draw { animation: none; stroke-dasharray: var(--dt-draw, 1) 2; stroke-dashoffset: 0 }
+  .dt-roll { animation: none; transform: translateY(var(--dt-roll-y, 0)) }
 }
 </style>`
 
