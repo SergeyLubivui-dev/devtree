@@ -1,6 +1,7 @@
 package draw
 
 import (
+	"github.com/SergeyLubivui-dev/devtree/internal/icons"
 	"strings"
 	"testing"
 )
@@ -217,7 +218,8 @@ func TestAGlyphCanNominateThePartThatMoves(t *testing.T) {
 	if strings.Contains(still.String(), "dt-moving-part") {
 		t.Error("a still glyph kept the marker")
 	}
-	if !strings.Contains(still.String(), "<g><path") {
+	// Stripping the class must leave a clean group rather than `<g >`.
+	if !strings.Contains(still.String(), "<g><") || strings.Contains(still.String(), "<g >") {
 		t.Errorf("stripping the marker left the group malformed: %s", still.String())
 	}
 }
@@ -239,5 +241,31 @@ func TestTheNewMotionIsGuardedLikeTheRest(t *testing.T) {
 	}
 	if !strings.Contains(guard, "--dt-roll-y") {
 		t.Error("a counter would stay on its first value with the motion off")
+	}
+}
+
+func TestTheTurningPartIsAnchoredToTheGrid(t *testing.T) {
+	// A rotation is centred on the box of what is being rotated. The ring's own
+	// geometry sits half a unit off the icon's centre — the arc covers the right
+	// half, the dots the left — so without an anchor the ring orbits instead of
+	// turning, and a ring wobbling around a stationary check reads as the whole
+	// mark being thrown about.
+	body, ok := icons.Get("circle-half-dotted-check")
+	if !ok {
+		t.Fatal("the progress glyph is missing")
+	}
+
+	open := strings.Index(body, `<g class="`+icons.MovingPart+`">`)
+	if open < 0 {
+		t.Fatal("the glyph names no moving part")
+	}
+	group := body[open : strings.Index(body[open:], "</g>")+open]
+
+	if !strings.Contains(group, `width="24" height="24" fill="none"`) {
+		t.Error("the turning group is not anchored to the icon's grid")
+	}
+	// The anchor has to be inside the group that turns, or it anchors nothing.
+	if strings.Index(body, `width="24" height="24"`) > strings.Index(body, "</g>") {
+		t.Error("the anchor is outside the group it is meant to centre")
 	}
 }

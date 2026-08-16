@@ -80,6 +80,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The progress mark's ring turns about the icon's centre rather than orbiting it. Naming the ring as
+  the moving part was only half the fix: a rotation is centred on the box of what is rotated, and
+  the ring's own box is not the icon's — the arc covers the right half and the dots the left, so the
+  two together sit half a unit off centre. The ring swung around the stationary check instead of
+  turning inside it, which reads as the whole mark being thrown about. The turning group is now
+  anchored to the full 24x24 grid, so its box is the icon's box and the turn is concentric.
+
 - The in-progress mark turns its ring, not itself. It is a ring around a check,
   and spinning the whole glyph tumbled the check with it — a mark falling over
   rather than work in flight. A glyph can now name the part of itself that
