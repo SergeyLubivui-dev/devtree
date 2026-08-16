@@ -56,7 +56,6 @@ All notable changes to this project are documented here. The format follows
   floor on it.
 - The view is in the address (`#board`), so a reload comes back to it and it can
   be handed to somebody as a link.
-
 - The Mermaid block no longer fights the reader's theme. It pinned a light fill and a dark label
   color, which glared on a dark GitHub page; a translucent tint was tried instead and turned out
   unreadable there, because Mermaid keeps the label dark in its dark theme. Both were rendered
