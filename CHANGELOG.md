@@ -8,6 +8,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- A card can carry described lines under its title. A card says what the work is; a bullet says what
+  a reader would otherwise have to open an issue to find out — what it is waiting on, what was
+  decided. A line with no kind gets a dot, one with a kind gets a glyph from the same set the
+  statuses use, and the words stay quiet either way, because a card with three loud lines has no
+  title left. `CardHeight` reports the room a card needs for what it has been given: a component
+  that can grow has to be able to say by how much, or every caller works it out again and one of
+  them gets it wrong.
+
 - Two more ways for a drawing to move, both declarative. `ClassDraw` writes a stroked path on —
   a sparkline, an elbow connector, the arc of a progress ring — and works on any path of any length
   because the element declares `pathLength="1"`, so the renderer measures it as one unit and a single

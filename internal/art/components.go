@@ -23,6 +23,7 @@ func components(th svg.Theme) string {
 		cols     = 2
 		cellW    = 366.0
 		cellH    = 104.0
+		tallCell = 158.0 // the card cell shows two, one of them described
 		gutter   = 20.0
 		headerH  = 86.0
 		captionH = 18.0
@@ -30,7 +31,23 @@ func components(th svg.Theme) string {
 
 	demos := gallery(p)
 	rows := (len(parts.Names()) + cols - 1) / cols
-	height := headerH + float64(rows)*cellH + pad
+
+	// The first row is taller because the card demo shows two of them. Rows
+	// carry their own height rather than every cell being sized for the worst
+	// one, which would leave nineteen cells half empty.
+	rowH := func(row int) float64 {
+		if row == 0 {
+			return tallCell
+		}
+		return cellH
+	}
+	rowTop := make([]float64, rows)
+	total := 0.0
+	for i := 0; i < rows; i++ {
+		rowTop[i] = total
+		total += rowH(i)
+	}
+	height := headerH + total + pad
 
 	var b strings.Builder
 	open(&b, height, th, "devtree drawing components")
@@ -41,14 +58,15 @@ func components(th svg.Theme) string {
 		" — the vocabulary every devtree diagram is assembled from",
 		pad, pad+36, 11, th.Muted, "", "")
 
-	grid := draw.Rect{X: pad, Y: headerH, W: width - pad*2, H: float64(rows) * cellH}
+	grid := draw.Rect{X: pad, Y: headerH, W: width - pad*2, H: total}
 
 	for i, name := range parts.Names() {
+		row := i / cols
 		cell := draw.Rect{
 			X: grid.X + float64(i%cols)*(cellW+gutter),
-			Y: grid.Y + float64(i/cols)*cellH,
+			Y: grid.Y + rowTop[row],
 			W: cellW,
-			H: cellH,
+			H: rowH(row),
 		}
 
 		caption, stage := cell.SplitTop(captionH)
@@ -80,13 +98,27 @@ func gallery(p parts.Palette) map[string]func(b *strings.Builder, r draw.Rect) {
 
 	return map[string]func(b *strings.Builder, r draw.Rect){
 		"Card": func(b *strings.Builder, r draw.Rect) {
-			parts.Card(b, draw.Rect{X: r.X, Y: r.MidY() - 23, W: r.W, H: 46}, p, parts.CardStyle{
+			// Two of them: what a card says on its own, and what it says when a
+			// line of description is worth the room. The taller one asks the
+			// component how much room that is rather than guessing.
+			plain := parts.CardStyle{
 				Accent: amber, Title: "Authentication", Meta: "feat/auth · ann · #12",
 				Glyph: "circle-half-dotted-check", Motion: draw.ClassSpin,
 				Trailer: func(b *strings.Builder, box draw.Rect) {
 					parts.Bar(b, draw.Rect{X: box.X, Y: box.MidY() - 3, W: 40, H: 5}, p, 3, 7, green, draw.ClassGrow)
 				},
-			})
+			}
+			parts.Card(b, draw.Rect{X: r.X, Y: r.Y, W: r.W, H: parts.CardHeight(plain)}, p, plain)
+
+			described := parts.CardStyle{
+				Accent: red, Title: "Password reset", Glyph: "lock-circle", Motion: draw.ClassPulse,
+				Bullets: []parts.Bullet{
+					{Text: "waiting on the SMTP account"},
+					{Text: "decided: no third-party mailer", Icon: "check-circle", Colour: green},
+				},
+			}
+			parts.Card(b, draw.Rect{X: r.X, Y: r.Y + parts.CardHeight(plain) + 8, W: r.W,
+				H: parts.CardHeight(described)}, p, described)
 		},
 		"Cluster": func(b *strings.Builder, r draw.Rect) {
 			box := draw.Rect{X: r.X + 2, Y: r.Y + 10, W: r.W - 4, H: r.H - 18}

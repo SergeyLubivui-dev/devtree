@@ -11,16 +11,53 @@ import (
 // 1. Card
 // ---------------------------------------------------------------------------
 
+// Bullet is one line of description under a card's title.
+//
+// A card says what the work is; a bullet says something about it that a reader
+// would otherwise have to open an issue to find out — what is left, what it is
+// waiting on, what was decided. It is optional on purpose: a plan diagram where
+// every card carries three lines is a document, not a diagram.
+type Bullet struct {
+	Text   string
+	Icon   string // a glyph instead of the dot, when the line has a kind
+	Colour string // the mark's colour; the text stays quiet either way
+}
+
 // CardStyle is what a card is told about itself.
 type CardStyle struct {
 	Accent  string // the edge colour; empty draws no edge
 	Title   string
 	Meta    string // one line under the title, for context
+	Bullets []Bullet
 	Glyph   string // an icon before the title
 	Motion  string // an animation class for the glyph
 	Muted   bool   // finished or abandoned work, stated quietly
 	Struck  bool   // drawn through: this was dropped
 	Trailer func(b *strings.Builder, r draw.Rect)
+}
+
+// Card geometry. The lines are fixed rather than a share of the box, because a
+// card that grows a bullet should grow by exactly one line — not restyle every
+// line it already had.
+const (
+	cardTitleH  = 17.0
+	cardMetaH   = 13.0
+	cardBulletH = 15.0
+	cardPadY    = 11.0
+)
+
+// CardHeight is the room a card needs for what it has been given.
+//
+// A component that can grow has to be able to say by how much, or every caller
+// works it out again and one of them gets it wrong. Give the returned height to
+// the box and nothing clips; give it more and the content sits centred in it.
+func CardHeight(s CardStyle) float64 {
+	h := cardTitleH + cardPadY*2
+	if s.Meta != "" {
+		h += cardMetaH
+	}
+	h += float64(len(s.Bullets)) * cardBulletH
+	return h
 }
 
 // Card is a raised panel with a full-height accent edge.
@@ -65,32 +102,68 @@ func Card(b *strings.Builder, r draw.Rect, p Palette, s CardStyle) {
 		}
 	}
 
-	// With a meta line the title takes the upper half and the meta the lower;
-	// alone, the title has the whole card and sits centred in it.
-	title, meta := text, draw.Rect{}
-	if s.Meta != "" {
-		title, meta = text.SplitTop(text.H * 0.54)
-	}
+	// The block is laid out from a fixed line height and then centred in
+	// whatever room it was given, so one card with a bullet and one without
+	// still line up on their titles when they are the same height.
+	content := CardHeight(s) - cardPadY*2
+	top := text.Y + (text.H-content)/2
 
 	colour := p.Text
 	if s.Muted {
 		colour = p.Muted
 	}
+
+	title := draw.Rect{X: text.X, Y: top, W: text.W, H: cardTitleH}
 	label := draw.Clip(s.Title, title.W, 12)
 	draw.Text(b, label, title.X, baseline(title.MidY(), 12), 12, colour, "500", "")
 
 	if s.Struck {
 		// A line through the label rather than a lighter colour: dropped work
 		// is not less important, it is not happening.
-		width := draw.TextWidth(label, 12)
 		y := baseline(title.MidY(), 12) - 4
 		fmt.Fprintf(b, `<path d="M%.1f %.1fH%.1f" stroke="%s" stroke-width="1"/>`,
-			title.X, y, title.X+width, colour)
+			title.X, y, title.X+draw.TextWidth(label, 12), colour)
 	}
 
+	at := title.Bottom()
 	if s.Meta != "" {
+		meta := draw.Rect{X: text.X, Y: at, W: text.W, H: cardMetaH}
 		draw.Text(b, draw.Clip(s.Meta, meta.W, 10), meta.X, baseline(meta.MidY(), 10), 10, p.Faint, "", "")
+		at = meta.Bottom()
 	}
+
+	for _, bullet := range s.Bullets {
+		line := draw.Rect{X: text.X, Y: at, W: text.W, H: cardBulletH}
+		cardBullet(b, line, p, bullet)
+		at = line.Bottom()
+	}
+}
+
+// cardBullet draws one described line: a mark, then the words.
+//
+// The mark is a dot unless the line has a kind worth naming, in which case it
+// is a glyph from the same set the statuses use. The text stays quiet whatever
+// the mark is coloured — a card with three loud lines has no title left.
+func cardBullet(b *strings.Builder, r draw.Rect, p Palette, bullet Bullet) {
+	colour := bullet.Colour
+	if colour == "" {
+		colour = p.Faint
+	}
+
+	const size = 10.0
+	text := r
+
+	if bullet.Icon != "" {
+		var mark draw.Rect
+		mark, text = r.SplitLeft(15)
+		spot := draw.Rect{X: mark.X, Y: mark.Y, W: 11, H: mark.H}.Fit(11, 11)
+		draw.Icon(b, bullet.Icon, spot.X, spot.Y, 11, colour)
+	} else {
+		fmt.Fprintf(b, `<circle cx="%.1f" cy="%.1f" r="1.8" fill="%s"/>`, r.X+3, r.MidY(), colour)
+		_, text = r.SplitLeft(11)
+	}
+
+	draw.Text(b, draw.Clip(bullet.Text, text.W, size), text.X, baseline(text.MidY(), size), size, p.Muted, "", "")
 }
 
 // ---------------------------------------------------------------------------

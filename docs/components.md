@@ -15,7 +15,7 @@ without a demo fails the build rather than quietly going undocumented.
 
 | | | |
 |---|---|---|
-| **Card** a panel with an accent edge | **Cluster** a dashed box around a region | **Callout** a bordered note |
+| **Card** a panel with an accent edge, and described lines under it | **Cluster** a dashed box around a region | **Callout** a bordered note |
 | **Swimlane** a labelled band | **ColumnHead** a board column heading | **Stat** one number, said loudly |
 | **Chip** a small labelled tag | **Badge** a count | **Pill** a state, in a wash of its colour |
 | **Avatar** an owner as initials | **Milestone** a point, not a span | **Legend** the key to a drawing |
@@ -92,6 +92,37 @@ at += parts.Chip(&b, at, y, p, "user", "ann", "") + 8
 
 Every optional part is genuinely optional. A chip with no icon costs nothing and leaves no hole, so
 there is one `Chip` rather than a `Chip` and a `ChipWithIcon`.
+
+## Saying more on a card
+
+A card says what the work is. When a reader would otherwise have to open an issue to learn the rest
+— what it is waiting on, what was decided — that goes under the title as bullets:
+
+```go
+style := parts.CardStyle{
+    Accent: theme.Blocked,
+    Title:  "Password reset",
+    Glyph:  "lock-circle",
+    Bullets: []parts.Bullet{
+        {Text: "waiting on the SMTP account"},
+        {Text: "decided: no third-party mailer", Icon: "check-circle", Colour: theme.Done},
+    },
+}
+
+parts.Card(&b, draw.Rect{X: x, Y: y, W: 260, H: parts.CardHeight(style)}, p, style)
+```
+
+A line with no kind gets a dot; one with a kind gets a glyph from the same set the statuses use, in
+whatever colour that kind means. The words stay quiet either way — a card with three loud lines has
+no title left.
+
+`CardHeight` is the room the card needs for what it has been given. A component that can grow has to
+be able to say by how much, or every caller works it out again and one of them gets it wrong. Give
+the card exactly that height and nothing clips; give it more and the block sits centred in it, so a
+described card and a plain one still line up on their titles.
+
+Bullets are optional on purpose. A plan diagram where every card carries three lines has stopped
+being a diagram and become a document.
 
 ## Motion
 

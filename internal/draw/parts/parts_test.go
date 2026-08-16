@@ -294,3 +294,63 @@ func TestACountingStatSettlesOnTheRealFigure(t *testing.T) {
 		t.Error("a single value drew nothing")
 	}
 }
+
+func TestACardSaysHowMuchRoomItNeeds(t *testing.T) {
+	// A component that can grow has to be able to say by how much, or every
+	// caller works it out again and one of them gets it wrong.
+	plain := CardStyle{Title: "Authentication"}
+	withMeta := CardStyle{Title: "Authentication", Meta: "feat/auth"}
+	withTwo := CardStyle{Title: "Authentication", Meta: "feat/auth", Bullets: []Bullet{
+		{Text: "waiting on the SMTP account"},
+		{Text: "blocks the checkout flow", Icon: "lock-circle"},
+	}}
+
+	if CardHeight(withMeta) <= CardHeight(plain) {
+		t.Error("a meta line costs nothing")
+	}
+	// Exactly one line per bullet: a card that grows a bullet grows by a line,
+	// it does not restyle the lines it already had.
+	if got := CardHeight(withTwo) - CardHeight(withMeta); got != 30 {
+		t.Errorf("two bullets added %.0f, want 30", got)
+	}
+}
+
+func TestBulletsAreDrawnAndDescribed(t *testing.T) {
+	style := CardStyle{
+		Accent: "#cf222e", Title: "Password reset", Meta: "auth",
+		Bullets: []Bullet{
+			{Text: "waiting on the SMTP account"},
+			{Text: "decided: no third-party mailer", Icon: "check-circle", Colour: "#1a7f37"},
+		},
+	}
+
+	var b strings.Builder
+	Card(&b, draw.Rect{X: 0, Y: 0, W: 260, H: CardHeight(style)}, test, style)
+	out := b.String()
+
+	for _, want := range []string{"waiting on the SMTP account", "decided: no third-party mailer"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("the card lost %q", want)
+		}
+	}
+	// A line with no kind gets a dot; one with a kind gets the glyph instead,
+	// so the mark is never both.
+	if n := strings.Count(out, "<circle"); n != 1 {
+		t.Errorf("%d dots drawn for one plain bullet", n)
+	}
+	if !strings.Contains(out, "#1a7f37") {
+		t.Error("a bullet's own colour was ignored")
+	}
+
+	// The description is quiet: the marks may be coloured, the words are not.
+	if strings.Count(out, `fill="#1a7f37"`) > 1 {
+		t.Error("a bullet coloured its text as well as its mark")
+	}
+
+	// And a card with no bullets draws none.
+	var bare strings.Builder
+	Card(&bare, draw.Rect{W: 260, H: 46}, test, CardStyle{Title: "Authentication"})
+	if strings.Contains(bare.String(), "<circle") {
+		t.Error("a card with no bullets drew one")
+	}
+}
