@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- The README shows the editor and the component vocabulary. Both pictures are drawn by devtree from
+  the same components its diagrams are, rather than captured: a screenshot is wrong the week after
+  somebody changes a colour, and nobody notices until a reader does. The editor illustration is also
+  the component library's first composition — if a card, a chip and a connector cannot be assembled
+  into something that looks like the product, the library is wrong.
+
 - A drawing vocabulary: twenty components — card, cluster, callout, swimlane, column head, stat,
   chip, badge, pill, avatar, milestone, legend, bar, ring, sparkline, timeline, divider, connector,
   arrow, brace — sitting between the primitives that write SVG and a finished picture. They know
