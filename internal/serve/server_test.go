@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/SergeyLubivui-dev/devtree/internal/icons"
 	"github.com/SergeyLubivui-dev/devtree/internal/store"
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
 )
@@ -422,5 +423,24 @@ func TestTheEmbeddedPageIsNotCached(t *testing.T) {
 		if !strings.Contains(got, "no-cache") {
 			t.Errorf("%s is served with Cache-Control: %q", asset, got)
 		}
+	}
+}
+
+func TestTheEditorTurnsTheSameGlyphTheDrawingDoes(t *testing.T) {
+	// One icon set, one behaviour. The glyph names its own moving part, and
+	// both the drawing and the page put the motion there.
+	_, handler := project(t)
+
+	glyphs := request(t, handler, http.MethodGet, "/api/glyphs", "").Body.String()
+	if !strings.Contains(glyphs, icons.MovingPart) {
+		t.Error("the page is served glyphs with no moving part named")
+	}
+
+	style := request(t, handler, http.MethodGet, "/app.css", "").Body.String()
+	if !strings.Contains(style, "."+icons.MovingPart) {
+		t.Error("the page never animates the part the glyph nominated")
+	}
+	if !strings.Contains(style, "prefers-reduced-motion") {
+		t.Error("the page's motion is not guarded")
 	}
 }

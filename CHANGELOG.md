@@ -42,6 +42,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The in-progress mark turns its ring, not itself. It is a ring around a check,
+  and spinning the whole glyph tumbled the check with it — a mark falling over
+  rather than work in flight. A glyph can now name the part of itself that
+  moves; renderers put the motion there, and strip the marker when nothing is
+  moving so a still drawing carries no dead classes. The editor honours the same
+  nomination, because a status that turns in the diagram and sits still in the
+  list would be two marks rather than one.
+
 - The editor's regions scroll. The grid holding them had no row of its own, so
   it took its height from its content: the regions grew past the bottom of the
   window and the body clipped the rest, which reads as a page that has simply

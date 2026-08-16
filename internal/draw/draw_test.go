@@ -182,3 +182,42 @@ func TestTextAndRoundRectStayOptional(t *testing.T) {
 		t.Errorf("an empty stroke should be left off entirely:\n%s", b.String())
 	}
 }
+
+func TestAGlyphCanNominateThePartThatMoves(t *testing.T) {
+	// The progress mark is a ring around a check. Turning the whole glyph
+	// tumbles the check with it, which reads as a mark falling over rather
+	// than as work in flight.
+	var b strings.Builder
+	IconClass(&b, "circle-half-dotted-check", ClassSpin, 0, 0, 16, "#d29922")
+	out := b.String()
+
+	ring := strings.Index(out, `<g class="`+ClassSpin+`">`)
+	if ring < 0 {
+		t.Fatal("nothing in the glyph is turning")
+	}
+	end := strings.Index(out[ring:], "</g>")
+	if end < 0 {
+		t.Fatal("the turning group is never closed")
+	}
+
+	turning := out[ring : ring+end]
+	if !strings.Contains(turning, "<path") || !strings.Contains(turning, "<circle") {
+		t.Error("the ring is not what is turning")
+	}
+	if strings.Contains(turning, "<polyline") {
+		t.Error("the check is inside the turning group")
+	}
+	if !strings.Contains(out[ring+end:], "<polyline") {
+		t.Error("the check is missing from the glyph, or drawn before the ring closes")
+	}
+
+	// A still drawing should not carry the nomination as a dead class.
+	var still strings.Builder
+	Icon(&still, "circle-half-dotted-check", 0, 0, 16, "#d29922")
+	if strings.Contains(still.String(), "dt-moving-part") {
+		t.Error("a still glyph kept the marker")
+	}
+	if !strings.Contains(still.String(), "<g><path") {
+		t.Errorf("stripping the marker left the group malformed: %s", still.String())
+	}
+}

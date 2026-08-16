@@ -819,6 +819,19 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 
 @keyframes draw { to { stroke-dashoffset: 0 } }
 
+/* --- a glyph that turns --------------------------------------------------- *
+   The glyphs come from the binary, and one of them names the part of itself
+   that moves: the ring of the progress mark turns, the check inside it holds
+   still. The drawings honour that, and so does this — a status that turns in
+   the diagram and sits still in the list would be two marks, not one.        */
+
+.dt-moving-part {
+  animation: dt-turn 8s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes dt-turn { to { transform: rotate(360deg) } }
+
 /* --- the icon swap ------------------------------------------------------------------ *
    One control, two states. The outgoing mark blurs away as the incoming one
    sharpens, so the button never blinks empty.                                        */

@@ -128,10 +128,18 @@ func IconClass(b *strings.Builder, name, class string, x, y, size float64, color
 	}
 	fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f) scale(%.4f)" style="color:%s">`,
 		x, y, size/icons.GridSize, color)
-	if class != "" {
+	marker := ` class="` + icons.MovingPart + `"`
+	switch {
+	case class == "":
+		// Nothing is moving, so the nomination is dead weight.
+		b.WriteString(strings.ReplaceAll(body, marker, ""))
+	case strings.Contains(body, marker):
+		// The glyph has named the part of itself that moves. Turning the whole
+		// mark would tumble the check inside a progress ring; only the ring
+		// turns, and it turns around the check.
+		b.WriteString(strings.ReplaceAll(body, marker, ` class="`+class+`"`))
+	default:
 		fmt.Fprintf(b, `<g class="%s">%s</g>`, class, body)
-	} else {
-		b.WriteString(body)
 	}
 	b.WriteString(`</g>`)
 }

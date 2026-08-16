@@ -10,6 +10,12 @@
 // caller sets the color once on a wrapping group and the whole icon follows.
 package icons
 
+// MovingPart marks the piece of a glyph that carries the motion, for glyphs
+// where turning the whole mark would be wrong. A renderer that is animating a
+// glyph puts the animation on this part; one that is not strips the marker, so
+// a still drawing carries no dead classes.
+const MovingPart = "dt-moving-part"
+
 // GridSize is the box every path is drawn in. Callers scale by size/GridSize.
 const GridSize = 24
 
@@ -18,7 +24,12 @@ const (
 	ClockCircle = `<path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.75C6.89137 2.75 2.75 6.89137 2.75 12C2.75 17.1086 6.89137 21.25 12 21.25C17.1086 21.25 21.25 17.1086 21.25 12C21.25 6.89137 17.1086 2.75 12 2.75ZM1.25 12C1.25 6.06294 6.06294 1.25 12 1.25C17.9371 1.25 22.75 6.06294 22.75 12C22.75 17.9371 17.9371 22.75 12 22.75C6.06294 22.75 1.25 17.9371 1.25 12ZM12 7.25C12.4142 7.25 12.75 7.58579 12.75 8V11.6893L15.0303 13.9697C15.3232 14.2626 15.3232 14.7374 15.0303 15.0303C14.7374 15.3232 14.2626 15.3232 13.9697 15.0303L11.4697 12.5303C11.329 12.3897 11.25 12.1989 11.25 12V8C11.25 7.58579 11.5858 7.25 12 7.25Z" fill="currentColor"/>`
 
 	// CircleHalfCheck is Reicon "circle-half-dotted-check" (outline) — status: in progress.
-	CircleHalfCheck = `<path d="M 12 2.3333 c 5.3387 0 9.6666 4.328 9.6666 9.6666 s -4.328 9.6666 -9.6666 9.6666" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><polyline points="7.6666 12.3333 10.6666 15.6666 16.3333 8.3333" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polyline><circle cx="5.164" cy="18.836" r="1" fill="currentColor"></circle><circle cx="2.3333" cy="12" r="1" fill="currentColor"></circle><circle cx="5.164" cy="5.164" r="1" fill="currentColor"></circle><circle cx="8.3013" cy="20.9306" r="1" fill="currentColor"></circle><circle cx="3.0693" cy="15.6986" r="1" fill="currentColor"></circle><circle cx="3.0693" cy="8.3013" r="1" fill="currentColor"></circle><circle cx="8.3013" cy="3.0693" r="1" fill="currentColor"></circle>`
+	//
+	// The ring is grouped and the check is not: this is a mark whose parts do
+	// not mean the same thing. The ring says the work is turning over; the
+	// check says what it is turning towards, and a check that tumbles with the
+	// ring reads as a mark falling over rather than progress being made.
+	CircleHalfCheck = `<g class="dt-moving-part"><path d="M 12 2.3333 c 5.3387 0 9.6666 4.328 9.6666 9.6666 s -4.328 9.6666 -9.6666 9.6666" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><circle cx="5.164" cy="18.836" r="1" fill="currentColor"></circle><circle cx="2.3333" cy="12" r="1" fill="currentColor"></circle><circle cx="5.164" cy="5.164" r="1" fill="currentColor"></circle><circle cx="8.3013" cy="20.9306" r="1" fill="currentColor"></circle><circle cx="3.0693" cy="15.6986" r="1" fill="currentColor"></circle><circle cx="3.0693" cy="8.3013" r="1" fill="currentColor"></circle><circle cx="8.3013" cy="3.0693" r="1" fill="currentColor"></circle></g><polyline points="7.6666 12.3333 10.6666 15.6666 16.3333 8.3333" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polyline>`
 
 	// LockCircle is Reicon "lock-circle" (filled) — status: blocked.
 	LockCircle = `<path d="M12 7.75C10.11 7.75 9.75 8.54 9.75 10V10.62H14.25V10C14.25 8.54 13.89 7.75 12 7.75Z" fill="currentColor"/><path d="M11.9984 15.0984C12.606 15.0984 13.0984 14.606 13.0984 13.9984C13.0984 13.3909 12.606 12.8984 11.9984 12.8984C11.3909 12.8984 10.8984 13.3909 10.8984 13.9984C10.8984 14.606 11.3909 15.0984 11.9984 15.0984Z" fill="currentColor"/><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17.38 14.5C17.38 16.7 16.7 17.38 14.5 17.38H9.5C7.3 17.38 6.62 16.7 6.62 14.5V13.5C6.62 11.79 7.03 11 8.25 10.73V10C8.25 9.07 8.25 6.25 12 6.25C15.75 6.25 15.75 9.07 15.75 10V10.73C16.97 11 17.38 11.79 17.38 13.5V14.5Z" fill="currentColor"/>`
