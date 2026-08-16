@@ -17,7 +17,7 @@ without a demo fails the build rather than quietly going undocumented.
 |---|---|---|
 | **Card** a panel with an accent edge | **Cluster** a dashed box around a region | **Callout** a bordered note |
 | **Swimlane** a labelled band | **ColumnHead** a board column heading | **Stat** one number, said loudly |
-| **Chip** a small labelled tag | **Badge** a count | **Pill** a state, in a word |
+| **Chip** a small labelled tag | **Badge** a count | **Pill** a state, in a wash of its colour |
 | **Avatar** an owner as initials | **Milestone** a point, not a span | **Legend** the key to a drawing |
 | **Bar** progress along a line | **Ring** the same, in a circle | **Sparkline** which way it is going |
 | **Timeline** an axis with ticks | **Divider** a hairline | **Connector** a rounded elbow |

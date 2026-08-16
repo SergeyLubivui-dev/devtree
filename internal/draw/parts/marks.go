@@ -64,24 +64,27 @@ func Badge(b *strings.Builder, x, y float64, p Palette, label, colour string) fl
 // 9. Pill
 // ---------------------------------------------------------------------------
 
-// Pill is a state said in a word: a glyph, a label, and a fully rounded edge.
+// Pill is a state said in a word: a glyph, a label, and a wash of the colour
+// it means.
 //
-// Rounded to the full height on purpose — the shape says "this is a state, not
-// a thing", which is what keeps it from being read as another card.
+// A rounded tag rather than a stadium. Fully rounded ends read as a button —
+// something you could press — and these are labels reporting a state nobody
+// clicks. The wash carries the meaning at a glance from across the diagram
+// while the label keeps full contrast, which a saturated fill would spend.
 func Pill(b *strings.Builder, x, y float64, p Palette, icon, label, colour, motion string) float64 {
 	if colour == "" {
 		colour = p.Accent
 	}
-	const size, height = 10.5, 20.0
+	const size, height = 10.5, 21.0
 
-	width := draw.TextWidth(label, size) + 18
+	width := draw.TextWidth(label, size) + 16
 	if icon != "" {
 		width += 15
 	}
 
-	draw.RoundRect(b, x, y, width, height, RadiusPill, "", colour)
+	draw.RoundRectTint(b, x, y, width, height, 6, colour, 0.14, 0.4)
 
-	inner := draw.Rect{X: x + 8, Y: y, W: width - 16, H: height}
+	inner := draw.Rect{X: x + 7, Y: y, W: width - 14, H: height}
 	if used := glyph(b, icon, motion, draw.Rect{X: inner.X, Y: inner.Y, W: 11, H: inner.H}, 11, colour); used > 0 {
 		_, inner = inner.SplitLeft(used - 2)
 	}

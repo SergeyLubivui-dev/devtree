@@ -176,3 +176,24 @@ func RoundRectClass(b *strings.Builder, class string, x, y, w, h, r float64, fil
 	}
 	b.WriteString(`/>`)
 }
+
+// RoundRectTint draws a rounded box in one colour at two strengths: a wash for
+// the fill and a firmer line for the edge.
+//
+// Opacity rather than a pre-mixed colour, because the mix depends on what is
+// behind it. The same tag has to sit on a light page and a near-black one, and
+// a colour blended against white by hand turns into a smear on the dark
+// drawing. Letting the renderer do the blending keeps one value per status
+// instead of one per status per theme.
+func RoundRectTint(b *strings.Builder, x, y, w, h, r float64, colour string, fill, stroke float64) {
+	fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%.1f"`, x, y, w, h, r)
+	if fill > 0 {
+		fmt.Fprintf(b, ` fill="%s" fill-opacity="%.2f"`, colour, fill)
+	} else {
+		b.WriteString(` fill="none"`)
+	}
+	if stroke > 0 {
+		fmt.Fprintf(b, ` stroke="%s" stroke-opacity="%.2f"`, colour, stroke)
+	}
+	b.WriteString(`/>`)
+}

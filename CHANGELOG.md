@@ -94,6 +94,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- The pill is a rounded tag washed in the colour it means, rather than a fully rounded stadium.
+  Stadium ends read as a button — something you could press — and a pill is a label reporting a
+  state nobody clicks. The wash carries the meaning from across a diagram while the label keeps full
+  contrast, which a saturated fill would have spent. It is drawn as opacity rather than a pre-mixed
+  colour, so one value per status covers both the light and the dark drawing.
+- The README leads with the drawing vocabulary — the gallery and the table right after the diagram
+  itself, the code that uses them in a section of its own — and shows the editor as a capture of the
+  real page in both themes rather than an illustration of it.
+
 - "What it looks like" in the README is devtree's own drawing and the terminal view. The Mermaid
   block is still written, still native on GitHub and GitLab, and still one link away in `TREE.md` —
   it is simply no longer what a visitor meets first. This repository now renders into `TREE.md`
