@@ -15,6 +15,7 @@
 package svg
 
 import (
+	"github.com/SergeyLubivui-dev/devtree/internal/draw/parts"
 	"strings"
 
 	"github.com/SergeyLubivui-dev/devtree/internal/tree"
@@ -119,4 +120,24 @@ func ThemeForFilename(name string) Theme {
 		return Dark
 	}
 	return Light
+}
+
+// Palette hands a theme to the component library.
+//
+// The two are deliberately different types. A Theme knows the five task
+// statuses, which is exactly the knowledge a drawing component must not have —
+// a Pill that knew what "blocked" looks like could only ever draw plans. This
+// is the one place the translation happens, so a new colour in the theme
+// reaches every component without any of them learning what it means.
+func (t Theme) Palette() parts.Palette {
+	return parts.Palette{
+		Text:   t.Text,
+		Muted:  t.Muted,
+		Faint:  t.Muted,
+		Canvas: t.Canvas,
+		Card:   t.Card,
+		Track:  t.Track,
+		Border: t.Border,
+		Accent: t.Done,
+	}
 }

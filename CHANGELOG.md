@@ -8,6 +8,19 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- A drawing vocabulary: twenty components — card, cluster, callout, swimlane, column head, stat,
+  chip, badge, pill, avatar, milestone, legend, bar, ring, sparkline, timeline, divider, connector,
+  arrow, brace — sitting between the primitives that write SVG and a finished picture. They know
+  nothing about development plans: a pill takes a colour and a label, and the renderer above decides
+  that "blocked" is red, which is what lets the documentation's illustrations and the plan diagrams
+  use one library rather than two. A generated gallery draws every one of them, walking the list, so
+  a component added without a demo fails the build instead of going undocumented.
+- Layout instrumentation to place them with: a `Rect` that insets, splits and divides into rows and
+  columns, so a card's header is "the top 34, padded by 12" rather than four numbers recomputed at
+  every use. With it, the measuring that drawing text actually needs — fitting a size until it fits,
+  wrapping into at most n lines with the last one ending in an ellipsis, initials from a name,
+  plurals, and a percentage that treats nothing to divide by as nothing done.
+
 - `devtree serve` — a local editor at `http://127.0.0.1:9312`. The plan on the left, drawn on the
   right, live: five views behind the tabs (tree, board, page, Mermaid, YAML), rendered on demand,
   with nothing written to disk until you ask. It binds to the loopback interface only, stores

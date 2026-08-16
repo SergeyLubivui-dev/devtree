@@ -415,6 +415,7 @@ This page is the tour. [`docs/`](docs/) is the detail underneath it.
 | [Automation](docs/automation.md) | The pre-commit hook and the GitHub Action, line by line |
 | [SVG output](docs/svg-output.md) | File naming, palettes, the animation vocabulary, the CSP it survives |
 | [The editor](docs/editor.md) | The local editor, the drawing you can edit, and the motion in it |
+| [Drawing components](docs/components.md) | The twenty components every diagram is assembled from |
 | [The container](docs/container.md) | Running devtree without installing anything |
 | [Architecture](docs/architecture.md) | The layering, the rules that hold it, and how it is tested |
 

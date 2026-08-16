@@ -46,6 +46,7 @@ func main() {
 		{"pipeline", pipeline},
 		{"statuses", statuses},
 		{"architecture", architecture},
+		{"components", components},
 	}
 
 	dir := filepath.Join("docs", "assets")
