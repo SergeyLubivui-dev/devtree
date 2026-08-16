@@ -82,13 +82,18 @@
 
       <div class="grow"></div>
 
-      <div class="seg" id="views" role="tablist" aria-label="View">
-        <span class="seg-pill" aria-hidden="true"></span>
-        <button role="tab" data-view="tree" aria-selected="true">Tree</button>
-        <button role="tab" data-view="board" aria-selected="false">Board</button>
-        <button role="tab" data-view="page" aria-selected="false">Page</button>
-        <button role="tab" data-view="mermaid" aria-selected="false">Mermaid</button>
-        <button role="tab" data-view="yaml" aria-selected="false">YAML</button>
+      <!--
+        The view is a dropdown rather than a row of tabs: five tabs spend the
+        width of the header saying what you are not looking at, and each one
+        gets a word where it could have had a sentence.
+      -->
+      <div class="menu-wrap" id="view-picker">
+        <button class="crumb" id="view-btn" aria-haspopup="menu" aria-expanded="false">
+          <span class="glyph" id="view-glyph"></span>
+          <span id="view-name">Tree</span>
+          <svg viewBox="0 0 24 24" class="ui chev"><path d="m7 10 5 5 5-5"/></svg>
+        </button>
+        <div class="menu menu-right" id="view-menu" role="menu" aria-labelledby="view-btn"></div>
       </div>
     </header>
 

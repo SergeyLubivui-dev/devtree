@@ -444,3 +444,31 @@ func TestTheEditorTurnsTheSameGlyphTheDrawingDoes(t *testing.T) {
 		t.Error("the page's motion is not guarded")
 	}
 }
+
+func TestTheViewIsChosenFromAList(t *testing.T) {
+	// Five tabs spent the header saying what you were not looking at, and gave
+	// each view a word where it could have had a sentence.
+	_, handler := project(t)
+
+	page := request(t, handler, http.MethodGet, "/", "").Body.String()
+	if strings.Contains(page, `role="tablist"`) && strings.Contains(page, `data-view=`) {
+		t.Error("the view is still a row of tabs in the markup")
+	}
+	for _, want := range []string{`id="view-btn"`, `id="view-menu"`, `aria-haspopup="menu"`} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the view picker is missing %q", want)
+		}
+	}
+
+	script := request(t, handler, http.MethodGet, "/app.js", "").Body.String()
+	for _, view := range []string{"tree", "board", "page", "mermaid", "yaml"} {
+		if !strings.Contains(script, `id: '`+view+`'`) {
+			t.Errorf("the picker does not offer %q", view)
+		}
+		// Every view devtree can render must also be reachable from the API,
+		// or the list is offering something the server will not draw.
+		if rec := request(t, handler, http.MethodGet, "/api/view/"+view, ""); rec.Code != http.StatusOK {
+			t.Errorf("the picker offers %q but the server answers %d", view, rec.Code)
+		}
+	}
+}

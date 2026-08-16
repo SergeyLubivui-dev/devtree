@@ -61,15 +61,20 @@ what `devtree render` does.
 it is drawing, so clicking a card opens that task and hovering one offers a `+` that adds work
 underneath it. The hierarchy is built in the diagram, where you can see the shape it is making.
 
-Five views behind the tabs:
+Five views, chosen from the dropdown in the header:
 
-| Tab | What you get |
+| View | What you get |
 |---|---|
 | Tree | the SVG devtree renders into `.svg` outputs |
 | Board | the same work in columns, by status |
 | Page | the HTML export, in a frame, filters and all |
 | Mermaid | the block that goes into a `.md` output |
 | YAML | the plan file exactly as it would be written |
+
+It is a dropdown rather than a row of tabs for two reasons: five tabs spend the width of the header
+saying what you are *not* looking at, and each one gets a word where it could have had a sentence.
+In the list every view says what it gives you. The chosen one is in the address as well
+(`#board`), so a reload comes back to it.
 
 They are rendered on demand and **nothing is written to disk** while you look at them. A preview
 that touched the working tree would turn every keystroke into a diff.
@@ -100,9 +105,9 @@ as published:
 
 | What moves | When | Why |
 |---|---|---|
-| a pill slides between tabs | changing the view or the scope | the eye follows the pill to the new content |
+| a pill slides between the two scopes | All to Open | the eye follows the pill to the list that changed |
 | a panel arrives from the right | editing, adding, confirming | it comes from the edge it lives on |
-| a menu drops | choosing a status | it opens from the control it belongs to |
+| a menu drops | choosing a view or a status | it opens from the control it belongs to |
 | an icon swaps with a blur | switching light and dark | one control, two states, no flicker |
 | a check draws itself | after the outputs are written | the answer to "did that take?" |
 | a skeleton pulses, then reveals | while a drawing is fetched | the layout does not jump when it arrives |

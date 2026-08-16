@@ -769,21 +769,75 @@ function setCollapsed(shut) {
   $('side-collapse').title = shut ? 'Show the panel' : 'Collapse the panel';
 }
 
-const views = ['tree', 'board', 'page', 'mermaid', 'yaml'];
+// The views, each with the glyph it is drawn with and a line saying what it
+// gives you. A dropdown has room for that sentence; five tabs did not.
+const views = [
+  { id: 'tree', name: 'Tree', glyph: 'nodes', what: 'the drawing devtree writes into an .svg output' },
+  { id: 'board', name: 'Board', glyph: 'layers', what: 'the same work in columns, by status' },
+  { id: 'page', name: 'Page', glyph: 'monitor', what: 'the HTML export, filters and links and all' },
+  { id: 'mermaid', name: 'Mermaid', glyph: 'code-square', what: 'the block that goes into a .md output' },
+  { id: 'yaml', name: 'YAML', glyph: 'document-code', what: 'the plan file exactly as it would be written' },
+];
+
+function viewByID(id) { return views.find((v) => v.id === id); }
+
+// buildViewMenu fills the dropdown once. The list is the same one setView
+// validates against, so a view cannot exist in one and not the other.
+function buildViewMenu() {
+  const menu = $('view-menu');
+  menu.innerHTML = '';
+
+  for (const view of views) {
+    const item = el('button', 'menu-pick');
+    item.type = 'button';
+    item.setAttribute('role', 'menuitemradio');
+    item.dataset.view = view.id;
+
+    const mark = el('span', 'glyph');
+    mark.innerHTML = glyph(view.glyph);
+
+    const name = el('span', 'name');
+    name.textContent = view.name;
+
+    const what = el('span', 'what');
+    what.textContent = view.what;
+
+    const tick = el('span', 'mark');
+    tick.innerHTML = '<svg viewBox="0 0 24 24" class="ui"><path d="m5 12.5 5 5 9-10.5"/></svg>';
+
+    item.append(mark, name, tick, what);
+    item.addEventListener('click', () => { setView(view.id); closeViewMenu(); $('view-btn').focus(); });
+    menu.append(item);
+  }
+}
+
+function openViewMenu() {
+  $('view-menu').dataset.open = '';
+  $('view-btn').setAttribute('aria-expanded', 'true');
+  const current = $('view-menu').querySelector('[aria-checked="true"]');
+  if (current) current.focus();
+}
+
+function closeViewMenu() {
+  delete $('view-menu').dataset.open;
+  $('view-btn').setAttribute('aria-expanded', 'false');
+}
+
+function viewMenuOpen() { return $('view-menu').dataset.open !== undefined; }
 
 // setView also writes the view into the address, so a reload comes back to the
 // same one and a view can be handed to somebody as a link.
-function setView(view) {
-  if (!views.includes(view)) view = 'tree';
-  state.view = view;
+function setView(id) {
+  const view = viewByID(id) || views[0];
+  state.view = view.id;
 
-  const seg = $('views');
-  seg.querySelectorAll('button').forEach((btn) => {
-    btn.setAttribute('aria-selected', String(btn.dataset.view === view));
+  $('view-name').textContent = view.name;
+  $('view-glyph').innerHTML = glyph(view.glyph);
+  $('view-menu').querySelectorAll('[data-view]').forEach((item) => {
+    item.setAttribute('aria-checked', String(item.dataset.view === view.id));
   });
-  slidePill(seg);
 
-  if (location.hash.slice(1) !== view) history.replaceState(null, '', `#${view}`);
+  if (location.hash.slice(1) !== view.id) history.replaceState(null, '', `#${view.id}`);
   paintStage();
 }
 
@@ -857,9 +911,26 @@ function wire() {
     btn.addEventListener('click', () => setSection(btn.dataset.section));
   });
 
-  $('views').querySelectorAll('button').forEach((btn) => {
-    btn.addEventListener('click', () => setView(btn.dataset.view));
+  $('view-btn').addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (viewMenuOpen()) closeViewMenu(); else openViewMenu();
   });
+  document.addEventListener('click', (event) => {
+    if (!$('view-picker').contains(event.target)) closeViewMenu();
+  });
+
+  // Up and down walk the list, the way a menu is expected to.
+  $('view-picker').addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!viewMenuOpen()) { openViewMenu(); return; }
+      const items = [...$('view-menu').querySelectorAll('[data-view]')];
+      const at = items.indexOf(document.activeElement);
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      items[(at + step + items.length) % items.length].focus();
+    }
+  });
+
   $('scope').querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => setScope(btn.dataset.scope));
   });
@@ -896,7 +967,11 @@ function wire() {
   $('scrim').addEventListener('click', closeDrawer);
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { closeDrawer(); return; }
+    if (event.key === 'Escape') {
+      if (viewMenuOpen()) { closeViewMenu(); $('view-btn').focus(); return; }
+      closeDrawer();
+      return;
+    }
     // Enter submits from a single-line field, the way a form would.
     if (event.key === 'Enter' && !event.shiftKey && drawer.onSubmit) {
       const target = event.target;
@@ -924,7 +999,7 @@ function wire() {
     if (first) first.focus();
   });
 
-  addEventListener('resize', () => { slidePill($('views')); slidePill($('scope')); });
+  addEventListener('resize', () => slidePill($('scope')));
 }
 
 // live tells the page when the plan changed underneath it — an edit made in a
@@ -955,6 +1030,7 @@ async function boot() {
     $('list').append(hint(String(err.message || err)));
   }
 
+  buildViewMenu();
   slidePill($('scope'));
   setView(location.hash.slice(1) || 'tree');
   live();

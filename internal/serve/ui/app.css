@@ -273,7 +273,6 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
   border-radius: var(--r);
   background: var(--rail);
 }
-.main-head .seg { margin: 0; }
 
 .seg button {
   position: relative;
@@ -462,7 +461,16 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
   transition: background var(--fast) ease;
 }
 .crumb:hover { background: var(--raise); }
-.crumb .chev { width: 15px; height: 15px; color: var(--faint); }
+.crumb .chev {
+  width: 15px;
+  height: 15px;
+  color: var(--faint);
+  transition: transform var(--fast) var(--ease);
+}
+.crumb[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.crumb[aria-expanded="true"] { background: var(--raise); }
+.crumb .glyph { display: grid; place-items: center; }
+.crumb .glyph svg { width: 15px; height: 15px; color: var(--muted); }
 
 .rollup { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
@@ -754,6 +762,34 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 }
 .menu[data-open] { opacity: 1; transform: none; pointer-events: auto; }
 
+/* Hung off a control near the right edge, so it opens inwards rather than off
+   the side of the window. */
+.menu-right {
+  left: auto;
+  right: 0;
+  width: 268px;
+  transform-origin: top right;
+}
+
+/* An item in a list you are choosing from, rather than a command you are
+   firing: it says what it is, and what it gives you. */
+/* Written as `.menu button.menu-pick` on purpose: `.menu button` above is a
+   class plus a type selector, so a bare `.menu-pick` loses to it and the item
+   stays a flex row with its description shoved out of the panel. */
+.menu button.menu-pick {
+  display: grid;
+  grid-template-columns: 15px 1fr 15px;
+  gap: 2px 9px;
+  align-items: start;
+  padding: 8px 9px;
+}
+.menu-pick .name { font-size: 12.5px; }
+.menu-pick .what { grid-column: 2; margin-top: 1px; color: var(--faint); font-size: 11px; line-height: 1.4; }
+.menu-pick .mark { color: var(--accent); opacity: 0; }
+.menu-pick[aria-checked="true"] .mark { opacity: 1; }
+.menu-pick[aria-checked="true"] .name { font-weight: 600; }
+.menu-pick > .glyph { display: grid; place-items: center; margin-top: 1px; color: var(--muted); }
+
 .menu button {
   display: flex;
   align-items: center;
@@ -874,7 +910,7 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 @media (max-width: 880px) {
   .app { grid-template-columns: var(--rail-w) 1fr; }
   .side { display: none; }
-  .main-head .seg button:nth-child(n+5) { display: none; }
+  .rollup { display: none; }
 }
 
 /* --- reduced motion ---------------------------------------------------------------------- *
