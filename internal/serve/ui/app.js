@@ -458,7 +458,7 @@ function field(label, name, value = '', { placeholder = '', hint = '', area = fa
 
 // statusPicker is the menu-drop snippet doing a real job: five options, opened
 // from the control that shows the current one.
-function statusPicker(current) {
+function statusPicker(current, note = '') {
   const wrap = el('div', 'field');
   const tag = el('label');
   tag.textContent = 'Status';
@@ -508,6 +508,11 @@ function statusPicker(current) {
   show();
   menuWrap.append(button, menu);
   wrap.append(tag, menuWrap);
+  if (note) {
+    const line = el('p', 'hint');
+    line.innerHTML = note;
+    wrap.append(line);
+  }
   wrap.read = () => value;
   return wrap;
 }
@@ -531,20 +536,42 @@ function editTask(id) {
   state.selected = id;
   paint();
 
+  // Every field says what it is for. These are not decoration: the fields do
+  // real work elsewhere in devtree — a branch closes a task when it merges, a
+  // pull request outranks an issue for the link — and a form that keeps that
+  // to itself is a form people fill in wrong.
+  const kids = (state.plan.nodes || []).filter((n) => n.parent === node.id).length;
+
   const body = el('div');
-  const title = field('Title', 'title', node.title);
-  const status = statusPicker(node.status);
+  const title = field('Title', 'title', node.title, {
+    hint: 'What the card says, in the drawing and in every export.',
+  });
+  const status = statusPicker(node.status, kids
+    ? `This one has ${kids} task${kids > 1 ? 's' : ''} under it, so its progress is counted from them,
+       not from this. The status still colours the card.`
+    : 'Colours the card and decides which column it lands in on the board.');
 
   const pair = el('div', 'pair');
-  pair.append(field('Owner', 'owner', node.owner, { placeholder: 'ann' }),
-              field('Branch', 'branch', node.branch, { placeholder: 'feat/auth' }));
+  pair.append(
+    field('Owner', 'owner', node.owner, { placeholder: 'ann', hint: 'Who has it. <code>@</code> is trimmed.' }),
+    field('Branch', 'branch', node.branch, {
+      placeholder: 'feat/auth',
+      hint: '<code>devtree sync</code> closes this task when that branch merges.',
+    }));
 
   const pair2 = el('div', 'pair');
-  pair2.append(field('Issue', 'issue', node.issue, { placeholder: '12' }),
-               field('Pull request', 'pr', node.pr, { placeholder: '44' }));
+  pair2.append(
+    field('Issue', 'issue', node.issue, { placeholder: '12', hint: 'Number only.' }),
+    field('Pull request', 'pr', node.pr, { placeholder: '44', hint: 'Wins over the issue for the link.' }));
 
-  const tags = field('Tags', 'tags', (node.tags || []).join(', '), { placeholder: 'backend, api' });
-  const note = field('Note', 'note', node.note, { area: true });
+  const tags = field('Tags', 'tags', (node.tags || []).join(', '), {
+    placeholder: 'backend, api',
+    hint: 'Comma separated. <code>devtree ls --tag backend</code> filters on these.',
+  });
+  const note = field('Note', 'note', node.note, {
+    area: true,
+    hint: 'A line of context for whoever opens the plan next — why it is blocked, what it is waiting on.',
+  });
 
   body.append(title, status, pair, pair2, tags, note);
 
@@ -595,11 +622,14 @@ function newTask(parent) {
   const body = el('div');
   const under = parent && (state.plan.nodes || []).find((n) => n.id === parent);
 
-  const title = field('Title', 'title', '', { placeholder: 'Search filters' });
-  const status = statusPicker('todo');
+  const title = field('Title', 'title', '', {
+    placeholder: 'Search filters',
+    hint: 'What the card will say. Everything else can be filled in later.',
+  });
+  const status = statusPicker('todo', 'Where the work stands today.');
   const id = field('ID', 'id', '', {
     placeholder: 'left blank, devtree makes one from the title',
-    hint: 'The id is what <code>parent</code> points at, so it is worth keeping short.',
+    hint: 'What <code>parent</code> points at, so it is worth keeping short. Cyrillic is transliterated.',
   });
 
   body.append(title, status, id);
@@ -706,12 +736,37 @@ function newDocument() {
 // chrome
 // ---------------------------------------------------------------------------
 
+// setSection points the panel at a list. Clicking the section already showing
+// folds the panel away, and clicking any section brings it back — the collapse
+// button lives inside the panel, so on its own it would be a one-way door.
 function setSection(section) {
+  if (collapsed()) {
+    setCollapsed(false);
+  } else if (section === state.section) {
+    setCollapsed(true);
+    return;
+  }
+
   state.section = section;
   document.querySelectorAll('.rail-btn[data-section]').forEach((btn) => {
     btn.setAttribute('aria-pressed', String(btn.dataset.section === section));
   });
   paint();
+  requestAnimationFrame(() => slidePill($('scope')));
+}
+
+function collapsed() { return document.querySelector('.app').dataset.collapsed !== undefined; }
+
+function setCollapsed(shut) {
+  const app = document.querySelector('.app');
+  const side = document.querySelector('.side');
+  if (shut) app.dataset.collapsed = ''; else delete app.dataset.collapsed;
+
+  // A panel folded to nothing must not still be tabbable, and it must not
+  // answer a screen reader either.
+  side.inert = shut;
+  side.setAttribute('aria-hidden', String(shut));
+  $('side-collapse').title = shut ? 'Show the panel' : 'Collapse the panel';
 }
 
 function setView(view) {
@@ -776,6 +831,11 @@ async function writeOutputs() {
   }
 }
 
+// isTyping keeps a shortcut from firing while somebody is filling in a field.
+function isTyping(node) {
+  return !!node && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA');
+}
+
 function escapeHTML(text) {
   return String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
@@ -802,10 +862,7 @@ function wire() {
   $('side-add').addEventListener('click', () => {
     if (state.section === 'docs') newDocument(); else newTask('');
   });
-  $('side-collapse').addEventListener('click', () => {
-    const app = document.querySelector('.app');
-    if (app.dataset.collapsed === undefined) app.dataset.collapsed = ''; else delete app.dataset.collapsed;
-  });
+  $('side-collapse').addEventListener('click', () => setCollapsed(!collapsed()));
 
   $('node-add').addEventListener('click', (event) => {
     event.stopPropagation();
@@ -839,7 +896,14 @@ function wire() {
     }
     if (event.key === '/' && document.activeElement !== $('search')) {
       event.preventDefault();
+      if (collapsed()) setCollapsed(false);
       $('search').focus();
+    }
+    // The same key folds and unfolds the panel, which is the only way back
+    // once the button has gone with it.
+    if (event.key === '[' && !isTyping(event.target)) {
+      event.preventDefault();
+      setCollapsed(!collapsed());
     }
   });
 

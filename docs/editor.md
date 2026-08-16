@@ -30,7 +30,10 @@ the address is not `127.0.0.1`.
 ## The regions
 
 **The rail** switches what the panel is listing, and holds the two buttons that act on the whole
-plan: the theme, and `Write outputs`.
+plan: the theme, and `Write outputs`. Clicking the section already showing folds the panel away, and
+clicking any section brings it back — the collapse button lives inside the panel, so on its own it
+would be a one-way door. `[` does the same from the keyboard, and `/` jumps to the search box,
+unfolding the panel if it has to.
 
 **The panel — Plan.** Every task as a row: the status glyph, the title, and the rollup on the right.
 Nesting is drawn, not indented by guesswork — a child hangs off its parent's line, and the last one
@@ -83,6 +86,12 @@ phrase. So the editor asks in its own panel, with the consequence spelled out, a
 that way.
 
 Escape closes it, so does the backdrop, and focus stays inside it while it is open.
+
+Every field says what it is for, under the field rather than in a tooltip. They are not decoration:
+these values do work elsewhere — a branch closes its task when it merges, a pull request outranks an
+issue for the link, a tag is what `devtree ls --tag` filters on — and a form that keeps that to
+itself is a form people fill in wrong. A parent's status field says so too: its progress is counted
+from the work underneath it, not typed here.
 
 ## The motion
 

@@ -111,6 +111,17 @@ body {
   transition: grid-template-columns var(--mid) var(--ease);
 }
 .app[data-collapsed] { grid-template-columns: var(--rail-w) 0 1fr; }
+.app[data-collapsed] .side { border-right: 0; }
+
+/* While the column animates to zero the panel must not reflow: the content
+   keeps the panel's width and is clipped, so collapsing reads as a panel
+   sliding out of the way rather than text reflowing on its way to nothing. */
+.side-inner {
+  display: flex;
+  flex-direction: column;
+  width: var(--side-w);
+  height: 100%;
+}
 
 /* --- rail ----------------------------------------------------------------- */
 
@@ -151,13 +162,24 @@ body {
 }
 .rail-btn:hover { background: var(--raise); color: var(--muted); }
 .rail-btn[aria-pressed="true"] { background: var(--raise-2); color: var(--text); }
+
+/* The section the panel is showing gets a marker on the rail edge, so a
+   collapsed panel still says what it is holding. */
+.rail-btn[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+}
 .rail-btn svg { width: 18px; height: 18px; }
 
 /* --- panel ---------------------------------------------------------------- */
 
 .side {
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   background: var(--panel);
   border-right: 1px solid var(--line);
@@ -281,6 +303,11 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 
 .list {
   flex: 1;
+  /* A flex item defaults to min-height:auto, which means it grows to fit its
+     content instead of scrolling inside it. Without this the list and the
+     stage push the layout taller than the window and the scrollbar ends up on
+     a region that cannot move. */
+  min-height: 0;
   padding: 0 8px 14px;
   overflow: auto;
   overscroll-behavior: contain;
@@ -434,9 +461,11 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 
 .stage {
   flex: 1;
+  min-height: 0;          /* see .list — the same trap */
   padding: 20px;
   overflow: auto;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
 }
 .stage:focus { outline: none; }
 
@@ -586,6 +615,7 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 
 .drawer-body {
   flex: 1;
+  min-height: 0;
   padding: 16px;
   overflow: auto;
   overscroll-behavior: contain;
@@ -637,10 +667,14 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
   border-color: var(--faint);
   background: var(--raise);
 }
-.field .hint { margin-top: 6px; color: var(--faint); font-size: 11.5px; }
+.field .hint { margin: 6px 0 0; color: var(--faint); font-size: 11.5px; line-height: 1.45; }
 .field .hint code { color: var(--muted); }
 
+/* Two fields side by side. Aligning the rows rather than the boxes keeps the
+   inputs level when one of the two carries a longer description. */
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pair .field { display: grid; grid-template-rows: auto auto 1fr; margin-bottom: 14px; }
+.pair .field .hint { align-self: start; }
 
 .note { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
 .note strong { color: var(--text); font-weight: 600; }
