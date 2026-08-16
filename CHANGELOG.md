@@ -49,7 +49,6 @@ All notable changes to this project are documented here. The format follows
   moving so a still drawing carries no dead classes. The editor honours the same
   nomination, because a status that turns in the diagram and sits still in the
   list would be two marks rather than one.
-
 - The editor's regions scroll. The grid holding them had no row of its own, so
   it took its height from its content: the regions grew past the bottom of the
   window and the body clipped the rest, which reads as a page that has simply
