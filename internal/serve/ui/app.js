@@ -769,13 +769,21 @@ function setCollapsed(shut) {
   $('side-collapse').title = shut ? 'Show the panel' : 'Collapse the panel';
 }
 
+const views = ['tree', 'board', 'page', 'mermaid', 'yaml'];
+
+// setView also writes the view into the address, so a reload comes back to the
+// same one and a view can be handed to somebody as a link.
 function setView(view) {
+  if (!views.includes(view)) view = 'tree';
   state.view = view;
+
   const seg = $('views');
   seg.querySelectorAll('button').forEach((btn) => {
     btn.setAttribute('aria-selected', String(btn.dataset.view === view));
   });
   slidePill(seg);
+
+  if (location.hash.slice(1) !== view) history.replaceState(null, '', `#${view}`);
   paintStage();
 }
 
@@ -947,10 +955,12 @@ async function boot() {
     $('list').append(hint(String(err.message || err)));
   }
 
-  slidePill($('views'));
   slidePill($('scope'));
-  paintStage();
+  setView(location.hash.slice(1) || 'tree');
   live();
+
+  // Back and forward through the views, since they are in the address now.
+  addEventListener('hashchange', () => setView(location.hash.slice(1) || 'tree'));
 }
 
 boot();

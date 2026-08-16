@@ -323,3 +323,15 @@ func TestEveryCardCarriesItsID(t *testing.T) {
 		}
 	}
 }
+
+func TestNoDrawingClipsItsOwnSummary(t *testing.T) {
+	// The header is the one part that does not shrink with the work: a plan
+	// with two tasks left still says how many there were in total.
+	for _, plan := range []*tree.Tree{sample(t), tree.New("A project with a rather long name indeed")} {
+		for _, doc := range []string{Render(plan, Light), Board(plan, Light)} {
+			if got, need := widthOf(t, doc), headerNeeds(plan); got < need-1 {
+				t.Errorf("drawn %.0f wide, header needs %.0f", got, need)
+			}
+		}
+	}
+}

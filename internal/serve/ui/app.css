@@ -107,9 +107,18 @@ body {
 .app {
   display: grid;
   grid-template-columns: var(--rail-w) var(--side-w) 1fr;
+  /* The row has to be told to be exactly the window, and told that it may be
+     shorter than its content. Left implicit it is sized `auto`, the regions
+     grow past the bottom of the window, and the body clips what is left over —
+     which looks like a page that has simply stopped scrolling. */
+  grid-template-rows: minmax(0, 100vh);
   height: 100vh;
   transition: grid-template-columns var(--mid) var(--ease);
 }
+
+/* Grid items default to min-height:auto too, so each region needs the same
+   permission to be shorter than what is inside it. */
+.rail, .side, .main { min-height: 0; }
 .app[data-collapsed] { grid-template-columns: var(--rail-w) 0 1fr; }
 .app[data-collapsed] .side { border-right: 0; }
 
@@ -459,17 +468,31 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
 
 .grow { flex: 1; }
 
+/* The drawing sits in the middle of the room. `safe` is the whole point of the
+   spelling: plain `center` centres by pushing from both sides, so a drawing
+   taller or wider than the stage would have its top and left pushed out of
+   reach — centred, and unscrollable. `safe` centres while it fits and falls
+   back to the start when it does not. */
 .stage {
   flex: 1;
   min-height: 0;          /* see .list — the same trap */
-  padding: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: safe center;
+  justify-items: safe center;
+  gap: 16px;
+  padding: 24px;
   overflow: auto;
   overscroll-behavior: contain;
-  scroll-behavior: smooth;
 }
 .stage:focus { outline: none; }
 
 .stage svg.plan { display: block; max-width: 100%; height: auto; }
+
+/* Text and the framed page want the width; only the drawings want centring. */
+.stage pre, .stage iframe { justify-self: stretch; width: 100%; }
+.stage .skeleton { justify-self: stretch; width: 100%; }
+.stage .empty { justify-self: center; }
 
 .stage pre {
   margin: 0;
@@ -524,7 +547,7 @@ svg.ui { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: ro
    answer will need, and the answer arrives over it instead of the layout
    jumping when it lands.                                                       */
 
-.skeleton { display: grid; gap: 10px; }
+.skeleton { display: grid; gap: 10px; align-content: start; }
 .skeleton i {
   display: block;
   height: 46px;

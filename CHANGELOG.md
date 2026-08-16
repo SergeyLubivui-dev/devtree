@@ -42,6 +42,21 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The editor's regions scroll. The grid holding them had no row of its own, so
+  it took its height from its content: the regions grew past the bottom of the
+  window and the body clipped the rest, which reads as a page that has simply
+  stopped scrolling. The row is the window now, and every region is allowed to
+  be shorter than what is inside it.
+- The drawing sits in the middle of the stage, centred with `safe` — plain
+  centring pushes from both sides, so a drawing larger than the stage would have
+  its top and left pushed out of reach: centred and unreachable.
+- No drawing is narrower than its own summary. Sizing the board's columns for
+  their cards let a one-column board shrink until "23 / 25 tasks done" ran off
+  the edge of it; the header now states the width it needs and both drawings
+  floor on it.
+- The view is in the address (`#board`), so a reload comes back to it and it can
+  be handed to somebody as a link.
+
 - The Mermaid block no longer fights the reader's theme. It pinned a light fill and a dark label
   color, which glared on a dark GitHub page; a translucent tint was tried instead and turned out
   unreadable there, because Mermaid keeps the label dark in its dark theme. Both were rendered

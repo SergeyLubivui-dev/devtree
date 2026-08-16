@@ -47,6 +47,10 @@ func Board(t *tree.Tree, th Theme) string {
 	if n > 0 {
 		width = pad*2 + n*colW + (n-1)*colGutter
 	}
+	// However few columns are left, the summary above them still has to fit.
+	if floor := headerNeeds(t); width < floor {
+		width = floor
+	}
 
 	tallest := 0
 	for _, c := range columns {

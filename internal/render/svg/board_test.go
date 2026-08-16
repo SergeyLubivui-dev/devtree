@@ -158,8 +158,16 @@ func TestBoardShrinksRatherThanStretchingOneColumn(t *testing.T) {
 	}
 
 	one := widthOf(t, Board(plan, Light))
-	if one > 340 {
-		t.Errorf("a one-column board is %.0f wide", one)
+	if one >= boardW {
+		t.Errorf("a one-column board is %.0f wide, no narrower than a full one", one)
+	}
+	// However narrow it gets, the summary above the columns still has to fit —
+	// a board that shrank until it clipped its own "23 / 25 tasks done" traded
+	// one problem for a worse one.
+	// The width attribute is written rounded, so a half-pixel short is the
+	// format, not a clipped header.
+	if need := headerNeeds(plan); one < need-1 {
+		t.Errorf("a one-column board is %.0f wide but its header needs %.0f", one, need)
 	}
 
 	// Add work in other statuses and the board opens back up to its full size.

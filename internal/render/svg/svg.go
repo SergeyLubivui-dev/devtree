@@ -33,7 +33,7 @@ func Render(t *tree.Tree, th Theme) string {
 	if floor := pad*2 + legendWidth(); width < floor {
 		width = floor
 	}
-	if floor := pad*2 + headerWidth(t); width < floor {
+	if floor := headerNeeds(t); width < floor {
 		width = floor
 	}
 
@@ -127,17 +127,42 @@ func header(b *strings.Builder, t *tree.Tree, th Theme, width float64) {
 		pad+30, pad+15, th.Text, draw.Escape(draw.Clip(projectName(t), width-pad*2-40, 17)))
 
 	done, total := t.Totals()
-	const barW = 208.0
 	y := pad + 34
 
-	draw.RoundRect(b, pad, y, barW, 6, 3, th.Track, "")
+	draw.RoundRect(b, pad, y, progressBarW, 6, 3, th.Track, "")
 	if total > 0 && done > 0 {
 		// The fill grows in once on load. It is the one place a reader's eye
 		// should be pulled first, and it settles immediately after.
-		draw.RoundRectClass(b, draw.ClassGrow, pad, y, barW*float64(done)/float64(total), 6, 3, th.Done, "")
+		draw.RoundRectClass(b, draw.ClassGrow, pad, y, progressBarW*float64(done)/float64(total), 6, 3, th.Done, "")
 	}
-	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="11" fill="%s">%d / %d tasks done</text>`,
-		pad+barW+10, y+6, th.Muted, done, total)
+	fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="11" fill="%s">%s</text>`,
+		pad+progressBarW+10, y+6, th.Muted, draw.Escape(progressLabel(t)))
+}
+
+// progressBarW is the summary bar under the title. It is a constant rather than
+// a share of the width because it reads as a measure, and a measure that
+// changes length between two drawings of the same plan is not one.
+const progressBarW = 208.0
+
+func progressLabel(t *tree.Tree) string {
+	done, total := t.Totals()
+	return fmt.Sprintf("%d / %d tasks done", done, total)
+}
+
+// headerNeeds is the width the header cannot be drawn in less than: the title
+// line and the progress line, whichever is wider.
+//
+// It exists because the header is the one part of a drawing that does not
+// shrink with the work. A board late in a project has one column left and is
+// happy to be narrow; its summary still says "23 / 25 tasks done", and without
+// this the summary is what gets cut off.
+func headerNeeds(t *tree.Tree) float64 {
+	title := pad*2 + headerWidth(t)
+	progress := pad*2 + progressBarW + 10 + draw.TextWidth(progressLabel(t), 11)
+	if progress > title {
+		return progress
+	}
+	return title
 }
 
 // card draws one node. The index only feeds the entrance stagger, so the
